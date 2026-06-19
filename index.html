@@ -6,72 +6,307 @@
     <title>Wang Qian | Portfolio</title>
     <meta
       name="description"
-      content="Portfolio website for Wang Qian, featuring selected projects, skills, and contact information."
+      content="Portfolio for Wang Qian: experience, selected projects, skills, education, and contact information."
     >
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
   </head>
   <body>
-    <main class="page">
-      <section class="intro" aria-labelledby="intro-title">
-        <p class="eyebrow">Portfolio</p>
-        <h1 id="intro-title">Wang Qian</h1>
-        <p class="lead">
-          I build thoughtful digital experiences with clean interfaces, practical
-          systems, and a focus on making ideas easy to use.
-        </p>
-        <div class="actions" aria-label="Primary links">
-          <a class="button primary" href="mailto:hello@example.com">Contact</a>
-          <a class="button" href="#projects">View projects</a>
+    <a class="skip-link" href="#main-content" data-i18n="skip">Skip to content</a>
+
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Wang Qian home">
+        <span class="brand-mark" aria-hidden="true">
+          <img src="assets/avatar.jpg" alt="">
+        </span>
+        <span>Wang Qian</span>
+      </a>
+
+      <nav class="top-nav" aria-label="Primary navigation">
+        <a href="#experience" data-i18n="navExperience">Experience</a>
+        <a href="#projects" data-i18n="navProjects">Projects</a>
+        <a href="#education" data-i18n="navEducation">Education</a>
+        <a href="#tech" data-i18n="navTech">Stack</a>
+        <a href="#contact" data-i18n="navContact">Contact</a>
+      </nav>
+
+      <div class="language-switch" aria-label="Language switcher">
+        <button class="lang-button active" type="button" data-lang="en">EN</button>
+        <button class="lang-button" type="button" data-lang="zh">中</button>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <section class="hero" id="top" aria-labelledby="hero-title">
+        <div class="hero-grid" aria-hidden="true"></div>
+        <div class="container hero-inner">
+          <div class="hero-avatar-wrap">
+            <div class="hero-avatar">
+              <img src="assets/avatar.jpg" alt="Illustrated portrait of Wang Qian">
+            </div>
+            <span class="avatar-badge" aria-label="Verified profile">✓</span>
+          </div>
+
+          <div class="hero-content">
+            <p class="eyebrow" data-i18n="heroEyebrow">Portfolio · Builder profile</p>
+            <h1 id="hero-title">
+              <span data-i18n="heroName">Wang Qian</span>
+              <span class="gradient-text" data-i18n="heroLine">builds practical digital systems.</span>
+            </h1>
+            <p class="hero-copy" data-i18n="heroCopy">
+              “A technological revolution does not create mediocrity. It reveals
+              it. AI frightens people not only because it is powerful, but because
+              it exposes how shallow some of our moats really were.”
+            </p>
+
+            <div class="hero-actions" aria-label="Primary links">
+              <a class="button primary" href="#projects" data-i18n="ctaWork">View work</a>
+              <a class="button" href="mailto:hello@example.com" data-i18n="ctaContact">Contact</a>
+            </div>
+
+            <ul class="hero-meta" aria-label="Profile highlights">
+              <li data-i18n="metaLocation">United States · Remote</li>
+              <li data-i18n="metaFocus">Product-minded development</li>
+              <li data-i18n="metaMode">English / Chinese</li>
+            </ul>
+          </div>
         </div>
       </section>
 
-      <section class="section" aria-labelledby="about-title">
-        <h2 id="about-title">About</h2>
-        <p>
-          This portfolio is ready for GitHub Pages. Replace this paragraph with a
-          short introduction, your focus areas, and the kind of work you want to
-          highlight.
-        </p>
-      </section>
+      <aside class="toc" aria-label="Section navigation">
+        <a href="#experience" data-i18n="tocExperience">Experience</a>
+        <a href="#projects" data-i18n="tocProjects">Projects</a>
+        <a href="#speaking" data-i18n="tocSharing">Sharing</a>
+        <a href="#education" data-i18n="tocEducation">Education</a>
+        <a href="#tech" data-i18n="tocTech">Skills & Stack</a>
+        <a href="#contact" data-i18n="tocContact">Contact</a>
+      </aside>
 
-      <section class="section" id="projects" aria-labelledby="projects-title">
-        <h2 id="projects-title">Selected Projects</h2>
-        <div class="projects">
-          <article class="project">
-            <h3>Project One</h3>
-            <p>
-              A concise description of the project, your role, and the outcome.
+      <section class="section summary-section">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow" data-i18n="summaryEyebrow">Professional Summary</p>
+            <h2 data-i18n="summaryTitle">A focused portfolio structure for what matters.</h2>
+          </div>
+
+          <div class="summary-layout">
+            <p class="summary-copy" data-i18n="summaryCopy">
+              This template keeps the first screen sharp, then moves into
+              evidence: experience, projects, public writing, education, and the
+              technical stack. Replace the placeholder text with your real story.
             </p>
-            <a href="#" aria-label="Open Project One">View work</a>
-          </article>
-          <article class="project">
-            <h3>Project Two</h3>
-            <p>
-              Add another project here with a link to a demo, repository, or case
-              study.
-            </p>
-            <a href="#" aria-label="Open Project Two">View work</a>
-          </article>
-          <article class="project">
-            <h3>Project Three</h3>
-            <p>
-              Use this space for a capstone, research project, product, or design
-              exploration.
-            </p>
-            <a href="#" aria-label="Open Project Three">View work</a>
-          </article>
+
+            <div class="feature-grid">
+              <article class="feature-card">
+                <span class="card-index">01</span>
+                <h3 data-i18n="summaryCardOneTitle">Builder mindset</h3>
+                <p data-i18n="summaryCardOneCopy">Turn vague goals into usable pages, workflows, and systems.</p>
+              </article>
+              <article class="feature-card">
+                <span class="card-index">02</span>
+                <h3 data-i18n="summaryCardTwoTitle">Evidence first</h3>
+                <p data-i18n="summaryCardTwoCopy">Make projects easy to scan with outcomes, links, and tools.</p>
+              </article>
+              <article class="feature-card">
+                <span class="card-index">03</span>
+                <h3 data-i18n="summaryCardThreeTitle">Bilingual by default</h3>
+                <p data-i18n="summaryCardThreeCopy">Switch between English and Chinese without changing pages.</p>
+              </article>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section class="section" aria-labelledby="skills-title">
-        <h2 id="skills-title">Skills</h2>
-        <ul class="skills">
-          <li>Frontend Development</li>
-          <li>UI Design</li>
-          <li>Product Thinking</li>
-          <li>Data Visualization</li>
-        </ul>
+      <section class="section muted" id="experience">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow" data-i18n="experienceEyebrow">Experience</p>
+            <h2 data-i18n="experienceTitle">My path</h2>
+          </div>
+
+          <div class="timeline">
+            <article class="timeline-item">
+              <div class="timeline-date" data-i18n="jobOneDate">2017 · Present</div>
+              <div>
+                <h3 data-i18n="jobOneTitle">Research Associate</h3>
+                <p class="role" data-i18n="jobOneRole">The City University of New York · Staten Island, NY</p>
+                <p data-i18n="jobOneCopy">
+                  Led hypothesis-driven programs on difficult protein systems,
+                  optimized cloning and purification workflows, increased soluble
+                  yield 10x, supported more than $1M in funding, and mentored Ph.D.
+                  and undergraduate researchers.
+                </p>
+              </div>
+            </article>
+            <article class="timeline-item">
+              <div class="timeline-date" data-i18n="jobTwoDate">2010 · 2017</div>
+              <div>
+                <h3 data-i18n="jobTwoTitle">Doctoral Researcher</h3>
+                <p class="role" data-i18n="jobTwoRole">The City College of New York · New York, NY</p>
+                <p data-i18n="jobTwoCopy">
+                  Increased expression yield of difficult protein targets from
+                  10 mg/L to more than 100 mg/L and developed simulation-guided
+                  relaxation-dispersion approaches for studying conformational
+                  exchange kinetics.
+                </p>
+              </div>
+            </article>
+          </div>
+        </div>
       </section>
+
+      <section class="section" id="projects">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow" data-i18n="projectsEyebrow">Projects</p>
+            <h2 data-i18n="projectsTitle">Selected work</h2>
+          </div>
+
+          <div class="project-grid">
+            <article class="project-card">
+              <div class="project-topline">
+                <span class="badge" data-i18n="projectOneBadge">2026</span>
+                <span class="project-number">01</span>
+              </div>
+              <h3 data-i18n="projectOneTitle">Scientific Manuscript Writing Agent</h3>
+              <p data-i18n="projectOneCopy">
+                Designed an 11-stage Claude API workflow that turns experimental
+                notes and figures into structured manuscript drafts with
+                retrieval-grounded drafting, resumable checkpoints, and
+                human-in-the-loop review gates.
+              </p>
+              <ul class="tech-list">
+                <li>Claude API</li>
+                <li>Agentic workflow</li>
+                <li>RAG</li>
+              </ul>
+            </article>
+
+            <article class="project-card">
+              <div class="project-topline">
+                <span class="badge" data-i18n="projectTwoBadge">2025 · 2026</span>
+                <span class="project-number">02</span>
+              </div>
+              <h3 data-i18n="projectTwoTitle">Protein Function Prediction using ESM-2 + GCN</h3>
+              <p data-i18n="projectTwoCopy">
+                Built a protein-function prediction pipeline combining ESM-2
+                sequence embeddings with graph neural network modeling for the
+                Kaggle CAFA6 benchmark, connecting biological evidence with
+                reproducible ML evaluation.
+              </p>
+              <ul class="tech-list">
+                <li>ESM-2</li>
+                <li>GCN</li>
+                <li>PyTorch</li>
+              </ul>
+            </article>
+
+            <article class="project-card">
+              <div class="project-topline">
+                <span class="badge" data-i18n="projectThreeBadge">2024 · Present</span>
+                <span class="project-number">03</span>
+              </div>
+              <h3 data-i18n="projectThreeTitle">NMR-HSQC-GNN: Protein Chemical Shift Predictor</h3>
+              <p data-i18n="projectThreeCopy">
+                Developed a GATv2 model on 4,286 paired BMRB/PDB protein entries,
+                improving Pearson correlation from 0.43 to 0.74 and achieving
+                held-out MAE of 0.302 ppm for 1H and 1.749 ppm for 15N shifts.
+              </p>
+              <ul class="tech-list">
+                <li>PyTorch Geometric</li>
+                <li>GATv2</li>
+                <li>NMR</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section muted" id="speaking">
+        <div class="container split">
+          <div class="section-heading">
+            <p class="eyebrow" data-i18n="sharingEyebrow">Sharing</p>
+            <h2 data-i18n="sharingTitle">Writing, talks, notes</h2>
+          </div>
+          <div class="link-list">
+            <a href="#" data-i18n="sharingOne">Technical note or article</a>
+            <a href="#" data-i18n="sharingTwo">Presentation or class project</a>
+            <a href="#" data-i18n="sharingThree">Open source or community contribution</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="education">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow" data-i18n="educationEyebrow">Education</p>
+            <h2 data-i18n="educationTitle">Education and credentials</h2>
+          </div>
+
+          <div class="education-grid">
+            <article class="info-panel">
+              <h3 data-i18n="educationMainTitle">M.S. in Computer and Information Technology</h3>
+              <p data-i18n="educationMainCopy">University of Pennsylvania · 2025</p>
+            </article>
+            <article class="info-panel">
+              <h3 data-i18n="educationSecondTitle">Ph.D. in Biochemistry</h3>
+              <p data-i18n="educationSecondCopy">The City University of New York · 2017</p>
+            </article>
+            <article class="info-panel">
+              <h3 data-i18n="educationThirdTitle">B.S. in Biotechnology</h3>
+              <p data-i18n="educationThirdCopy">Yantai University · 2009</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section muted" id="tech">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow" data-i18n="techEyebrow">Skills & Stack</p>
+            <h2 data-i18n="techTitle">Tools I use to build</h2>
+          </div>
+
+          <div class="stack-grid">
+            <div>
+              <h3 data-i18n="stackOneTitle">Product</h3>
+              <ul class="pill-list">
+                <li>Discovery</li>
+                <li>Roadmapping</li>
+                <li>User flows</li>
+              </ul>
+            </div>
+            <div>
+              <h3 data-i18n="stackTwoTitle">Frontend</h3>
+              <ul class="pill-list">
+                <li>HTML</li>
+                <li>CSS</li>
+                <li>React</li>
+              </ul>
+            </div>
+            <div>
+              <h3 data-i18n="stackThreeTitle">Systems</h3>
+              <ul class="pill-list">
+                <li>GitHub Pages</li>
+                <li>APIs</li>
+                <li>Automation</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer" id="contact">
+        <div class="container footer-inner">
+          <div>
+            <p class="eyebrow" data-i18n="contactEyebrow">Contact</p>
+            <h2 data-i18n="contactTitle">Want to talk?</h2>
+            <p data-i18n="contactCopy">Replace this with your real email, LinkedIn, GitHub, or resume link.</p>
+          </div>
+          <a class="button primary" href="mailto:hello@example.com" data-i18n="contactButton">Send email</a>
+        </div>
+      </footer>
     </main>
   </body>
 </html>
