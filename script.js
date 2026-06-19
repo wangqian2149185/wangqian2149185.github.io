@@ -8,7 +8,7 @@ const translations = {
     navContact: "Contact",
     heroEyebrow: "Portfolio · Builder profile",
     heroName: "Wang Qian",
-    heroLine: "builds practical digital systems.",
+    heroLine: "builds with AI, not behind AI.",
     heroCopy:
       "“A technological revolution does not create mediocrity. It reveals it. AI frightens people not only because it is powerful, but because it exposes how shallow some of our moats really were.”",
     ctaWork: "View work",
@@ -90,7 +90,7 @@ const translations = {
     navContact: "联系",
     heroEyebrow: "作品集 · Builder profile",
     heroName: "Wang Qian",
-    heroLine: "构建实用的数字系统。",
+    heroLine: "与AI合伙，不是甩手给AI.",
     heroCopy:
       "“AI 让人焦虑，不是因为它夺走了才华，而是因为它照出了许多才华从未存在过。”",
     ctaWork: "查看项目",
