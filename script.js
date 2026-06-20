@@ -96,7 +96,7 @@ const translations = {
     stackTwoTitle: "Frontend",
     stackThreeTitle: "Systems",
     contactEyebrow: "Contact",
-    contactTitle: "Want to talk?",
+    contactTitle: "Welcome to knock!",
     contactCopy: "Email me at wangqian01222026@gmail.com.",
     contactButton: "Send email",
   },
@@ -197,7 +197,7 @@ const translations = {
     stackTwoTitle: "前端",
     stackThreeTitle: "系统",
     contactEyebrow: "联系",
-    contactTitle: "想聊聊吗？",
+    contactTitle: "欢迎来敲门！",
     contactCopy: "欢迎通过 wangqian01222026@gmail.com 联系我。",
     contactButton: "发送邮件",
   },
@@ -248,6 +248,12 @@ const quoteState = {
   index: -1,
   timeout: null,
   token: 0,
+};
+
+const visitLoggerConfig = {
+  endpoint:
+    "https://script.google.com/macros/s/AKfycbwphkrKmp_ehnwWKDG_ib3wF4kHx_jffrSJSGFOv4jJWvMFLMhCDD2-XGnaC3HqyQnQ/exec",
+  token: "fewoeifjoF8OIJEOFIJ46Wfewl1ffgurkah",
 };
 
 function setTheme(theme) {
@@ -335,6 +341,62 @@ function startQuoteRotator(lang) {
   typeNextCharacter();
 }
 
+function getVisitorId() {
+  const storageKey = "portfolio-visitor-id";
+  const existing = localStorage.getItem(storageKey);
+  if (existing) {
+    return existing;
+  }
+
+  const randomPart =
+    window.crypto?.randomUUID?.() ||
+    `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+  localStorage.setItem(storageKey, randomPart);
+  return randomPart;
+}
+
+function logVisit() {
+  if (!visitLoggerConfig.endpoint) {
+    return;
+  }
+
+  const payload = {
+    token: visitLoggerConfig.token,
+    visitorId: getVisitorId(),
+    url: window.location.href,
+    path: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+    referrer: document.referrer,
+    language: navigator.language,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    screen: `${window.screen.width}x${window.screen.height}`,
+    userAgent: navigator.userAgent,
+  };
+
+  const body = JSON.stringify(payload);
+
+  if (navigator.sendBeacon) {
+    const sent = navigator.sendBeacon(
+      visitLoggerConfig.endpoint,
+      new Blob([body], { type: "text/plain;charset=utf-8" }),
+    );
+    if (sent) {
+      return;
+    }
+  }
+
+  fetch(visitLoggerConfig.endpoint, {
+    method: "POST",
+    mode: "no-cors",
+    keepalive: true,
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8",
+    },
+    body,
+  }).catch(() => {
+    // Analytics should never affect the portfolio experience.
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const saved = localStorage.getItem("portfolio-lang");
   const preferred = navigator.language.toLowerCase().startsWith("zh") ? "zh" : "en";
@@ -350,4 +412,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const current = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
     setTheme(current === "dark" ? "light" : "dark");
   });
+
+  logVisit();
 });

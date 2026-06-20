@@ -572,6 +572,16 @@ h3 {
   font-weight: 800;
 }
 
+.feature-card cite a {
+  color: inherit;
+  font-weight: inherit;
+  text-decoration: none;
+}
+
+.feature-card cite a:hover {
+  color: hsl(var(--primary));
+}
+
 .card-index,
 .project-number,
 .timeline-date {
