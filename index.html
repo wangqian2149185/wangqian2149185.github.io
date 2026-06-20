@@ -9,6 +9,11 @@
       content="Portfolio for Wang Qian: experience, selected projects, skills, education, and contact information."
     >
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <script>
+      const savedTheme = localStorage.getItem("portfolio-theme");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.dataset.theme = savedTheme || (prefersDark ? "dark" : "light");
+    </script>
     <link rel="stylesheet" href="styles.css">
     <script src="script.js" defer></script>
   </head>
@@ -27,13 +32,24 @@
         <a href="#experience" data-i18n="navExperience">Experience</a>
         <a href="#projects" data-i18n="navProjects">Projects</a>
         <a href="#education" data-i18n="navEducation">Education</a>
-        <a href="#tech" data-i18n="navTech">Stack</a>
+        <a href="#tech" data-i18n="navTech" hidden>Stack</a>
         <a href="#contact" data-i18n="navContact">Contact</a>
       </nav>
 
-      <div class="language-switch" aria-label="Language switcher">
-        <button class="lang-button active" type="button" data-lang="en">EN</button>
-        <button class="lang-button" type="button" data-lang="zh">中</button>
+      <div class="header-controls">
+        <button
+          class="theme-button"
+          type="button"
+          data-theme-toggle
+          aria-label="Switch color theme"
+          title="Switch color theme"
+        >
+          ☾
+        </button>
+        <div class="language-switch" aria-label="Language switcher">
+          <button class="lang-button active" type="button" data-lang="en">EN</button>
+          <button class="lang-button" type="button" data-lang="zh">中</button>
+        </div>
       </div>
     </header>
 
@@ -51,10 +67,10 @@
           <div class="hero-content">
             <p class="eyebrow" data-i18n="heroEyebrow">Portfolio · Builder profile</p>
             <h1 id="hero-title">
-              <span data-i18n="heroName">Wang Qian</span>
-              <span class="gradient-text" data-i18n="heroLine">builds with AI, not behind AI.</span>
+              <span class="hero-name" data-i18n="heroName">I'm Qian Wang</span>
+              <span class="gradient-text" data-i18n="heroLine">Human judgment, AI leverage, scientific rigor.</span>
             </h1>
-            <p class="hero-copy" data-i18n="heroCopy">
+            <p class="hero-copy" data-i18n="heroCopy" aria-live="polite">
               “A technological revolution does not create mediocrity. It reveals
               it. AI frightens people not only because it is powerful, but because
               it exposes how shallow some of our moats really were.”
@@ -62,13 +78,13 @@
 
             <div class="hero-actions" aria-label="Primary links">
               <a class="button primary" href="#projects" data-i18n="ctaWork">View work</a>
-              <a class="button" href="mailto:hello@example.com" data-i18n="ctaContact">Contact</a>
+              <a class="button" href="mailto:wangqian01222026@gmail.com" data-i18n="ctaContact">Contact</a>
             </div>
 
             <ul class="hero-meta" aria-label="Profile highlights">
-              <li data-i18n="metaLocation">United States · Remote</li>
-              <li data-i18n="metaFocus">Product-minded development</li>
-              <li data-i18n="metaMode">English / Chinese</li>
+              <li data-i18n="metaLocation">Biochemist</li>
+              <li data-i18n="metaFocus">AI4SCI</li>
+              <li data-i18n="metaMode">English / Mandarin</li>
             </ul>
           </div>
         </div>
@@ -77,9 +93,9 @@
       <aside class="toc" aria-label="Section navigation">
         <a href="#experience" data-i18n="tocExperience">Experience</a>
         <a href="#projects" data-i18n="tocProjects">Projects</a>
-        <a href="#speaking" data-i18n="tocSharing">Sharing</a>
+        <a href="#speaking" data-i18n="tocSharing">Hobby</a>
         <a href="#education" data-i18n="tocEducation">Education</a>
-        <a href="#tech" data-i18n="tocTech">Skills & Stack</a>
+        <a href="#tech" data-i18n="tocTech" hidden>Skills & Stack</a>
         <a href="#contact" data-i18n="tocContact">Contact</a>
       </aside>
 
@@ -87,31 +103,80 @@
         <div class="container">
           <div class="section-heading">
             <p class="eyebrow" data-i18n="summaryEyebrow">Professional Summary</p>
-            <h2 data-i18n="summaryTitle">A focused portfolio structure for what matters.</h2>
+            <h2 data-i18n="summaryTitle">Scientific Builder Profile</h2>
           </div>
 
           <div class="summary-layout">
-            <p class="summary-copy" data-i18n="summaryCopy">
-              This template keeps the first screen sharp, then moves into
-              evidence: experience, projects, public writing, education, and the
-              technical stack. Replace the placeholder text with your real story.
-            </p>
+            <div class="summary-copy">
+              <p data-i18n="summaryCopy">
+                I am a research scientist and AI research engineer with a Ph.D. in
+                Biochemistry, an M.S. in Computer Science, and nearly a decade of
+                empirical research experience in structural biology and
+                biochemistry. My wet-lab background includes protein expression and
+                purification, NMR spectroscopy, enzyme kinetics, molecular biology,
+                mutagenesis, binding assays, and mechanistic studies of difficult
+                protein systems. I have worked on projects involving antimicrobial
+                proteins, metal binding, protein dynamics, and non-heme iron
+                enzymes.
+              </p>
+              <p data-i18n="summaryCopyTwo">
+                I build LLM-assisted scientific workflows, protein ML models, and
+                structured evaluation pipelines for ambiguous research problems.
+                My work sits between experimental science and AI systems. I care
+                about careful hypothesis testing, reproducible experiments,
+                model-behavior evaluation, and clear research communication.
+              </p>
+              <p data-i18n="summaryCopyThree">
+                I am especially interested in AI systems that help scientists work
+                faster without losing rigor, evidence, or human judgment. This
+                includes empirical AI safety, alignment science, and scientific AI
+                tools that are useful, auditable, and grounded in real domain
+                expertise.
+              </p>
+            </div>
 
             <div class="feature-grid">
               <article class="feature-card">
                 <span class="card-index">01</span>
-                <h3 data-i18n="summaryCardOneTitle">Builder mindset</h3>
-                <p data-i18n="summaryCardOneCopy">Turn vague goals into usable pages, workflows, and systems.</p>
+                <h3 data-i18n="summaryCardOneTitle">Deep field understanding</h3>
+                <p data-i18n="summaryCardOneCopy">
+                  I bring domain depth from years of protein biochemistry, NMR
+                  spectroscopy, enzyme kinetics, and experimental research. I do
+                  not treat scientific problems as abstract data tasks. I try to
+                  understand the mechanism first.
+                </p>
+                <blockquote>
+                  <p data-i18n="summaryCardOneQuote">“During Qian’s Ph.D. defense, I could sit in the back and enjoy the cookies without worrying that he would be challenged too hard by the committee.”</p>
+                  <cite data-i18n="summaryCardOneCite">— Distinguished Professor Ruth E. Stark, Ph.D. Advisor</cite>
+                </blockquote>
               </article>
               <article class="feature-card">
                 <span class="card-index">02</span>
-                <h3 data-i18n="summaryCardTwoTitle">Evidence first</h3>
-                <p data-i18n="summaryCardTwoCopy">Make projects easy to scan with outcomes, links, and tools.</p>
+                <h3 data-i18n="summaryCardTwoTitle">Accelerating science with AI</h3>
+                <p data-i18n="summaryCardTwoCopy">
+                  I use AI as a working partner for scientific tasks: literature
+                  synthesis, manuscript drafting, protein data workflows, model
+                  evaluation, and research automation. The goal is not to replace
+                  scientific judgment. The goal is to reduce friction and move
+                  faster with better structure.
+                </p>
+                <blockquote>
+                  <p data-i18n="summaryCardTwoQuote">“I often learn from Qian about new and almost magical ways to use computers.”</p>
+                  <cite data-i18n="summaryCardTwoCite">— Professor Rupal Gupta, Postdoctoral Advisor</cite>
+                </blockquote>
               </article>
               <article class="feature-card">
                 <span class="card-index">03</span>
-                <h3 data-i18n="summaryCardThreeTitle">Bilingual by default</h3>
-                <p data-i18n="summaryCardThreeCopy">Switch between English and Chinese without changing pages.</p>
+                <h3 data-i18n="summaryCardThreeTitle">Independent and creative</h3>
+                <p data-i18n="summaryCardThreeCopy">
+                  I am comfortable working in uncertain environments where the
+                  path is not fully defined. I enjoy turning vague problems into
+                  testable ideas, practical workflows, and working systems.
+                </p>
+                <blockquote>
+                  <p data-i18n="summaryCardThreeQuote">“I would do everything I can to keep Qian working in our lab.”</p>
+                  <cite data-i18n="summaryCardThreeCite">— Professor Rupal Gupta, Postdoctoral Advisor</cite>
+                </blockquote>
               </article>
             </div>
           </div>
@@ -224,16 +289,30 @@
       </section>
 
       <section class="section muted" id="speaking">
-        <div class="container split">
+        <div class="container hobby-layout">
           <div class="section-heading">
-            <p class="eyebrow" data-i18n="sharingEyebrow">Sharing</p>
-            <h2 data-i18n="sharingTitle">Writing, talks, notes</h2>
+            <p class="eyebrow" data-i18n="sharingEyebrow">Hobby</p>
+            <h2 data-i18n="sharingTitle">Game design, systems, and rules as creative constraints</h2>
           </div>
-          <div class="link-list">
-            <a href="#" data-i18n="sharingOne">Technical note or article</a>
-            <a href="#" data-i18n="sharingTwo">Presentation or class project</a>
-            <a href="#" data-i18n="sharingThree">Open source or community contribution</a>
-          </div>
+          <article class="hobby-card">
+            <img src="assets/ZHURAN_2013.webp" alt="Zhu Ran card design from Yi Jiang Cheng Ming 2012">
+            <div class="hobby-copy">
+              <span class="badge" data-i18n="hobbyBadge">Yi Jiang Cheng Ming 2012 · Award-winning design</span>
+              <h3 data-i18n="hobbyTitle">Zhu Ran · SanGuoSha card design</h3>
+              <p data-i18n="hobbyCopy">
+                The judge sees Zhu Ran as winning through a “special resolution
+                mechanism.” The “terminate all resolution” idea appeared at “just
+                the right time,” when the official rules framework was still taking
+                shape. But it also caused problems: its resolution issues were
+                “criticized by players.” So the design was clever and historically
+                timely, but heavy on rules complexity.
+              </p>
+              <div class="hobby-links" aria-label="Hobby references">
+                <a href="https://sanguosha.fandom.com/zh/wiki/%E6%9C%B1%E7%84%B6?variant=zh-cn" target="_blank" rel="noreferrer" data-i18n="hobbyCardLink">Card profile</a>
+                <a href="https://www.bilibili.com/video/BV1uWQVYxEDe/?spm_id_from=333.337.search-card.all.click" target="_blank" rel="noreferrer" data-i18n="hobbyVideoLink">Judge commentary</a>
+              </div>
+            </div>
+          </article>
         </div>
       </section>
 
@@ -261,7 +340,7 @@
         </div>
       </section>
 
-      <section class="section muted" id="tech">
+      <section class="section muted" id="tech" hidden>
         <div class="container">
           <div class="section-heading">
             <p class="eyebrow" data-i18n="techEyebrow">Skills & Stack</p>
@@ -302,9 +381,9 @@
           <div>
             <p class="eyebrow" data-i18n="contactEyebrow">Contact</p>
             <h2 data-i18n="contactTitle">Want to talk?</h2>
-            <p data-i18n="contactCopy">Replace this with your real email, LinkedIn, GitHub, or resume link.</p>
+            <p data-i18n="contactCopy">Email me at wangqian01222026@gmail.com.</p>
           </div>
-          <a class="button primary" href="mailto:hello@example.com" data-i18n="contactButton">Send email</a>
+          <a class="button primary" href="mailto:wangqian01222026@gmail.com" data-i18n="contactButton">Send email</a>
         </div>
       </footer>
     </main>
