@@ -1000,10 +1000,151 @@
   </div>
 </section>
 
+<!-- ══════════ Scene 15.5 亲手训练 ══════════ -->
+<section id="s155" data-scene="s155" data-screen-label="Scene 15.5 亲手训练" style="max-width:920px;padding:56px 48px 20px;scroll-margin-top:56px">
+  <div style="font-family:ui-monospace,monospace;font-size:12px;font-weight:700;color:#B0623A;letter-spacing:2px">SCENE 15.5 · <span class="lz">亲手训练(实操 &amp; 调试,LAB-10)</span><span class="le">HANDS-ON TRAINING (LAB-10)</span></div>
+  <h2 style="font-family:'Noto Serif SC',serif;font-size:30px;font-weight:900;margin:6px 0 6px"><span class="lz">从数据到会说话的 tiny LM</span><span class="le">From data to a talking tiny LM</span></h2>
+  <p class="lz" style="font-size:14.5px;line-height:1.8;color:#4A4438;max-width:660px;margin:0 0 20px"><a href="#s15">Scene 15</a> 讲"训练为什么能并行"(理论);这一屏讲"我真去训一个,管线怎么接、坏了怎么查"。四个环节:数据管线 → 五步循环 → 健全性检查 → 生成。</p>
+  <p class="le" style="font-size:14.5px;line-height:1.8;color:#4A4438;max-width:660px;margin:0 0 20px"><a href="#s15">Scene 15</a> explained why training parallelizes (theory); this panel is "I actually go train one — how to wire the pipeline and debug it". Four stops: data pipeline → five-step loop → sanity check → generation.</p>
+
+  <div style="background:#FFFDF8;border:1px solid #E4DCC9;padding:22px 24px;margin-bottom:16px">
+    <div style="font-size:12px;font-weight:700;letter-spacing:1px;color:#8C8272;margin-bottom:6px"><span class="lz">① 数据管线 · 错一位对齐(shift by one)——整个训练的心脏</span><span class="le">① Data pipeline · shift-by-one alignment — the heart of training</span></div>
+    <div style="font-size:12.5px;color:#8C8272;margin-bottom:14px"><span class="lz">连续片段 chunk 长 block_size+1;x = chunk[:-1] 喂进去,y = chunk[1:] 右移一位当答案。拖动位置 i:</span><span class="le">A contiguous chunk of length block_size+1; x = chunk[:-1] goes in, y = chunk[1:] shifts right by one as the answer. Drag position i:</span></div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#4A4438;margin-bottom:14px"><span class="lz">位置 i</span><span class="le">position i</span> <input type="range" min="0" max="3" step="1" value="{{ shiftVal }}" onChange="{{ onShift }}" style="width:160px"> <span style="font-family:ui-monospace,monospace;font-weight:700">i = {{ shiftVal }}</span></label>
+    <div style="display:flex;flex-direction:column;gap:6px;font-family:ui-monospace,monospace;font-size:12px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:4px"><span style="width:88px;color:#6B6252">x = chunk[:-1]</span>
+        <sc-for list="{{ shiftXCells }}" as="sx" hint-placeholder-count="4"><span style="width:56px;text-align:center;padding:8px 0;background:{{ sx.bg }};color:{{ sx.fg }};border:{{ sx.bd }};font-weight:700">{{ sx.t }}</span></sc-for>
+        <span style="width:56px"></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:4px"><span style="width:88px;color:#6B6252">y = chunk[1:]</span>
+        <span style="width:56px"></span>
+        <sc-for list="{{ shiftYCells }}" as="sy" hint-placeholder-count="4"><span style="width:56px;text-align:center;padding:8px 0;background:{{ sy.bg }};color:{{ sy.fg }};border:{{ sy.bd }};font-weight:700">{{ sy.t }}</span></sc-for>
+      </div>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:#2C603F;margin-bottom:10px">{{ shiftCaption }}</div>
+    <div style="font-size:12.5px;color:#8C8272;line-height:1.8;border-top:1px dashed #E4DCC9;padding-top:10px"><span class="lz">一条长 n 的序列 + 一次前向 + 因果掩码 = 同时训练 n−1 个"猜下一个"样本。<strong>错位量必须 = 1</strong>:生成时每次只吐 1 个词再回喂,训练步幅必须等于生成步幅。</span><span class="le">One length-n sequence + one forward pass + the causal mask = n−1 "guess the next" samples trained at once. <strong>The shift must be exactly 1</strong>: generation emits 1 word per step and feeds it back — training stride must equal generation stride.</span></div>
+  </div>
+
+  <div style="background:#FBF1E4;border-top:3px solid #C9552E;padding:14px 18px;max-width:660px;margin-bottom:16px">
+    <div style="font-size:12px;font-weight:700;letter-spacing:1px;color:#C9552E;margin-bottom:6px"><span class="lz">⚠️ 误区 · 把 y 设成 = x(不错位)</span><span class="le">⚠️ Trap · setting y = x (no shift)</span></div>
+    <div style="font-size:13.5px;line-height:1.8;color:#4A4438"><span class="lz">模型学成<strong>恒等映射 / 标签泄漏</strong>:把输入原样复读就 loss = 0,一到真实生成就抓瞎。</span><span class="le">The model learns an <strong>identity map / label leakage</strong>: echoing the input gives loss = 0 — and it's helpless the moment real generation starts.</span></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px">
+    <div style="background:#FFFDF8;border:1px solid #E4DCC9;padding:16px 18px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:1px;color:#C9552E;margin-bottom:8px"><span class="lz">② 坑一 · 别双 softmax</span><span class="le">② Pit 1 · no double softmax</span></div>
+      <div style="font-size:13px;line-height:1.9;color:#4A4438"><span class="lz">cross_entropy <strong>内部自带 log-softmax</strong>,要喂<strong>生 logits</strong>;先 softmax 再喂 = 双重,梯度压扁训不动。</span><span class="le">cross_entropy has <strong>log-softmax built in</strong> — feed it <strong>raw logits</strong>; softmaxing first = doubling up, gradients flatten and training stalls.</span></div>
+    </div>
+    <div style="background:#FFFDF8;border:1px solid #E4DCC9;padding:16px 18px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:1px;color:#C9552E;margin-bottom:8px"><span class="lz">② 坑二 · zero_grad 看空档(错题 13)</span><span class="le">② Pit 2 · zero_grad lives in the gap (mistake #13)</span></div>
+      <div style="font-size:13px;line-height:1.9;color:#4A4438"><span class="lz">判据是<strong>"相对空档"不是"绝对第一行"</strong>:放循环头 = 放循环尾,都合法(落在上次 step 之后、下次 backward 之前)。真正致命的是 <strong>backward → zero_grad → step</strong>:刚算的梯度被清空,step 拿全 0,参数永不动、loss 钉在 ln(vocab)。</span><span class="le">The criterion is the <strong>relative gap, not "absolute first line"</strong>: top of the loop = bottom of the loop, both legal (after last step, before next backward). The killer is <strong>backward → zero_grad → step</strong>: fresh gradients get wiped, step receives all zeros — parameters never move, loss pinned at ln(vocab).</span></div>
+    </div>
+    <div style="background:#FFFDF8;border:1px solid #E4DCC9;padding:16px 18px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:1px;color:#C9552E;margin-bottom:8px"><span class="lz">② 坑三 · 摊平是逻辑对齐(错题 14)</span><span class="le">② Pit 3 · flattening is logical alignment (mistake #14)</span></div>
+      <div style="font-size:13px;line-height:1.9;color:#4A4438"><span class="lz">[B,T,vocab]→[B*T,vocab]、[B,T]→[B*T] 要<strong>同序摊平</strong>,第 k 个预测对第 k 个标签;和 contiguous(物理内存,错题 8)、eval() 模式都无关。能随便摊平是因为<strong>跨 token 混合早在注意力内做完了</strong>,loss 只是逐位置对答案。</span><span class="le">[B,T,vocab]→[B*T,vocab] and [B,T]→[B*T] must flatten <strong>in the same order</strong> so the k-th prediction meets the k-th label; nothing to do with contiguous (physical memory, mistake #8) or eval() mode. Flattening is safe because <strong>cross-token mixing already happened inside attention</strong> — loss just grades each position.</span></div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+    <div style="background:#FFFDF8;border:1px solid #E4DCC9;padding:18px 20px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:1px;color:#2C603F;margin-bottom:8px"><span class="lz">③ 健全性检查 · overfit-one-batch(上大数据前必做)</span><span class="le">③ Sanity check · overfit-one-batch (mandatory before big data)</span></div>
+      <div style="font-size:13px;line-height:1.9;color:#4A4438"><span class="lz">拿<strong>固定一个 batch</strong> 反复训,看能不能压到 <strong>loss ≈ 0</strong>。能 → 管线全通(错位/摊平/梯度回传都对),放心上大语料;不能 → 一定是<strong>管线有 bug,不是模型能力问题</strong>。它把"训练失败"分成互斥两类:(a) 模型学不会 vs (b) 我接错了;连一撮都背不下 → 排除 (a),锁定 (b)。花 30 秒省几小时。</span><span class="le">Train repeatedly on <strong>one fixed batch</strong> and see if loss crushes to <strong>≈ 0</strong>. Yes → pipeline fully wired (shift / flatten / backprop all correct), safe to scale up; no → it's <strong>a pipeline bug, not model capacity</strong>. It splits "training failed" into two exclusive bins: (a) model can't learn vs (b) I wired it wrong — if it can't even memorize a pinch, (a) is ruled out. 30 seconds saves hours.</span></div>
+    </div>
+    <div style="background:#FFFDF8;border:1px solid #E4DCC9;padding:18px 20px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:1px;color:#8C8272;margin-bottom:10px"><span class="lz">④ ln(vocab) 体温计 · 拖动 loss 读体温</span><span class="le">④ The ln(vocab) thermometer · drag the loss</span></div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#4A4438;margin-bottom:12px">loss <input type="range" min="0" max="5" step="0.01" value="{{ lossVal }}" onChange="{{ onLoss }}" style="width:170px"> <span style="font-family:ui-monospace,monospace;font-weight:700">{{ lossLabel }}</span></label>
+      <div style="position:relative;height:20px;background:#F1EADA;border:1px solid #E4DCC9;margin-bottom:8px">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:{{ thermoFillW }};background:{{ thermoFillBg }}"></div>
+        <div style="position:absolute;left:{{ thermoLineL }};top:-5px;bottom:-5px;width:2px;background:#26221B"></div>
+      </div>
+      <div style="font-family:ui-monospace,monospace;font-size:11px;color:#6B6252;margin-bottom:10px"><span class="lz">▲ 瞎猜线 ln(13) ≈ 2.56(均匀瞎猜:每词概率 1/vocab)</span><span class="le">▲ guess line ln(13) ≈ 2.56 (uniform guessing: 1/vocab per word)</span></div>
+      <div style="min-height:44px;font-size:13px;font-weight:700;line-height:1.7;color:{{ thermoColor }}">{{ thermoMsg }}</div>
+      <div style="font-size:12.5px;color:#8C8272;line-height:1.8;border-top:1px dashed #E4DCC9;padding-top:10px"><span class="lz">loss = −ln(模型分给正确词的概率)。迁移:蛋白序列模型(20 种氨基酸)的瞎猜线就是 ln(20) ≈ 3.0,一个道理。</span><span class="le">loss = −ln(probability assigned to the correct word). Transfer: a protein sequence model (20 amino acids) has its guess line at ln(20) ≈ 3.0 — same idea.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ Scene 16 LoRA ══════════ -->
+<section id="s16" data-scene="s16" data-screen-label="Scene 16 LoRA 微调" style="max-width:920px;padding:56px 48px 20px;scroll-margin-top:56px">
+  <div style="font-family:ui-monospace,monospace;font-size:12px;font-weight:700;color:#B0623A;letter-spacing:2px">SCENE 16 · <span class="lz">LoRA 微调专题</span><span class="le">LoRA FINE-TUNING DEEP DIVE</span></div>
+  <h2 style="font-family:'Noto Serif SC',serif;font-size:30px;font-weight:900;margin:6px 0 6px"><span class="lz">冻结大书,只贴一张可训练的便利贴</span><span class="le">Freeze the big book, stick on one trainable Post-it</span></h2>
+  <p class="lz" style="font-size:14.5px;line-height:1.8;color:#4A4438;max-width:660px;margin:0 0 20px">前面都在"从零训"。现实里更常见的是<strong>微调(fine-tuning)</strong>一个已训好的大模型。全参微调太贵,LoRA 用"低秩补丁"把成本砍到 0.4%:贵在哪 → LoRA 是什么 → 三个旋钮 → 初始化的雷。</p>
+  <p class="le" style="font-size:14.5px;line-height:1.8;color:#4A4438;max-width:660px;margin:0 0 20px">Everything so far was "train from scratch". In practice you more often <strong>fine-tune</strong> a pretrained model. Full fine-tuning is expensive; LoRA cuts the cost to 0.4% with a low-rank patch: where the cost lives → what LoRA is → three knobs → the initialization mine.</p>
+
+  <div style="background:#FFFDF8;border:1px solid #E4DCC9;padding:22px 24px;margin-bottom:16px">
+    <div style="font-size:12px;font-weight:700;letter-spacing:1px;color:#8C8272;margin-bottom:6px"><span class="lz">① 全参微调为什么贵 · 四块显存(7B 模型,fp16)</span><span class="le">① Why full fine-tuning is expensive · four memory blocks (7B model, fp16)</span></div>
+    <div style="font-size:12.5px;color:#8C8272;margin-bottom:14px"><span class="lz">②③ 只为"要训练的参数"存在——切到 LoRA 看它们塌缩。</span><span class="le">② and ③ exist only for trainable parameters — switch to LoRA and watch them collapse.</span></div>
+    <div style="display:flex;gap:10px;margin-bottom:16px">
+      <button onClick="{{ loraModeFull }}" style="font-family:inherit;font-size:13px;font-weight:700;padding:7px 16px;border:1.5px solid #8A4A1D;background:{{ lmFullBg }};color:{{ lmFullFg }};cursor:pointer;border-radius:3px"><span class="lz">全参微调</span><span class="le">Full fine-tune</span></button>
+      <button onClick="{{ loraModeLora }}" style="font-family:inherit;font-size:13px;font-weight:700;padding:7px 16px;border:1.5px solid #8A4A1D;background:{{ lmLoraBg }};color:{{ lmLoraFg }};cursor:pointer;border-radius:3px">LoRA</button>
+    </div>
+    <div style="display:flex;height:44px;border:1px solid #E4DCC9;margin-bottom:8px;overflow:hidden">
+      <sc-for list="{{ loraSegs }}" as="lg" hint-placeholder-count="4"><div style="width:{{ lg.w }};background:{{ lg.bg }};color:#FFF7EC;font-family:ui-monospace,monospace;font-size:10.5px;display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;transition:width 0.5s">{{ lg.label }}</div></sc-for>
+    </div>
+    <div style="font-family:ui-monospace,monospace;font-size:12.5px;font-weight:700;color:#8A4A1D;margin-bottom:10px">{{ loraTotal }}</div>
+    <div style="font-size:12.5px;color:#8C8272;line-height:1.8;border-top:1px dashed #E4DCC9;padding-top:10px"><span class="lz">AdamW 给每个训练参数额外存两本账:<strong>m(一阶动量 = 梯度滑动平均,惯性方向)</strong> + <strong>v(二阶动量 = 梯度平方滑动平均,谁暴躁就自动减小步子)</strong>,所以 ③ = 2×权重(且 fp32)。痛点判据:<strong>贵不在"模型多大",在"要动多少参数"</strong>。</span><span class="le">AdamW keeps two extra ledgers per trainable parameter: <strong>m (1st moment = gradient moving average, inertia)</strong> + <strong>v (2nd moment = squared-gradient average — jumpy params auto-shrink their step)</strong>, so ③ = 2× weights (in fp32). The criterion: <strong>cost isn't "how big the model is" but "how many parameters you move"</strong>.</span></div>
+  </div>
+
+  <div style="background:#FFFDF8;border:1px solid #E4DCC9;padding:22px 24px;margin-bottom:16px">
+    <div style="font-size:12px;font-weight:700;letter-spacing:1px;color:#8C8272;margin-bottom:6px"><span class="lz">② LoRA 核心 · ΔW = B·A,拖动 r 看瓶颈</span><span class="le">② LoRA core · ΔW = B·A — drag r to squeeze the bottleneck</span></div>
+    <div style="font-size:12.5px;color:#8C8272;margin-bottom:14px"><span class="lz">微调 = W → W + ΔW;ΔW 虽大但有效秩很低 → 拆成两个瘦矩阵。前向:h = W·x + B·(A·x),W 冻结,只训 A、B。</span><span class="le">Fine-tuning = W → W + ΔW; ΔW is big but effectively low-rank → split into two thin matrices. Forward: h = W·x + B·(A·x); W frozen, only A and B train.</span></div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#4A4438;margin-bottom:14px"><span class="lz">秩 r</span><span class="le">rank r</span> <input type="range" min="1" max="64" step="1" value="{{ loraRVal }}" onChange="{{ onLoraR }}" style="width:170px"> <span style="font-family:ui-monospace,monospace;font-weight:700">r = {{ loraRVal }}</span></label>
+    <div style="display:flex;align-items:center;gap:0;margin-bottom:12px">
+      <div style="width:120px;height:96px;background:#8C8272;display:flex;align-items:center;justify-content:center;color:#FFF7EC;font-family:ui-monospace,monospace;font-size:11px">d = 4096</div>
+      <div style="width:56px;height:0;border-top:{{ waistPx }} solid #C9552E;transition:border-top-width 0.3s"></div>
+      <div style="width:70px;height:{{ waistH }};min-height:4px;background:#C9552E;display:flex;align-items:center;justify-content:center;color:#FFF7EC;font-family:ui-monospace,monospace;font-size:11px;transition:height 0.3s">r = {{ loraRVal }}</div>
+      <div style="width:56px;height:0;border-top:{{ waistPx }} solid #C9552E;transition:border-top-width 0.3s"></div>
+      <div style="width:120px;height:96px;background:#8C8272;display:flex;align-items:center;justify-content:center;color:#FFF7EC;font-family:ui-monospace,monospace;font-size:11px">d = 4096</div>
+    </div>
+    <div style="font-family:ui-monospace,monospace;font-size:12.5px;color:#3A342A;line-height:2"><span class="lz">全参 ΔW:4096² = 16,777,216 &nbsp;vs&nbsp; LoRA:2 × r × 4096 = <strong style="color:#C9552E">{{ loraParams }}</strong> ≈ 全参的 <strong style="color:#C9552E">{{ loraPct }}</strong></span><span class="le">Full ΔW: 4096² = 16,777,216 &nbsp;vs&nbsp; LoRA: 2 × r × 4096 = <strong style="color:#C9552E">{{ loraParams }}</strong> ≈ <strong style="color:#C9552E">{{ loraPct }}</strong> of full</span></div>
+    <div style="font-size:12.5px;color:#8C8272;line-height:1.8;border-top:1px dashed #E4DCC9;padding-top:10px;margin-top:10px"><span class="lz"><strong>省显存真相(错题 15):</strong>99.6% 参数冻结 → 它们丢掉梯度和优化器状态,②③ 从 70GB 塌到几百 MB;<strong>① 权重(底座还得读)和 ④ 激活(前向照跑)省不掉</strong>。便利贴类比:W = 印好的厚书不许涂改,BA = 边上可擦写便签;换任务 = 换便签,每任务只存几十 MB。<strong>推理零延迟:</strong>训完 W' = W + BA 合并回去,就是普通权重。</span><span class="le"><strong>Where the savings really come from (mistake #15):</strong> 99.6% of parameters are frozen → they drop their gradients and optimizer state, so ②③ collapse from 70GB to a few hundred MB; <strong>① weights (the base must still be read) and ④ activations (forward still runs) can't be saved</strong>. Post-it analogy: W = a printed book you may not mark, BA = an erasable sticky note; switch tasks = swap notes, tens of MB each. <strong>Zero inference latency:</strong> after training, merge W' = W + BA back — it's just an ordinary weight.</span></div>
+  </div>
+
+  <details style="border:1px solid #E4DCC9;background:#FFFDF8;padding:12px 18px;margin-bottom:16px;font-size:13.5px;color:#4A4438">
+    <summary style="cursor:pointer;font-weight:700;font-size:13px;color:#6B6252"><span class="lz">进阶 · 混合精度小账:为什么 ②③ 要 fp32</span><span class="le">Advanced · mixed-precision ledger: why ② and ③ need fp32</span></summary>
+    <div class="lz" style="font-family:ui-monospace,monospace;font-size:12px;line-height:2.05;margin-top:10px">fp32&nbsp;&nbsp;4字节&nbsp;&nbsp;精度高&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ 优化器 m,v / 主权重(反复累加,差之毫厘谬千里)<br>bf16&nbsp;&nbsp;2字节&nbsp;&nbsp;范围宽精度略低&nbsp;→ ★训练计算的权重/激活/梯度(省一半、不易溢出)<br>fp16&nbsp;&nbsp;2字节&nbsp;&nbsp;范围窄易溢出&nbsp;&nbsp;→ 早期方案,现多被 bf16 取代<br>int4&nbsp;&nbsp;0.5字节&nbsp;量化,很糊&nbsp;&nbsp;&nbsp;&nbsp;→ QLoRA 冻结底座(反正不训,糊一点无妨)</div>
+    <div class="le" style="font-family:ui-monospace,monospace;font-size:12px;line-height:2.05;margin-top:10px">fp32&nbsp;&nbsp;4B&nbsp;&nbsp;&nbsp;high precision&nbsp;&nbsp;→ optimizer m,v / master weights (repeated accumulation)<br>bf16&nbsp;&nbsp;2B&nbsp;&nbsp;&nbsp;wide range&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ ★training compute: weights/activations/gradients<br>fp16&nbsp;&nbsp;2B&nbsp;&nbsp;&nbsp;narrow, overflows → early scheme, mostly replaced by bf16<br>int4&nbsp;&nbsp;0.5B&nbsp;quantized, blurry → QLoRA frozen base (not training it anyway)</div>
+    <p class="lz" style="line-height:1.9;margin:10px 0 4px">原则:<strong>要反复更新的用高精度,冻结只读的可低精度/量化</strong>——又和 LoRA "冻结省钱"同源。</p>
+    <p class="le" style="line-height:1.9;margin:10px 0 4px">Principle: <strong>high precision for what updates repeatedly; low precision / quantization for frozen read-only</strong> — the same root idea as LoRA's freeze-to-save.</p>
+  </details>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px">
+    <div style="background:#FFFDF8;border:1px solid #E4DCC9;padding:16px 18px">
+      <div style="font-family:ui-monospace,monospace;font-size:13px;font-weight:700;color:#8A4A1D;margin-bottom:8px">r</div>
+      <div style="font-size:13px;line-height:1.9;color:#4A4438"><span class="lz">便利贴多大(表达带宽/容量)。甜点 8~16,再大边际递减(印证低秩假设);数据少还硬拉大 r → 过拟合,<strong>大 r 不是保险是风险</strong>。</span><span class="le">How big the Post-it is (capacity). Sweet spot 8–16; beyond that diminishing returns (confirming the low-rank hypothesis). Little data + big r → overfitting: <strong>big r is a risk, not insurance</strong>.</span></div>
+    </div>
+    <div style="background:#FFFDF8;border:1px solid #E4DCC9;padding:16px 18px">
+      <div style="font-family:ui-monospace,monospace;font-size:13px;font-weight:700;color:#8A4A1D;margin-bottom:8px">alpha</div>
+      <div style="font-size:13px;line-height:1.9;color:#4A4438"><span class="lz">字写多重(音量/强度)。有效 ΔW = (alpha/r)·B·A,常配 alpha = 2r。除以 r 是为了<strong>跨实验换 r 时不用重找学习率</strong>;单次训练内 r 恒定不变。</span><span class="le">How hard you press the pen (volume). Effective ΔW = (alpha/r)·B·A, commonly alpha = 2r. Dividing by r means <strong>no re-tuning the learning rate when you change r across experiments</strong>; within one run r never changes.</span></div>
+    </div>
+    <div style="background:#FFFDF8;border:1px solid #E4DCC9;padding:16px 18px">
+      <div style="font-family:ui-monospace,monospace;font-size:13px;font-weight:700;color:#8A4A1D;margin-bottom:8px"><span class="lz">注入层</span><span class="le">target modules</span></div>
+      <div style="font-size:13px;line-height:1.9;color:#4A4438"><span class="lz">便签贴哪几页。可注入点:注意力 W_Q/W_K/W_V/W_O + FFN 的 W_gate/W_up/W_down(SwiGLU 门控前馈)。原论文最省:只 Q、V;现在主流:<strong>全线性层</strong>(更稳更强)。</span><span class="le">Which pages get the note. Candidates: attention W_Q/W_K/W_V/W_O + FFN W_gate/W_up/W_down (SwiGLU gated FFN). Original paper, thriftiest: Q and V only; today's mainstream: <strong>all linear layers</strong> (steadier, stronger).</span></div>
+    </div>
+  </div>
+
+  <div style="background:#FFFDF8;border:1px solid #E4DCC9;padding:22px 24px;margin-bottom:16px">
+    <div style="font-size:12px;font-weight:700;letter-spacing:1px;color:#C9552E;margin-bottom:6px"><span class="lz">④ ⚠️ 初始化的雷 · A、B 必须"一零一非零" · 点三种初始化试试</span><span class="le">④ ⚠️ The initialization mine · A, B must be "one zero, one not" · try all three</span></div>
+    <div style="font-family:ui-monospace,monospace;font-size:12px;color:#6B6252;line-height:2;margin-bottom:14px">grad_A ∝ B^T·(上游)·x^T&nbsp;&nbsp;(含 B)&nbsp;&nbsp;&nbsp;&nbsp;grad_B ∝ (上游)·(A·x)^T&nbsp;&nbsp;(含 A)</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <button onClick="{{ initGood }}" style="font-family:inherit;font-size:13px;font-weight:700;padding:8px 16px;border:1.5px solid #C9BFA8;background:{{ igBg }};color:{{ igFg }};cursor:pointer;border-radius:3px"><span class="lz">A 随机,B = 0</span><span class="le">A random, B = 0</span></button>
+      <button onClick="{{ initZero }}" style="font-family:inherit;font-size:13px;font-weight:700;padding:8px 16px;border:1.5px solid #C9BFA8;background:{{ izBg }};color:{{ izFg }};cursor:pointer;border-radius:3px">A = 0, B = 0</button>
+      <button onClick="{{ initRand }}" style="font-family:inherit;font-size:13px;font-weight:700;padding:8px 16px;border:1.5px solid #C9BFA8;background:{{ irBg }};color:{{ irFg }};cursor:pointer;border-radius:3px"><span class="lz">A、B 全随机</span><span class="le">A, B both random</span></button>
+    </div>
+    <div style="min-height:52px;font-size:13.5px;font-weight:700;line-height:1.8;color:{{ initColor }}">{{ initMsg }}</div>
+  </div>
+
+  <details style="border:1px solid #E4DCC9;background:#FFFDF8;padding:12px 18px;margin-bottom:14px;font-size:13.5px;color:#4A4438">
+    <summary style="cursor:pointer;font-weight:700;font-size:13px;color:#6B6252"><span class="lz">迁移 · 蛋白 ML 场景</span><span class="le">Transfer · protein ML</span></summary>
+    <p class="lz" style="line-height:1.9;margin:10px 0 4px">冻结 ESM 类蛋白语言模型,只在特定投影层挂 LoRA,用少量领域标注(某类 residue 性质 / NMR 相关任务)适配;省显存、省存储、每个下游任务各存一张便签——正是多任务科研场景的理想形态。(QLoRA 4-bit 量化底座 + 上手 lab 待补。)</p>
+    <p class="le" style="line-height:1.9;margin:10px 0 4px">Freeze an ESM-style protein language model and hang LoRA on selected projection layers; adapt with a small amount of domain labels (residue properties / NMR-related tasks). Saves memory and storage, one sticky note per downstream task — ideal for multi-task research. (QLoRA 4-bit quantized base + hands-on lab to come.)</p>
+  </details>
+</section>
+
 <!-- ══════════ 附录 ══════════ -->
 <section id="appx" data-scene="appx" data-screen-label="附录与自测" style="max-width:920px;padding:56px 48px 100px;scroll-margin-top:56px">
   <div style="font-family:ui-monospace,monospace;font-size:12px;font-weight:700;color:#B0623A;letter-spacing:2px"><span class="lz">附录 · 速查 + 闯关自测</span><span class="le">APPENDIX · CHEATSHEET + QUIZ</span></div>
-  <h2 style="font-family:'Noto Serif SC',serif;font-size:30px;font-weight:900;margin:6px 0 22px"><span class="lz">把整台机器折成三张卡,再闯十二关</span><span class="le">The whole machine folded into three cards, then twelve trials</span></h2>
+  <h2 style="font-family:'Noto Serif SC',serif;font-size:30px;font-weight:900;margin:6px 0 22px"><span class="lz">把整台机器折成三张卡,再闯十六关</span><span class="le">The whole machine folded into three cards, then sixteen trials</span></h2>
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
     <div style="background:#FFFDF8;border:1px solid #E4DCC9;padding:18px 20px">
@@ -1027,11 +1168,11 @@
 
   <div style="background:#FFFDF8;border:1px solid #E4DCC9;padding:22px 24px">
     <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
-      <div style="font-family:'Noto Serif SC',serif;font-size:20px;font-weight:900"><span class="lz">附录 D · 闯关自测(错题本十二连)</span><span class="le">Appendix D · The quiz (twelve mistakes revisited)</span></div>
+      <div style="font-family:'Noto Serif SC',serif;font-size:20px;font-weight:900"><span class="lz">附录 D · 闯关自测(错题本十六连)</span><span class="le">Appendix D · The quiz (sixteen mistakes revisited)</span></div>
       <span style="font-family:ui-monospace,monospace;font-size:13px;color:#8A4A1D;font-weight:700">{{ quizScore }}</span>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px">
-      <sc-for list="{{ quizItems }}" as="qz" hint-placeholder-count="12">
+      <sc-for list="{{ quizItems }}" as="qz" hint-placeholder-count="16">
         <div style="border:1px solid #E4DCC9;padding:14px 18px;background:#FAF6EE">
           <div style="font-size:14px;line-height:1.8;color:#26221B;margin-bottom:10px"><span style="font-family:ui-monospace,monospace;font-size:11px;color:#B0623A;font-weight:700;margin-right:8px">Q{{ qz.n }}</span>{{ qz.statement }}</div>
           <div style="display:flex;align-items:center;gap:10px">
@@ -1055,7 +1196,8 @@
 class Component extends DCLogic {
   state = { active: 's0', inputText: '猫追老鼠。', memStep: 0, maskOn: true, div: 1.73, selRow: 1,
     strategy: 'temperature', temp: 1.0, topk: 3, sampled: null,
-    genStep: 0, s14Ans: null, orderPicked: [], quizAns: {}, ropePos: 3, ropeOff: 2, ropeMat: 2, kvStep: 0, lang: 'zh' };
+    genStep: 0, s14Ans: null, orderPicked: [], quizAns: {}, ropePos: 3, ropeOff: 2, ropeMat: 2, kvStep: 0, lang: 'zh',
+    shiftI: 1, lossVal: 2.56, loraMode: 'full', loraR: 8, loraInit: null };
 
   setLang(l) {
     document.body.setAttribute('data-lang', l);
@@ -1111,6 +1253,8 @@ class Component extends DCLogic {
       { id: 's13', label: '13 · 自回归 + KV', en: '13 · Autoregression + KV', shape: '循环', shapeEn: 'loop' },
       { id: 's14', label: '14 · 三范式', en: '14 · Three paradigms', shape: '掩码', shapeEn: 'masks' },
       { id: 's15', label: '15 · 训练视角', en: '15 · Training view', shape: 'loss' },
+      { id: 's155', label: '15.5 · 亲手训练', en: '15.5 · Hands-on training', shape: 'ln(13)≈2.56' },
+      { id: 's16', label: '16 · LoRA 微调', en: '16 · LoRA fine-tune', shape: 'ΔW=BA' },
       { id: 'appx', label: '附录 · 速查 + 自测', en: 'Appendix · Cheatsheet + quiz', shape: '速查', shapeEn: 'ref' },
     ].map(s => ({ ...s, label: EN ? s.en : s.label, shape: EN && s.shapeEn ? s.shapeEn : s.shape }));
     const act = this.state.active;
@@ -1511,6 +1655,80 @@ class Component extends DCLogic {
       orderMsgColor = '#2C603F';
     }
 
+    // ---- Scene 15.5 shift-by-one ----
+    const CHUNK = [
+      { t: '猫', c: '#D97736', tint: '#F6E3D2' }, { t: '追', c: '#3B6FBF', tint: '#DFE8F4' },
+      { t: '老鼠', c: '#3E8F5A', tint: '#DFEEE4' }, { t: '。', c: '#8C8678', tint: '#E8E4D8' },
+      { t: '<eos>', c: '#A89C82', tint: '#EFEAE0' },
+    ];
+    const si = this.state.shiftI;
+    const shiftXCells = CHUNK.slice(0, 4).map((c, i) => ({
+      t: c.t, bg: i <= si ? c.c : c.tint, fg: i <= si ? '#FFF7EC' : '#8C8272',
+      bd: i === si ? '2px solid #26221B' : '1px solid #E4DCC9',
+    }));
+    const shiftYCells = CHUNK.slice(1, 5).map((c, i) => ({
+      t: c.t, bg: i === si ? c.c : '#F4EFE2', fg: i === si ? '#FFF7EC' : '#B5AB96',
+      bd: i === si ? '2px solid #26221B' : '1px dashed #D8CEB6',
+    }));
+    const xSeen = CHUNK.slice(0, si + 1).map(c => c.t).join(' ');
+    const shiftCaption = EN
+      ? 'see x[0..' + si + '] = "' + xSeen + '" → predict y[' + si + '] = "' + CHUNK[si + 1].t + '" (the next token of the original sequence)'
+      : '看 x[0..' + si + '] 「' + xSeen + '」 → 猜 y[' + si + '] = 「' + CHUNK[si + 1].t + '」(即原序列的下一个)';
+
+    // ---- Scene 15.5 ln(vocab) thermometer ----
+    const LNV = Math.log(13);
+    const lv = this.state.lossVal;
+    let thermoMsg, thermoColor;
+    if (lv < 0.15) {
+      thermoMsg = EN ? 'loss → 0: overfit-one-batch passed — pipeline fully wired ✅' : 'loss → 0:一撮数据背下来了,管线全通 ✅';
+      thermoColor = '#2C603F';
+    } else if (lv > LNV + 0.18) {
+      thermoMsg = EN ? 'loss ≫ ln(13): "confidently wrong" — broken init (huge weights → sharp distribution) or misaligned labels/flatten 🐛' : 'loss ≫ ln(13):自信押错——初始化炸了(权重过大→尖锐分布)或标签/摊平接错 🐛';
+      thermoColor = '#C9552E';
+    } else if (Math.abs(lv - LNV) <= 0.18) {
+      thermoMsg = EN ? 'loss ≈ ln(13) = 2.56: uniform guessing. Healthy at step 0 ✅ — but stuck here mid-training = gradients not flowing (mistake #13) 🐛' : 'loss ≈ ln(13) = 2.56:均匀瞎猜。第 0 步在这儿 = 初始化正常 ✅;训练中钉在这儿 = 梯度没流(错题 13)🐛';
+      thermoColor = '#8A4A1D';
+    } else {
+      thermoMsg = EN ? 'below the guess line: the model is learning, gradients are flowing ✓' : '低于瞎猜线:在学习,梯度在流 ✓';
+      thermoColor = '#2C603F';
+    }
+
+    // ---- Scene 16 LoRA ----
+    const lmode = this.state.loraMode;
+    const segsData = lmode === 'full'
+      ? [
+        { label: '① 14GB', labelEn: '① 14GB', w: 14, bg: '#8C8272' },
+        { label: '② 梯度 14GB', labelEn: '② grads 14GB', w: 14, bg: '#C9552E' },
+        { label: '③ AdamW 56GB (fp32)', labelEn: '③ AdamW 56GB (fp32)', w: 56, bg: '#8A4A1D' },
+        { label: '④ 激活', labelEn: '④ activations', w: 12, bg: '#3B6FBF' },
+      ]
+      : [
+        { label: '① 14GB', labelEn: '① 14GB', w: 14, bg: '#8C8272' },
+        { label: '②③', labelEn: '②③', w: 1.6, bg: '#C9552E' },
+        { label: '④ 激活', labelEn: '④ activations', w: 12, bg: '#3B6FBF' },
+      ];
+    const loraSegs = segsData.map(s => ({ label: EN ? s.labelEn : s.label, w: (s.w / 96 * 100).toFixed(1) + '%', bg: s.bg }));
+    const loraTotal = lmode === 'full'
+      ? (EN ? 'fixed cost ①②③ ≈ 84 GB — ②③ alone are 5× the weights' : '固定成本 ①②③ ≈ 84 GB —— 光 ②③ 就是权重的 5 倍')
+      : (EN ? 'fixed cost ≈ 14 GB + a few hundred MB of sticky notes — ②③ collapsed' : '固定成本 ≈ 14 GB + 便签几百 MB —— ②③ 塌缩了');
+    const lr = this.state.loraR;
+    const loraParamsN = 2 * lr * 4096;
+    const li = this.state.loraInit;
+    const initMsgs = EN ? {
+      good: '✅ The only sweet spot. Start: ΔW = 0 → output = original model, smooth takeoff. grad_B ∝ A ≠ 0 moves B first; once B ≠ 0, grad_A wakes up too → trainable.',
+      zero: '🐛 Mine 1: grad_A ∝ B = 0 and grad_B ∝ A = 0 lock each other — A and B stay pinned at 0 forever. The branch is dead; it never trains.',
+      rand: '🐛 Mine 2: start ΔW ≠ 0 → you scramble the carefully-tuned original model from step one; it may drift completely off.',
+    } : {
+      good: '✅ 唯一甜点。起步 ΔW = 0 → 输出 = 原模型,平滑起步;grad_B ∝ A ≠ 0 先动 B,B 非零后 grad_A 也活 → 能训。',
+      zero: '🐛 雷一:grad_A ∝ B = 0、grad_B ∝ A = 0 互锁全为 0 → A、B 永远钉在 0,分支死掉,训不动。',
+      rand: '🐛 雷二:起步 ΔW ≠ 0 → 一上来就搅乱已调好的原模型,可能完全跑偏。',
+    };
+    const initBtn = (k, okColor) => ({
+      bg: li === k ? okColor : '#FFFDF8',
+      fg: li === k ? '#FFF7EC' : '#3A342A',
+    });
+    const ig = initBtn('good', '#2C603F'), iz = initBtn('zero', '#C9552E'), ir = initBtn('rand', '#C9552E');
+
     // ---- Appendix D quiz ----
     const QUIZ_EN = [
       { n: 1, ans: false, statement: '"BERT uses the front half of the Transformer, GPT the back half."', explain: '❌ Both are "one half": BERT = Encoder-only, GPT = Decoder-only; the difference is the mask (bidirectional vs causal). T5 uses both halves.' },
@@ -1525,6 +1743,10 @@ class Component extends DCLogic {
       { n: 10, ans: false, statement: '"RoPE is another way of adding positions to the word embedding: x = RoPE(vocab_emb(ids))."', explain: '❌ RoPE never touches word embeddings and adds nothing at the input; it drops pos_emb and rotates Q and K by position inside attention.' },
       { n: 11, ans: false, statement: '"RoPE extrapolates well because the rotation angles are periodic — go around and you come back."', explain: '❌ It extrapolates well because positions are computed by formula, not looked up (no missing row-513 problem); the periodicity is a side effect to be tamed (aliasing past 2π — position interpolation / NTK / YaRN).' },
       { n: 12, ans: true, statement: '"RoPE pairs the d_k dims into 2D planes, each rotating at its own frequency: low dims fast for near distances, high dims slow for far — together a unique fingerprint per position."', explain: '✓ Correct. Rotation needs a 2D plane, hence the pairing; one frequency is too poor and wraps into collisions — multiple frequencies work like an odometer, read together they pin down one position.' },
+      { n: 13, ans: false, statement: '"zero_grad must be the very first line of the training loop, otherwise training breaks."', explain: '❌ The criterion is the relative gap, not the absolute first line: top of the loop = bottom of the loop, both legal (after last step, before next backward). The real killer is backward → zero_grad → step — fresh gradients wiped, step gets all zeros, loss pinned at ln(vocab).' },
+      { n: 14, ans: false, statement: '"Flattening [B,T,vocab]→[B*T,vocab] for the loss requires .contiguous(), that\'s what makes it work."', explain: '❌ Flattening for the loss is logical alignment (the k-th prediction must meet the k-th label, same flatten order for x and y) — nothing to do with contiguous (physical memory, mistake #8) or eval() mode. It\'s safe because cross-token mixing already happened inside attention.' },
+      { n: 15, ans: false, statement: '"LoRA trains only 0.4% of the parameters, so it needs only 0.4% of the memory."', explain: '❌ LoRA cuts ② gradients + ③ optimizer state (frozen params drop both, 70GB → a few hundred MB); ① base weights (still must be read, 14GB) and ④ activations (forward still runs) can\'t be saved.' },
+      { n: 16, ans: true, statement: '"LoRA init: A random + B = 0 is the only sweet spot — start ΔW = 0 doesn\'t disturb the base model, yet grad_B ∝ A ≠ 0 lets training take off."', explain: '✓ Correct. All zeros → grad_A and grad_B lock each other at 0, the branch is dead; both random → ΔW ≠ 0 from step one scrambles the tuned base model.' },
     ];
     const QUIZ = EN ? QUIZ_EN : [
       { n: 1, ans: false, statement: '"BERT 用 Transformer 的前半,GPT 用后半。"', explain: '❌ 两个都是"一半":BERT=Encoder-only,GPT=Decoder-only,区别在掩码(双向 vs 因果)。两半的是 T5。' },
@@ -1539,6 +1761,10 @@ class Component extends DCLogic {
       { n: 10, ans: false, statement: '"RoPE 是把位置编码加在词嵌入上的另一种写法:x = RoPE(vocab_emb(ids))。"', explain: '❌ RoPE 不碰词嵌入、不在输入端加位置;它去掉 pos_emb,在注意力内部按位置旋转 Q 和 K。' },
       { n: 11, ans: false, statement: '"RoPE 外推性能好,是因为旋转角度有周期性,绕一圈又回来。"', explain: '❌ 外推好 = 位置用公式算不查表(无第 513 行缺失问题);周期性反而是要治理的副作用(超 2π 混叠,靠位置插值 / NTK / YaRN)。' },
       { n: 12, ans: true, statement: '"RoPE 把 d_k 维两两配对成 2D 平面、每对用不同旋转频率:低维高频辨近距离,高维低频辨远距离,合起来给每个位置唯一指纹。"', explain: '✓ 正确。旋转需要 2D 平面所以两两配对;单一频率信息太穷、绕圈撞车,多频率像里程表,合读锁定唯一位置。' },
+      { n: 13, ans: false, statement: '"zero_grad 必须放在训练循环的第一行,否则训练就坏了。"', explain: '❌ 判据是"相对空档"不是"绝对第一行":放循环头 = 放循环尾,都合法(落在上次 step 之后、下次 backward 之前)。真正致命的是 backward → zero_grad → step:刚算的梯度被清空,step 拿全 0,loss 钉在 ln(vocab)。' },
+      { n: 14, ans: false, statement: '"算 loss 前把 [B,T,vocab] 摊平成 [B*T,vocab],关键在于先 .contiguous() 保证内存连续。"', explain: '❌ 摊平算 loss 是逻辑对齐:x/y 要同序摊平,第 k 个预测对第 k 个标签;和 contiguous(物理内存,错题 8)、eval() 模式都无关。能随便摊平是因为跨 token 混合早在注意力内做完了。' },
+      { n: 15, ans: false, statement: '"LoRA 只训 0.4% 的参数,所以只需要 0.4% 的显存。"', explain: '❌ LoRA 砍的是 ②梯度 + ③优化器状态(冻结参数彻底丢掉这俩,70GB → 几百 MB);①底座权重(还得读,14GB 硬成本)和 ④激活(前向照跑)都省不掉。' },
+      { n: 16, ans: true, statement: '"LoRA 初始化 A 随机 + B=0 是唯一甜点:起步 ΔW=0 不搅乱原模型,又因 grad_B ∝ A ≠ 0 能训起来。"', explain: '✓ 正确。全 0 → grad_A、grad_B 互锁全为 0,分支死掉训不动;全随机 → 起步 ΔW≠0,一上来就搅乱已调好的原模型。' },
     ];
     const qa = this.state.quizAns;
     const quizItems = QUIZ.map(q => {
@@ -1560,8 +1786,8 @@ class Component extends DCLogic {
     const answeredCount = Object.keys(qa).length;
     const correctCount = QUIZ.filter(q => qa[q.n] === q.ans).length;
     const quizScore = EN
-      ? (answeredCount === 0 ? '12 questions · not started' : correctCount + ' / ' + answeredCount + ' correct' + (answeredCount === 12 ? (correctCount === 12 ? ' · perfect score 🎓' : ' · revisit the Scenes for the misses') : ''))
-      : (answeredCount === 0 ? '12 题 · 未开始' : correctCount + ' / ' + answeredCount + ' 对' + (answeredCount === 12 ? (correctCount === 12 ? ' · 满分毕业 🎓' : ' · 错题回去重看对应 Scene') : ''));
+      ? (answeredCount === 0 ? '16 questions · not started' : correctCount + ' / ' + answeredCount + ' correct' + (answeredCount === 16 ? (correctCount === 16 ? ' · perfect score 🎓' : ' · revisit the Scenes for the misses') : ''))
+      : (answeredCount === 0 ? '16 题 · 未开始' : correctCount + ' / ' + answeredCount + ' 对' + (answeredCount === 16 ? (correctCount === 16 ? ' · 满分毕业 🎓' : ' · 错题回去重看对应 Scene') : ''));
 
     return {
       showShapeBar: this.props.showShapeBar ?? true,
@@ -1588,6 +1814,32 @@ class Component extends DCLogic {
       // scene 15
       orderChips, orderMsg, orderMsgColor,
       orderReset: () => this.setState({ orderPicked: [] }),
+      // scene 15.5
+      shiftVal: si, onShift: (e) => this.setState({ shiftI: parseInt(e.target.value, 10) }),
+      shiftXCells, shiftYCells, shiftCaption,
+      lossVal: lv, lossLabel: 'loss = ' + lv.toFixed(2),
+      onLoss: (e) => this.setState({ lossVal: parseFloat(e.target.value) }),
+      thermoFillW: (lv / 5 * 100).toFixed(1) + '%',
+      thermoFillBg: thermoColor,
+      thermoLineL: (LNV / 5 * 100).toFixed(1) + '%',
+      thermoMsg, thermoColor,
+      // scene 16 LoRA
+      loraModeFull: () => this.setState({ loraMode: 'full' }),
+      loraModeLora: () => this.setState({ loraMode: 'lora' }),
+      lmFullBg: lmode === 'full' ? '#8A4A1D' : '#FFFDF8', lmFullFg: lmode === 'full' ? '#FFF7EC' : '#8A4A1D',
+      lmLoraBg: lmode === 'lora' ? '#8A4A1D' : '#FFFDF8', lmLoraFg: lmode === 'lora' ? '#FFF7EC' : '#8A4A1D',
+      loraSegs, loraTotal,
+      loraRVal: lr, onLoraR: (e) => this.setState({ loraR: parseInt(e.target.value, 10) }),
+      waistH: Math.max(6, Math.round(lr / 64 * 96)) + 'px',
+      waistPx: '2px',
+      loraParams: loraParamsN.toLocaleString('en-US'),
+      loraPct: (loraParamsN / (4096 * 4096) * 100).toFixed(2) + '%',
+      initGood: () => this.setState({ loraInit: 'good' }),
+      initZero: () => this.setState({ loraInit: 'zero' }),
+      initRand: () => this.setState({ loraInit: 'rand' }),
+      igBg: ig.bg, igFg: ig.fg, izBg: iz.bg, izFg: iz.fg, irBg: ir.bg, irFg: ir.fg,
+      initMsg: li ? initMsgs[li] : (EN ? 'Click an initialization to see its fate.' : '点一种初始化,看它的命运。'),
+      initColor: li === 'good' ? '#2C603F' : (li ? '#C9552E' : '#8C8272'),
       // appendix quiz
       quizItems, quizScore,
       navItems, crumbs,
