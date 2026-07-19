@@ -224,6 +224,13 @@ const quoteLibrary = {
     "Can the success of computational neural networks inspire neuroscience to better understand the brain?",
     "Tiny differences in protein structure can produce enormous differences in activity and function.",
     "Proteins with similar functions often share similar secondary and tertiary structures, but the reverse is often not true.",
+    `A Programmer for the AI Era:
+Clarify the ambiguous.
+Deconstruct the complex.
+Know which boundaries to challenge.
+Know what to delegate to AI.
+Make systems faster—and more stable.
+`,
   ],
   zh: [
     "AI 不会替代科学家；它会替代那些只会重复流程的人。",
@@ -243,6 +250,12 @@ const quoteLibrary = {
     "计算神经网络的成功是否能反向启发神经脑科学的研究呢？",
     "蛋白结构的细微差异可以导致其活性功能的巨大不同。",
     "相似功能的蛋白通常共享类似的二级、三级结构；然而反向却经常不成立。",
+    `新时代程序员：
+把模糊的问题说清楚；
+把复杂的系统拆解开；
+判断一个边界该不该动；
+知道什么该交给AI；
+让系统变快后反而更加稳定。`,
   ],
 };
 
