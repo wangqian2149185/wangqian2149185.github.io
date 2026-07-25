@@ -1,0 +1,2280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UCSFViewer</title>
+<style>
+  :root{
+    --bg:#e7ebf0; --panel:#fff; --ink:#16202b; --muted:#66727f; --line:#d3dae2;
+    --plot:#fff; --accent:#0f766e; --grid:#eef1f5; --warn:#b4530f; --sel:#e11d48;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --ui:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--ui);-webkit-font-smoothing:antialiased;
+    display:flex;flex-direction:column;height:100%;overflow:hidden;font-size:13px}
+  header{padding:11px 18px 5px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  h1{font-size:14px;font-weight:650;margin:0;letter-spacing:-.01em}
+  h1 .n{color:var(--accent)}
+  .status{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .status.warn{color:var(--warn)}
+  .main{flex:1;display:flex;min-height:0;gap:10px;padding:2px 18px 14px}
+  .panel{width:344px;flex:none;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 12px}
+  .card h2{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);
+    margin:0 0 9px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .card h2 .tg{border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:5px;
+    width:19px;height:19px;line-height:1;font-size:13px;font-weight:700;cursor:pointer;padding:0;
+    display:flex;align-items:center;justify-content:center;flex:none}
+  .card h2 .tg:hover{border-color:var(--accent);color:var(--accent)}
+  .card.collapsed h2{margin:0}
+  .card.collapsed>*:not(h2){display:none !important}
+  .row{display:flex;align-items:center;gap:8px;margin:7px 0}
+  .row:first-of-type{margin-top:0}
+  .row>label{font-size:11.5px;color:var(--muted);font-weight:550;min-width:70px}
+  .btn{font-family:var(--ui);font-size:11.5px;font-weight:550;color:#fff;background:var(--accent);
+    border:none;border-radius:6px;padding:6px 11px;cursor:pointer}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .btn.ghost:hover{border-color:var(--accent);color:var(--accent)}
+  .btn:disabled{opacity:.45;cursor:default}
+  .btn.sm{padding:4px 8px;font-size:10.5px}
+  .file{position:relative;overflow:hidden;display:inline-flex}
+  .file input{position:absolute;inset:0;opacity:0;cursor:pointer}
+  input[type=range]{flex:1;accent-color:var(--accent);min-width:50px}
+  input[type=number],input[type=text],select{font-family:var(--ui);font-size:11.5px;padding:4px 6px;
+    border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink)}
+  .val{font-family:var(--mono);font-size:10.5px;color:var(--ink);min-width:58px;text-align:right}
+  .chk{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink);cursor:pointer;user-select:none}
+  .chk input{accent-color:var(--accent)}
+  .modes{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px}
+  .mode{border:1.4px solid var(--line);border-radius:6px;padding:6px 3px;text-align:center;cursor:pointer;
+    font-size:10.5px;font-weight:600;color:var(--muted);user-select:none}
+  .mode.on{border-color:var(--accent);background:var(--accent);color:#fff}
+  .subs{display:flex;flex-wrap:wrap;gap:4px 9px;margin-top:7px;max-height:92px;overflow-y:auto;
+    padding:5px 3px 2px;border-top:1px dashed var(--line)}
+  .subs .chk{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+  .subs .chk.all{color:var(--accent);font-weight:700;font-family:var(--ui)}
+  .axttl{font-size:10.5px;font-weight:700;margin:3px 0 2px}
+  .reschips{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+  .chip{position:relative;height:31px;border-radius:6px;border:1.5px solid;background:#fff;
+    font-family:var(--mono);font-weight:700;font-size:13px;cursor:pointer;display:flex;
+    align-items:center;justify-content:center;transition:opacity .1s}
+  .chip.dim{opacity:.3}
+  .chip .three{position:absolute;bottom:0;right:2px;font-size:6.5px;font-weight:600;opacity:.6}
+  .hint{font-size:10.5px;color:var(--muted);line-height:1.45;margin-top:7px}
+  .list{max-height:150px;overflow-y:auto;border:1px solid var(--line);border-radius:6px;margin-top:6px}
+  .item{padding:5px 8px;font-family:var(--mono);font-size:10.5px;cursor:pointer;
+    border-bottom:1px solid var(--grid);display:flex;gap:7px;align-items:center}
+  .item:last-child{border-bottom:none}
+  .item.on{background:#0f766e14;color:var(--accent);font-weight:700}
+  .item .sv{color:var(--accent);font-weight:700;cursor:pointer;padding:0 2px;font-size:12px}
+  .item .sv:hover{color:var(--ink)}
+  .item .x{margin-left:auto;color:var(--muted);font-weight:700;padding:0 3px;font-size:12px}
+  .item .x:hover{color:var(--warn)}
+  .item .dot{width:9px;height:9px;border-radius:3px;flex:none}
+  .thead{display:flex;gap:7px;padding:4px 8px;font-family:var(--mono);font-size:9.5px;font-weight:700;
+    color:var(--muted);background:#f7f9fb;border-bottom:1px solid var(--line);text-transform:none}
+  .errbox{margin-top:8px;border:1px solid #b4530f55;background:#b4530f0d;border-radius:6px;
+    padding:7px 8px;font-family:var(--mono);font-size:10px;color:var(--warn);
+    max-height:150px;overflow:auto;white-space:pre-wrap;word-break:break-word}
+  .seqbox{font-family:var(--mono);font-size:10px;line-height:1.5;max-height:150px;overflow:auto;
+    background:#f7f9fb;border:1px solid var(--line);border-radius:6px;padding:6px;margin-top:6px;
+    color:var(--muted)}
+  .seqgrid{font-family:"Courier New",Courier,monospace;font-size:13px;line-height:1.6;white-space:pre;
+    letter-spacing:1px;color:var(--ink);margin-top:3px}
+  .seqgrid a{text-decoration:none;cursor:pointer}
+  .seqgrid a:hover{text-decoration:underline}
+  .stage{flex:1;min-height:0;display:grid;gap:8px}
+  .pane{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    min-height:0;overflow:hidden;display:flex;flex-direction:column}
+  .pane.focus{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+  .ptitle{display:flex;align-items:center;gap:7px;padding:5px 9px;font-size:11px;font-weight:650;
+    border-bottom:1px solid var(--line);flex:none;background:#fbfcfd}
+  .ptitle .dot{width:10px;height:10px;border-radius:3px;flex:none}
+  .ptitle .meta{margin-left:auto;font-family:var(--mono);font-size:9.5px;color:var(--muted);font-weight:500}
+  .cvwrap{position:relative;flex:1;min-height:0}
+  canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  .readout{position:absolute;top:7px;right:9px;font-family:var(--mono);font-size:10px;
+    background:#ffffffd8;border:1px solid var(--line);border-radius:5px;padding:3px 6px;
+    pointer-events:none;opacity:0;transition:opacity .1s;white-space:pre}
+  .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    color:var(--muted);font-size:12.5px;text-align:center;padding:22px}
+  .modal{position:fixed;inset:0;background:#0b1a2a55;display:flex;align-items:center;
+    justify-content:center;z-index:60;padding:20px}
+  .modal .box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;
+    width:min(720px,94vw);max-height:88vh;display:flex;flex-direction:column;gap:9px;
+    box-shadow:0 14px 44px #0b1a2a33}
+  .modal h3{margin:0;font-size:13px;font-weight:650;display:flex;align-items:center;gap:7px}
+  .modal h3 .dot{width:10px;height:10px;border-radius:3px;flex:none}
+  .modal textarea{width:100%;flex:1;min-height:270px;font-family:var(--mono);font-size:11px;
+    line-height:1.45;border:1px solid var(--line);border-radius:7px;padding:9px;resize:vertical;
+    background:#fbfcfd;color:var(--ink);white-space:pre;overflow-wrap:normal;overflow-x:auto}
+  .stage.none{display:flex;align-items:center;justify-content:center;
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <h1>UCSF<span class="n">Viewer</span></h1>
+  <span style="font-size:11px;color:var(--muted);align-self:center">Composed by Qian Wang.</span>
+  <span class="status" id="status">No spectrum loaded — the overlay works standalone.</span>
+</header>
+
+<div class="main">
+ <div class="panel">
+
+  <div class="card">
+    <h2>Spectra</h2>
+    <div class="row">
+      <span class="btn file">Open .ucsf<input id="file" type="file" accept=".ucsf" multiple></span>
+      <span class="btn file ghost">Open .json<input id="openjson" type="file" accept=".json,.save"></span>
+      <button class="btn ghost" id="reset">Reset view</button>
+      <button class="btn ghost" id="colorscheme">Color scheme</button>
+    </div>
+    <div class="list" id="speclist" style="display:none"></div>
+    <div class="axttl" style="margin-top:9px">Align viewing mode</div>
+    <div class="modes" id="alignmodes">
+      <div class="mode" data-align="vertical">Vertical</div>
+      <div class="mode on" data-align="horizontal">Horizontal</div>
+      <div class="mode" data-align="stack">Stack</div>
+    </div>
+    <div class="hint" id="spechint">Vertical stacks panes in a column and locks the X range together;
+      Horizontal places them side by side and locks Y; Stack overlays every spectrum in one pane.
+      Click a pane to focus it — the controls below act on the focused pane.</div>
+    <div id="focusbox" style="display:none;margin-top:8px;border-top:1px dashed var(--line);padding-top:8px">
+      <div class="row"><label>Contour</label><input id="lev" type="range" min="0.1" max="20" step="0.1" value="3">
+        <span class="val" id="levval">—</span></div>
+      <div id="zwrap" style="display:none">
+        <div class="row"><label>Z axis</label><select id="zaxis" style="flex:1"></select></div>
+        <div class="row"><label>Z plane</label><input id="zslider" type="range" min="0" max="0" value="0">
+          <input id="zval" type="number" step="any" style="width:74px" title="Z plane in ppm — the nearest plane is shown"><span style="font-size:10px;color:var(--muted)">ppm</span></div>
+      </div>
+    </div>
+    <div class="errbox" id="errbox" style="display:none"></div>
+  </div>
+
+  <div class="card">
+    <h2>Mouse</h2>
+    <div class="modes">
+      <div class="mode on" data-mode="zoom">Zoom</div>
+      <div class="mode" data-mode="pick">Pick peak</div>
+      <div class="mode" data-mode="select">Select</div>
+    </div>
+    <label class="chk" style="margin-top:9px"><input id="cross" type="checkbox" checked> Crosshair on hover</label>
+    <label class="chk" style="margin-top:6px"><input id="symcross" type="checkbox"> Symmetric crosshair (mirror across diagonal)</label>
+    <label class="chk" style="margin-top:6px"><input id="diag" type="checkbox"> Show F1 = F2 diagonal</label>
+    <div class="hint" id="modehint">Drag a box to zoom in. Wheel over the X or Y axis zooms that axis only.</div>
+  </div>
+
+  <div class="card">
+    <h2>Overlay axes</h2>
+    <div class="axttl">X axis (F2 — horizontal)</div>
+    <div class="row"><label>Nucleus</label><select id="xelem"><option>C</option><option>N</option><option>H</option></select></div>
+    <div class="subs" id="xsubs"></div>
+    <div class="axttl" style="margin-top:10px">Y axis (F1 — vertical)</div>
+    <div class="row"><label>Nucleus</label><select id="yelem"><option>C</option><option>N</option><option>H</option></select></div>
+    <div class="subs" id="ysubs"></div>
+  </div>
+
+  <div class="card">
+    <h2>Statistics (semi-transparent)</h2>
+    <label class="chk" style="margin-bottom:9px"><input id="sigmode" type="checkbox">
+      Use σ rings (d₁, d₂) — uncheck to plot the raw histogram bins</label>
+    <div id="sigbox" style="display:none">
+      <div class="row"><label>Ring 1 · d₁</label><input id="d1" type="range" min="0.2" max="3.0" step="0.2" value="1.0"><span class="val" id="d1v">1.0σ</span></div>
+      <div class="row"><label>Ring 2 · d₂</label><input id="d2" type="range" min="0.2" max="3.0" step="0.2" value="2.0"><span class="val" id="d2v">2.0σ</span></div>
+    </div>
+    <div id="pctbox">
+      <div class="row"><label>X level</label><input id="px" type="range" min="1" max="100" step="1" value="90"><span class="val" id="pxv">90%</span></div>
+      <div class="row"><label>Y level</label><input id="py" type="range" min="1" max="100" step="1" value="90"><span class="val" id="pyv">90%</span></div>
+      <div class="hint" style="margin-top:2px">Every bin of the uploaded histogram is drawn as its own pixel box,
+        shaded by density. The level is a horizontal cut through each atom's distribution, normalized to its own
+        maximum — like a contour level. Raise for a tight core, lower to include the tails.</div>
+    </div>
+    <label class="chk" style="margin:9px 0"><input id="lbl" type="checkbox"> Label atoms (top-right inside ring)</label>
+    <div class="axttl">Reference offset (shifts statistics only)</div>
+    <div class="row"><label>X offset</label><input id="xoff" type="range" min="-10" max="10" step="0.1" value="0"><span class="val" id="xoffv">0.0</span></div>
+    <div class="row"><label>Y offset</label><input id="yoff" type="range" min="-10" max="10" step="0.1" value="0"><span class="val" id="yoffv">0.0</span></div>
+  </div>
+
+  <div class="card">
+    <h2>Residues</h2>
+    <label class="chk" style="margin-bottom:8px"><input id="allres" type="checkbox"> Select all residues</label>
+    <div class="reschips" id="chips"></div>
+    <div class="hint">Hover to preview one residue. Click to pin (multi-select); others dim but stay clickable.</div>
+  </div>
+
+  <div class="card">
+    <h2>Sequence (FASTA)</h2>
+    <div class="row"><span class="btn file">Open .txt / .fasta<input id="fasta" type="file" accept=".txt,.fasta,.fa,.seq"></span>
+      <button class="btn ghost" id="clrseq">Clear</button></div>
+    <div class="row"><label>First residue #</label><input id="seqstart" type="number" value="1" style="width:78px">
+      <span class="hint" style="margin:0">number of the first letter</span></div>
+    <div class="seqbox" id="seqbox">No sequence loaded. Residue numbering falls back to manual entry.</div>
+  </div>
+
+  <div id="pkpanels"></div>
+
+ </div>
+
+ <div class="stage none" id="stage"><span>Open a <b>.ucsf</b> file to begin.</span></div>
+</div>
+<div style="text-align:center;font-size:10px;color:var(--muted);padding:1px 0 3px;flex:none">© 2026 Qian Wang. All rights reserved.</div>
+
+<script>
+const BMRB_STATS={"ALA":{"C":{"m":177.802,"s":2.064,"b0":160.852,"bw":0.2205,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQEBAQEBAgMDBAQGBwgKDQ4PExcdJS01P0pXY2NdW2JscHuXy/3/4sy8qpyWjIB0bGdkX1A8KhwSCwgGBAMCAQEAAAAAAAAAAAAAAAAAAAAA"},"CA":{"m":53.137,"s":1.981,"b0":28.195,"bw":0.4195,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAECAwUICxIgNlRqbW+HyP3ZlYKf3P/McTARBwQCAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CB":{"m":18.988,"s":1.925,"b0":1.283,"bw":0.3864,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAgQIDhMbJjVUi8zw/v/GcUIvJSIgHxwZFRENCQYDAgEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"H":{"m":8.191,"s":0.595,"b0":0.066,"bw":0.1233,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAgQGCg8XIi4+T2N8mr7l//XCi2pYSDgsIBYPCQYEAgIBAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HA":{"m":4.243,"s":0.434,"b0":0.703,"bw":0.0662,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQEBAQEBAQICAgIDAwQEBQYICxAYIzFCV3CUw+r/8rFrSTwyKSEcGBUTERAODAoKCQgGBQQDAwIBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"N":{"m":123.341,"s":3.52,"b0":67.536,"bw":0.9361,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAgMGChQlQmycyev//d2qdlE8LiQcEwwHAwIBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}},"ARG":{"C":{"m":176.471,"s":1.993,"b0":167.16,"bw":0.149,"h":"AAAAAAAAAAAAAAEBAQEBAQECAgIDAwMDAwQFBggKCwwODxIWGh8iJi02QElOVWJra256ho6UmJ+qt8zl+f/v2MOwn5CJio+QjYyJhoaCenFlYGBVRzkrIRoVEA4PDgwKBwUEAwIBAQEAAAAAAAAAAAAAAAAAAAAA"},"CA":{"m":56.758,"s":2.347,"b0":25.503,"bw":0.4098,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQECAwQHCxAWITNOcIuYnrjt/8yYhX2ElqWjh2A8Hw4HAwIBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CB":{"m":30.647,"s":1.846,"b0":15.177,"bw":0.3283,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAgMEBwoOExkeIis8VHmx5v/8z4dZRz04My0qJiAZEgwIBgQDAgEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CD":{"m":43.16,"s":1.109,"b0":19.15,"bw":0.43,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQECBAoQEREYMZD/3WEcCQQCAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CG":{"m":27.212,"s":1.336,"b0":0.232,"bw":0.4632,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAgIEChIXGiVHpf/ih0clFAsGAwIBAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CZ":{"m":160.338,"s":4.665,"b0":113.578,"bw":0.5935,"h":"AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAAAAAAAAAAAAAAEBAQEBAQECBgsRH2jx/28SBwQCAgEBAQEBAAAAAQECBAQDAwMCAQMIBwIAAQABAgMCAQAAAAEC"},"H":{"m":8.236,"s":0.614,"b0":0.064,"bw":0.106,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQICAwQGCg8WICw5RldshJ+50u3//uS5knhoWUk6LCIaEgwIBgQDAgIBAQEAAAEBAAAAAAAAAAAAAAAAAAAA"},"HA":{"m":4.287,"s":0.461,"b0":1.244,"bw":0.0636,"h":"AAAAAAAAAAAAAAABAQAAAQEBAQEBAgICAgICAwMEBAUHCg4TGiUxQFVtiqvG3vH/+s+XdmliV0Y5LyklIR8dGBQSEA0KCQcFAwIBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB2":{"m":1.789,"s":0.276,"b0":-0.894,"bw":0.0474,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAABAQEAAQEBAQEBAQECAgICAwMEBQUGCAkLDREWGyItPE5lh7bh+f/tw49lRSwdFQ4JBgUEAwICAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB3":{"m":1.759,"s":0.289,"b0":-1.329,"bw":0.0424,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAAABAQEBAQEBAQEBAgICAgICAgMDBAQEBQcICQoMDxEWHCMqNUJRZ4KjzPH/8Na5kmZGMSIXEAsIBgQDAgICAQEBAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HD2":{"m":3.11,"s":0.251,"b0":0.53,"bw":0.0374,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAQEBAQEBAQEBAQICAgICAgMDAwMEBQYGBgcJCgwPERMYHyczRV16oNj/4phZMx4SDQkGBAMCAgICAQEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HD3":{"m":3.093,"s":0.282,"b0":-0.468,"bw":0.0458,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAQEBAQEBAQEBAQEBAQICAwMDAwMEBQUGCAkLDhEVGiIsPVV2pOD/y3M5HhAJBgQDAgIBAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HE":{"m":7.377,"s":0.66,"b0":1.195,"bw":0.0894,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAQMEBAQFBgkMERYcJzxjsv/3uYhgPy0jGxURDgwLCQcICgsIBgYGBQYGBQQDAwQDAgEBAQEAAAAAAAAAAAAAAAAAAAAA"},"HG2":{"m":1.559,"s":0.282,"b0":-0.966,"bw":0.0432,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQEBAQEBAQECAgICAwQEBQYHCAkKDA0QFBkeJS44SFxylsPr/+y5hWFGMCAWDgkHBQQDAgEBAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HG3":{"m":1.541,"s":0.296,"b0":-1.278,"bw":0.0401,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQEBAQEBAQECAgICAgMDAwQFBgUGBwgJCgwNDhATFxsgJzE8S195lrfe//7UonhXPSocEw4KBwUEAwMCAgEBAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HH11":{"m":6.933,"s":0.566,"b0":4.44,"bw":0.0607,"h":"AgEAAAECAQAAAAAAAAAAAAECAQECAgIECAoNERYeLT5GUVtotv/r6Om1lImRm39YPi8hFxoXDggEAgMFBgYGBQUFBQUGBQMDAgIEBQUEAgAAAQIBAAECBAUDAQACAwIBAgEAAAAAAQIBAAAAAAAAAAAAAAAAAAEC"},"HH12":{"m":6.882,"s":0.532,"b0":4.436,"bw":0.0526,"h":"AwEAAAABAgEAAAAAAAAAAAAAAQMDAQABAgICAwYNERAPFSMzRExecmuF1P/x0cTWv35SXH5sRj47Lx4UFBEPCwYFBAQDAwMBAQICAgIECAgEAgICAgEBAgICAQAAAAAAAAAAAAAAAAAAAAECAQEFCAMAAAAAAAED"},"HH21":{"m":6.829,"s":0.644,"b0":1.275,"bw":0.0843,"h":"AgEAAQEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAAAAAAABAQEBAQEAAAAAAAEBAQICAgULFB4nPnScwP/0t5NqVlZCKxwQDAsJBgYIBgMEBgcGBQQBAAABAgQCAQEDAwICAgEBAQEBAQAAAAAAAAAAAAEC"},"HH22":{"m":6.828,"s":0.635,"b0":1.27,"bw":0.0746,"h":"AgEAAAAAAQIBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAECAQAAAAAAAAECAQAAAAECAQAAAQICAgIFCAYGCRMeGxsqWoy5//rAqIRXUFpNNiYXDwwKBQMEBQUDAwQFBQQEBAICAQABBAUCAQICBAMBAAECAgMF"},"N":{"m":120.869,"s":3.659,"b0":85.016,"bw":0.4852,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAgICAgMDBQgKDREWHig2R1dqgpqww9Xh7Pr/8t/Lt52AZVVNRj44MywkHRYSDwwJBgQDAgEBAQAAAAAAAAAAAAAAAAAAAAAA"},"NE":{"m":89.944,"s":13.49,"b0":-22.432,"bw":1.4355,"h":"AAEAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQIGFWLu/3QXCQQCAQEBAQAAAAECBQkLDA8SEg8NCwgGBgYEAgEBAQEBAAAAAAAAAAAA"},"NH1":{"m":78.829,"s":13.51,"b0":6.943,"bw":0.9862,"h":"BAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQYQKGTC/8hVIictJyQmGhIWIiMWExAFAAECAQAAAAEFBgUICQUEBQIBBgsMDhAPDAsFAAABAgEAAAYT"},"NH2":{"m":78.769,"s":13.957,"b0":66.459,"bw":0.5189,"h":"CAYCAAQVQ2Zrm+r/zZRrNhcZFw0PGx8XFR0mKBkPDQgKCAQICgQAAAIEAgAAAAAAAAAAAAAAAAACBAIABAgGBAQGCAYCAAIEAgIEAgAAAAQKCgYCBAgEBA0PCAYTGQ0EAgAAAgQCAAAAAAAAAAQPEwoCAAAAAAIG"}},"ASN":{"C":{"m":175.282,"s":1.77,"b0":166.886,"bw":0.1729,"h":"AAAAAAAAAAAAAAAAAQEBAQICAwMEBQYICgwOERUaHyQnKjI6P0pVYHKEjZaku9vz//XLoIh5aFtYWFNLSklEQ0E6MikiHBYTEQ4JBgQDAwICAQEBAQAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CA":{"m":53.505,"s":1.892,"b0":35.925,"bw":0.3932,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAgQGCAwSHSxCWGl4lNH/1ZR2ZVpcXk0zHhAJBgMCAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CB":{"m":38.678,"s":1.743,"b0":9.503,"bw":0.4895,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQIFCA0VIjpdhK/t/7JkRjUoHRQNCQYEAgEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CG":{"m":176.701,"s":2.462,"b0":111.908,"bw":0.6159,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgIECBEgPHG49/+/bCwPCQQCAQEBAAAA"},"H":{"m":8.324,"s":0.642,"b0":0.093,"bw":0.1699,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgIECA8aKTtNZom57//PjmFCKx4WDggFAwICAQEBAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HA":{"m":4.66,"s":0.359,"b0":1.774,"bw":0.0446,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQEBAQEBAgICAwQGBwkKDREWGyErOklabISbrbi6x+r/8cuihXVnWUk7MioiHhoVEhAOCwkJCQcGBQUEAwICAgICAQEBAQAAAAAAAAAAAAAAAAAAAAAA"},"HB2":{"m":2.801,"s":0.322,"b0":-0.478,"bw":0.0507,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQAAAQEBAQEBAgICAgMDBAQEBQcJCwsNEBMWHSc0RmGKu+r/5rOFZlA+MCUdFhAMCgcGBQQDAgIBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB3":{"m":2.743,"s":0.356,"b0":-0.657,"bw":0.0554,"h":"AAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAABAQEBAQEBAQECAgICAgIDAwQEBQYHCAoMDxIWHCUzRl5/ruH/8sWQZ0o2JxwWEQwIBgQEAwMCAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HD21":{"m":7.331,"s":0.51,"b0":0.73,"bw":0.0853,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQIDAwMEBQYICxEbK0d3pKJ4VEpYfr//9adiPSgbEg0KBwYFBAQDAgIBAQEBAQEBAAAAAAAAAAAAAAAAAAAA"},"HD22":{"m":7.14,"s":0.528,"b0":0.949,"bw":0.0877,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQAAAAAAAAAAAAEBAQICAgMDBAUHCQ0THC1Ni93/x3hKO0JefYBiPykcEgwJBwUDAgMCAgEBAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"N":{"m":118.955,"s":3.92,"b0":100.546,"bw":0.3092,"h":"AAAAAAAAAAAAAAAAAAEBAQEBAQICAwIDBAYHBgcJCQkKDRAUFxshKjM6P0dSXmlyfYyYn6m2wcnM2PD//u/Xw7CfjnxvYVJIQj48OTY1NTIwMS8qJiQhHhoWFBMQDQsIBgQDAgIBAQEAAAAAAAAAAAAAAAAAAAAA"},"ND2":{"m":112.729,"s":2.698,"b0":21.558,"bw":1.0408,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEDBgoTJkiT9v+dSicWDQcEAgEBAQAAAAAAAAAAAAAAAAAAAAAAAAAA"}},"ASP":{"C":{"m":176.426,"s":1.699,"b0":166.872,"bw":0.1445,"h":"AAAAAAAAAAAAAAAAAAAAAAABAQEBAQEBAQICAgIDBAQEBQYHCQkLDQ8RFRgbHiInKy81PUROWGFrcniFnLXM2/H/8Na9ppSGeHBsZF1ZWFdTT05NSkQ7MSYdFhAMCAYFBgYEAwIBAQEBAQAAAAAAAAAAAAAAAAAA"},"CA":{"m":54.664,"s":2.043,"b0":31.241,"bw":0.3115,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQIDBQcJDA8TGSMxRFpufYaKmMr/6KJ4a2RcXm6CiHBGJBIKBQMCAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CB":{"m":40.862,"s":1.655,"b0":17.337,"bw":0.3838,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAgQGCg4VHig4UXSavez/wHdVPiwhGhQPCgcFBAIBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CG":{"m":177.684,"s":15.763,"b0":7.465,"bw":1.5126,"h":"AQEAAAAAAAAAAAEBAQEBAAAAAAAAAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACBAcMG03E/5IhBgIB"},"H":{"m":8.297,"s":0.568,"b0":3.364,"bw":0.0782,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQICBAYJCw0QFRshJiwzOkRQXm6Cmbzm//bSp4l0ZltOQDQpIRsWEQ0JCAYFBAMCAgICAQEBAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HA":{"m":4.582,"s":0.319,"b0":1.709,"bw":0.0487,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAAABAQEBAQEBAgIDAwUGCQwRGCAuQVl4l62/0u3/6LaMc2JSQTIpIRsYFREMCgkIBwYFBAMDAgEBAQEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB2":{"m":2.711,"s":0.269,"b0":-1.137,"bw":0.0662,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAQEBAgICAwQEBggNEh0vSnSv7P/VnndYQi8eEw0JBgQDAgEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB3":{"m":2.661,"s":0.277,"b0":-1.425,"bw":0.0699,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQECAgICAgMEBQgLDxckN1aJy//7wYJZPSodEwwIBQMCAgEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HD2":{"m":5.617,"s":3.117,"b0":1.015,"bw":0.0944,"h":"gFVVVVUqAAAAAAAAAAAAACpVKgAAAAAAACpVKgAAAAAqVSoAACqq1FVV1P//qioAAAAAACpVKgAAAAAqVSoAAAAAAAAAKlUqAAAAAAAAAAAAAAAAAAAAKlUqAAAAAAAAAAAAAAAAAAAAKlUqAAAAAAAAAAAAKoCq"},"N":{"m":120.738,"s":3.794,"b0":90.582,"bw":0.5649,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQECAgMFBwkLDxciKzZCUGFzhZmux+j/+uK/l3ReTkA5ODYvKCMcFQ8LCAUDAgEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}},"CYS":{"C":{"m":174.792,"s":2.073,"b0":160.752,"bw":0.2246,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAgIDAwUICgwQFBYeLj1IVGR7jJWep7bFztrl8fz/9+XY1Nne3t/Zv6KQfGRPPDAlGREOCwYEBAQFAwIBAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CA":{"m":57.979,"s":3.494,"b0":30.918,"bw":0.4975,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBAYICxAaLT5OXnCHqMjX19bV5f/xxKGCZ1dRUVFOT05GMxwNBQIBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CB":{"m":33.466,"s":6.609,"b0":18.144,"bw":0.5871,"h":"AAEBAQABAQIECBAcNGWm3f/50sjTyr+vjWI+KCAjKi80OkJMUlVdZV1MQDgxKyclJSMgHhkRCwgFAwEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"H":{"m":8.374,"s":0.693,"b0":3.76,"bw":0.0745,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAABAQEBAQEBAgMEBQcICQwPFBsjKjRATFpmcHqBiZisv9Po+P/27Obc08a6rJyNhn9oUkQ2KyYgFxENCggGBAQDAwICAgEBAQEBAQABAQAAAAAAAAAAAAAAAAAAAAAA"},"HA":{"m":4.659,"s":0.587,"b0":-2.922,"bw":0.1332,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAQEBAgICAwUJEB42V3eUvev/9+vbuIhfRjUnGxAHAwEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB2":{"m":2.99,"s":1.345,"b0":-39.479,"bw":0.6816,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEEEnj/zzwDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB3":{"m":2.913,"s":1.27,"b0":-43.858,"bw":0.685,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEEEnv/yTkDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HG":{"m":2.08,"s":1.382,"b0":-1.778,"bw":0.1044,"h":"Gg0JBAAAAAAAAAAAAAAECQQJIz00Fho9UmN5nLqxx+7y7u7/7svHy9jCl6CtimxjSSMRDQQECQkJCQkJCQQRIxYJBAAAAAAAAAkRCQAAAAQJBAAAAAAACREJAAAAAAAAAAQJBAAAAAAAAAAAAAAAAAAAAAAAAAka"},"N":{"m":119.905,"s":6.885,"b0":-43.612,"bw":2.775,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBE6ke3/xoBCFgQBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}},"GLN":{"C":{"m":176.337,"s":1.916,"b0":132.493,"bw":0.442,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQIDBgkOFR8wSWJ4lc7/56qNiouHc1AtGA0GAgEAAAAAAAAA"},"CA":{"m":56.542,"s":2.11,"b0":33.304,"bw":0.304,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQIDBAYICg4UGCI1UGNoa3B4j8n/7a19bG1wepOywKd2TC8bDwgFBAMCAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CB":{"m":29.155,"s":1.848,"b0":6.786,"bw":0.3849,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQECAwUJEBYdJC9HdLDe8P/rnFxEOC8pJSAZEw4KBwQDAgIBAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CD":{"m":179.643,"s":1.861,"b0":111.077,"bw":0.6657,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAECAgIDBAYMFiU+dNr/jCAJBQIAAAAAAAAAAAAA"},"CG":{"m":33.78,"s":1.124,"b0":13.584,"bw":0.3138,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQIEBwwQEhMVGidKl/L/tWk+IxQNCggFAgEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"H":{"m":8.214,"s":0.586,"b0":0.055,"bw":0.1098,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAECAgIDBggLERonN0dcdY2is8vo//vQlm1WRzsuIxoSDQkGBQMCAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HA":{"m":4.263,"s":0.428,"b0":0.031,"bw":0.0619,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAgICAgMDAwUHCQsPGCQzQ1p4nMDa6/X/+cmObF5VSDktJiAbGBQTERAODQsJCAcFBAMCAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB2":{"m":2.043,"s":0.26,"b0":-0.634,"bw":0.039,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEAAQEBAQEBAQEBAQECAgICAgIDBAUGBwgJCw0RFxwgKDM/UGeBpcbe9P/11ad8XUk2Jh0WEAsJBwUDAwIBAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB3":{"m":2.013,"s":0.281,"b0":-1.115,"bw":0.0495,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQEBAQEBAQICAwMDAwQFBgcJCw0RGCApNUVaeana9v/z06l7UTYkFxAMCAYEAgEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HE21":{"m":7.224,"s":0.46,"b0":2.335,"bw":0.0734,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAgECAgMEBQYICg8WITVdoNK6eE9GUmmOyP/+vnJBKR4UDQgFBAQDAgICAgIBAQEBAQEBAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HE22":{"m":7.032,"s":0.461,"b0":0.043,"bw":0.0863,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAgIBAQEBAgIDBAUHCQ4WJEeP7f+mTy4sOVBpZkcqGQ8JBQQEAwICAQEBAQEAAAAAAAAAAAAAAAAAAAAA"},"HG2":{"m":2.313,"s":0.269,"b0":-0.193,"bw":0.0388,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQEBAQICAQEBAgICAgIDAwQFBQcICQkLDA4QEhYcJS45R1p0kbnm/+7Gn3dSOikbEg0KBwUEAwMCAQEBAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HG3":{"m":2.293,"s":0.288,"b0":-1.055,"bw":0.0548,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQEBAgICAwMDAwMEBAUGBwgJDA8TFyEtO05tmdH//MWDUC4aEAoGBAMCAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"N":{"m":120.038,"s":3.534,"b0":82.846,"bw":0.4925,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQECAgIEBggLDxUcJTI/TmB2ip+5y9Pn/v/rzrace2BMPzs3MColIBoVExAMCAYEAwICAQEBAAAAAAAAAAAAAAAAAAAA"},"NE2":{"m":111.872,"s":1.819,"b0":83.564,"bw":0.4211,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQICAQICAwUGCAsPFBwrQVyGuev/z3tBKBwUDwwKCAUDAwICAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}},"GLU":{"C":{"m":176.927,"s":1.914,"b0":140.531,"bw":0.3697,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAgMEBggLEBkkM0VVZXyn4f/lsYqAhpCWiGY/IhIKBQMBAQAAAAAA"},"CA":{"m":57.308,"s":2.133,"b0":26.593,"bw":0.5068,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAwYLERsyVnR/jML/6Kmfx/HimE8kDwcDAgEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CB":{"m":29.964,"s":1.764,"b0":9.289,"bw":0.4177,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEDBgwSGB8pQW2u6P/on1c2KyYjIBsWDwkGBAICAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CD":{"m":182.197,"s":4.588,"b0":51.72,"bw":1.2292,"h":"AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEDAsHCxg1ZML/oCYEAwMCAQAAAAAB"},"CG":{"m":36.103,"s":1.234,"b0":22.109,"bw":0.3507,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQECAgMEBw0TGBgXHCtMoP/4olszHA8IBAIBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"H":{"m":8.328,"s":0.592,"b0":1.188,"bw":0.1062,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQECAwUHCxAXHys8TmN3iJqy0/X/47SLblxNPTAlHBQOCQYFBAMCAgEBAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HA":{"m":4.239,"s":0.41,"b0":0.465,"bw":0.0632,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAQEBAQEBAQIEBQYJDhUdJjNLb5vT+//557R4VEc/Ny4lIBwYFRQSEQ8NDAoJBwUEAwIBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB2":{"m":2.019,"s":0.216,"b0":-0.119,"bw":0.0325,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAQEBAQEBAQEBAQEBAgMEBAUFBgcICg0QFRsiKzlIXH+nwdLo///jwqJ/Yk07LCEZEw4MCQcGBQQDAgIBAQEBAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB3":{"m":1.996,"s":0.221,"b0":-0.231,"bw":0.0361,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQEBAQEBAQEBAQECAgMDBAUGBgcJCw4TGB4lMUBUcJbC4vL8//TPoXxeQy8iHBUOCQcGBQQDAgIBAQEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HE2":{"m":4.825,"s":1.867,"b0":0.847,"bw":0.093,"h":"VRwAAAAAAAAAAAAAAAAAAAAAAByO/8ZVORwAAABVqnGOxnE5HAAAHDlVxv+qcXFVOTk5VY6OcXE5AAAAAAA5cTkAABw5OTkcAAAcORwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABxV"},"HG2":{"m":2.265,"s":0.218,"b0":0.168,"bw":0.0344,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQEBAQEBAgICAwMEBAUFBggKDREWGyEqOEhdeZzA5v/z1rSRdFtFMyYbEw4KBwYFBAQDAgIBAQEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HG3":{"m":2.246,"s":0.221,"b0":0.088,"bw":0.0353,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQEBAQECAgICAgMEBAUGBwgKDRAUGiAnMT9RaYux2/7/5MGbeV1HNCUZEQ0JBwUEBAMCAgEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"N":{"m":120.758,"s":3.457,"b0":94.377,"bw":0.4711,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQIDBAYICg0TGyMtO01gcYOZrsDP5Pr/9eHGqoprVUlDPzYtJiEeGxcTEAwIBQQDAwICAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}},"GLY":{"C":{"m":173.895,"s":1.846,"b0":143.529,"bw":0.385,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAgMEBgkOFRwlMT1BRFJ0uv/5tXJINCohGBAKBwgJBgMCAgEBAQEBAAAAAAAAAAAAAAAAAAAAAAAA"},"CA":{"m":45.349,"s":1.35,"b0":28.555,"bw":0.3101,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQIDBQcMERUcJC07VobR/8t8V0Y+NigbEQoFAwIBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"H":{"m":8.325,"s":0.645,"b0":-0.054,"bw":0.1318,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQECAgMEBQcKEBklNUpkfZGy5f/cnG9WQTAjGRINCAYFBAQFBAMBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"H1":{"m":8.525,"s":0.151,"b0":8.374,"bw":0.0025,"h":"/1UAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFX/"},"HA2":{"m":3.959,"s":0.389,"b0":0.028,"bw":0.0617,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAAEBAQEBAQEBAQEBAQICAgMEBAUHCQwQFR0oNUVYb4zA/P/CiWtYSTwwJRwWEg4KBwYFBQMDAgICAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HA3":{"m":3.89,"s":0.396,"b0":-0.24,"bw":0.0664,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAQEBAQEBAQECAgICAwQEBQYICw4TGiY1SFt0lLXi/9OLY007LiMcFQ8MCgcFBAMDAgICAQEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"N":{"m":109.564,"s":3.756,"b0":45.09,"bw":0.9799,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQIECRUkNkxrk8r7/86JXUY1KyEVDAcFAwIBAQEBAQEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}},"HIS":{"C":{"m":175.243,"s":2.021,"b0":130.403,"bw":0.4502,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQIDBAcLERsqPVV3qeD/9M6rkoV9bVc/KhoPCAQCAQEAAAAA"},"CA":{"m":56.476,"s":2.485,"b0":26.245,"bw":0.5086,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgIDBgwTHi5DWXWo5v/gqYFrYWlsWT4mFg4KBQMCAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CB":{"m":30.284,"s":2.18,"b0":13.688,"bw":0.3838,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQECAgMFCRAZHycxQFqDueT3//7rxZ6BalpLPTMoHxkTDQkHBQQDAwIBAQEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CD2":{"m":120.115,"s":3.797,"b0":67.284,"bw":0.7754,"h":"AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQIEBw0WJjxXhdz/oT8bDgoJCRAbGxAJBgMCAQAAAAEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CE1":{"m":137.49,"s":2.701,"b0":89.84,"bw":0.6397,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAAAAAAAAAQECAQAAAAAAAAAAAAABAQEBAgMEBgcKEh46caPN//y2ajEQBQMCAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CG":{"m":131.822,"s":6.103,"b0":61.302,"bw":0.6571,"h":"BgIAAAAAAAAAAAAAAAACBAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIEAgIEAgACBgkJBwcHEiEsRm2w9v/n0aFgRm2QcU5INx8a"},"H":{"m":8.253,"s":0.722,"b0":-0.243,"bw":0.1137,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgMDBQYHCQ0UHSw8RlNoe4mZs9Pu//zfuJFzZVlHNSgfGBIMCAYFBAQDAwICAQEBAQEBAQEAAAAAAAAAAAAAAAAA"},"HA":{"m":4.611,"s":0.532,"b0":0.714,"bw":0.0754,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAgICAgEBAQIDAgIDBAYJDBAVHSs6S2J9lqzG8P/Nj3BcSDgvJx0ZGBUPDAoIBgUEAwIBAQEBAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAABAQEBAAAAAAAAAAAA"},"HB2":{"m":3.109,"s":0.6,"b0":-2.104,"bw":0.1286,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAABAQECAgICAgIDBAUHCAsRHC1IgdP/zXM1FwsHAwEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB3":{"m":3.049,"s":0.613,"b0":-6.119,"bw":0.1622,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQICAwMEBQcJDBMhO2vD/8heIQwFAgEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HD1":{"m":9.849,"s":8.227,"b0":-14.577,"bw":0.8458,"h":"AQAAAAEAAAAAAAAAAAAAAAECAgIBAQIGPMD/sWdLQUIxFwoKDAcCAAABAQEAAAAAAAAAAAAAAAAAAQICAQAAAQAAAAAAAAAAAAAAAAAAAAABAAABAwMBAAAAAQICAQABAQAAAAAAAAAAAAEBAQEAAAAAAAAAAAAB"},"HD2":{"m":6.983,"s":1.435,"b0":-23.244,"bw":0.5117,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQIDAQAAAAAAAQIGHY7/tC8GAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HE1":{"m":7.865,"s":1.323,"b0":-13.83,"bw":0.3392,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgMDAwIAAAAAAAAAAAABAQIECx5MsP/kkTcGAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HE2":{"m":11.065,"s":7.554,"b0":-14.619,"bw":0.7617,"h":"AwEAAAAAAAAAAAAAAAAAAAAAAAEEBQIAAAABGnr6/49fpOm9XCYcFxMTCAAAAAEEBQMDAwEAAAABAgEAAAAAAAECAQAAAAAAAAAAAAAAAAAAAAIEBgoGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIG"},"N":{"m":119.742,"s":4.151,"b0":70.77,"bw":0.7395,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAgMDBAYIDxkiLjxIWnWWttb0/+e5j3VgUEtKPS0jGxQNCQcFBAIBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"ND1":{"m":190.977,"s":33.543,"b0":31.984,"bw":1.9166,"h":"BgIAAAAAAAAAAAAAAAAAAAIEAgAAAAAAAAAAAAAAAAAAAAAAAgQGCAoPDRk3Q0xIKBUZHhMNFxMGCBELAgACBAICBiyT8v/RyPn1yMbCoINrTGmvxLmcg3hpW1JfdHyAgIF4cHx2Xz8sMzM1PT0/PUNOQzM5MRUI"},"NE2":{"m":180.662,"s":19.952,"b0":18.002,"bw":2.0048,"h":"AgEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQECBAYEAgEBAQECAwIBAAAAAQEBAQEAAQUPMWJ/i4+SwP/mi1dCLyUbEw0LCwoKDAwPFB0nJyIbEw0JBQIBAAEBAQACBggIBAID"}},"ILE":{"C":{"m":175.934,"s":1.897,"b0":166.491,"bw":0.1762,"h":"AAAAAAAAAAAAAAEBAQEBAQECAgIDBQYHCAkMDxEUFxkcIiowNTtFU2Jwf5KktMDFxsbO3ezz+//nxra0vsvQxrimjHNfUEM5MikeFhEODAoICAcFBAMCAgEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CA":{"m":61.638,"s":2.737,"b0":31.096,"bw":0.3919,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQIDBQcJCw8YJDNFW3WOqcLV7f/nrH5rYl5gZm54goR2VS4UCAMBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CB":{"m":38.53,"s":2.036,"b0":18.3,"bw":0.4002,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAQIDBAUIDBIZISw5SmWNuuT/6qRvXVNKRD0zKR4TCwYEAgEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CD1":{"m":13.411,"s":1.869,"b0":1.546,"bw":0.375,"h":"AAAAAAAAAAAAAAABAQECAgQFBwoOEhYdJCw3RVyKx/H/9tandEcpGBAMCggGBAIBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CG1":{"m":27.729,"s":1.856,"b0":8.211,"bw":0.4219,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAQEBAQEAAQECAwMEBwwVHyo2R2y5//zStJ+DXj4oGQ8IBAIBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CG2":{"m":17.521,"s":1.468,"b0":0.988,"bw":0.3958,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQECAgQGCxAVGR8tTpHm/8eDVDQdEAkGBAMCAQEBAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"H":{"m":8.257,"s":0.684,"b0":1.958,"bw":0.0829,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQMEBAMEBggKDRIXHig1QEpUXWh3hZm52/L///Hhz7qnmpKHfHVqXFBFNyogGBIPCgYFBQQCAQEBAQEAAAAAAAAAAAAAAAAA"},"HA":{"m":4.159,"s":0.558,"b0":0.425,"bw":0.0497,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAgEBAgMEBAUHCQwPEhkjMD9TZXOBj5ulr7GpqrG1vdT0/+K4n5KJgXp2cW5qZmFcVk9JQjkzLSUfGhYSDgwJBwYGBAMCAgIBAQEAAAAA"},"HB":{"m":1.783,"s":0.297,"b0":-1.259,"bw":0.0429,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEAAAEBAQEBAQEBAQICAgIDBAUGBgYJCwwOEhccISkyPUxecISar8zt//bcvZl6X0c1Jx0WEg0JBwUEAwICAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HG12":{"m":1.268,"s":0.404,"b0":-2.088,"bw":0.064,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAgICAgICAgMEBQYICgwOEhggKTVDUmR6kKzP4Nve8//swZV4Z1Q+KhwSDAgFAwIBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HG13":{"m":1.197,"s":0.416,"b0":-3.07,"bw":0.0598,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAAEBAQECAgICAgMDAwMEBgcICw0OERUcJDA/UF9xhZqz0vP/6M3CwLiegmtZSjwuIxcPCgcEAwIBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"N":{"m":121.428,"s":4.325,"b0":82.406,"bw":0.8124,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQECBAYHCAoNDxIXHSUxRmaSxvD/9NexjXRmXlNFMyQYDwkFAwIBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}},"LEU":{"C":{"m":177.07,"s":1.935,"b0":166.32,"bw":0.1963,"h":"AAAAAAAAAAAAAAAAAAAAAQEBAQICAgIDBAUFBggJDA8RFBgfJzA5Q09aZnF7g4aJjY6OlKGxy+3//vrw39jRwK6chWtXST4zKiEYEAsIBgUEBAMCAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CA":{"m":55.654,"s":2.139,"b0":34.089,"bw":0.2953,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQIEBwoNERQXIDBKbo+fpKKeorna3bSHc3F9mcj4/8uARCITDAcFAwIBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CB":{"m":42.214,"s":1.883,"b0":24.557,"bw":0.3088,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAgIEBggMEBUaIiw3SGB/ocbv/9eTZlBCOTMtKCQfGxYSDwsIBgQDAgEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CD1":{"m":24.62,"s":1.635,"b0":5.264,"bw":0.3284,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAgMFCAsOExsmOE9keY2VlKHR//vauJFrSi8cEAkFAgEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CD2":{"m":24.099,"s":1.739,"b0":6.135,"bw":0.3241,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQIDBAUICw8UGh8qPFqBptH7/9u3rrWxoYpyW0MrGxAJBQIBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CG":{"m":26.78,"s":1.131,"b0":15.408,"bw":0.2169,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAQIDBAYICw4QERERExomNEhljcn/8axtRCsdEgwJCAcFBAMCAgIBAQEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"H":{"m":8.217,"s":0.644,"b0":1.185,"bw":0.1007,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQECAwQGCQ0UGyUxQE1aaHeMpcPm//zjxaqUg3JjVkc6MCYbEgsHBQQDAgEBAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HA":{"m":4.299,"s":0.465,"b0":0.035,"bw":0.0692,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQECAgMEBggKDREVHiw/WXqew93u+f/wv4luYVVIPjc0Mi0pJB8aFRAMCAUEAgIBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB2":{"m":1.607,"s":0.353,"b0":-1.798,"bw":0.0542,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQEBAgICAgIDBAQFBggKDA4RFx8nLzlEU2d/nsXx/+zTvaiQdl1FMiQZEQsIBQQDAgIBAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB3":{"m":1.525,"s":0.375,"b0":-1.782,"bw":0.0851,"h":"AAAAAAAAAAEBAAABAQAAAAEBAQEBAgIDAwQFBggLEBciMUNZc5jK+P/RmnNPMh4SCgUDAgEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HG":{"m":1.503,"s":0.347,"b0":-1.925,"bw":0.0571,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQEBAgIDAwQFBwgLDhEVGR0fIyguOEdXbIuu0fL/3qyIa042JRgPCgcFAwIBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"N":{"m":121.846,"s":4.041,"b0":49.706,"bw":1.2117,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEDBgwZLlOFvOv/6bqLaE89KhgMBQIBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}},"LYS":{"C":{"m":176.705,"s":1.954,"b0":130.786,"bw":0.4537,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAgQGCQ0UHi9HYHSLsOj/1KKQh3plSSsWDQgDAQAAAAAA"},"CA":{"m":56.939,"s":2.245,"b0":26.931,"bw":0.5003,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEDBQkOFiQ/ZoiXqN7/zpiLk6SlhlUsFAgDAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CB":{"m":32.741,"s":1.8,"b0":16.132,"bw":0.363,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAgMEBwoPFRsfIys9XY/O//y+dks3LSgkIR0YEgwIBgQDAgEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CD":{"m":28.961,"s":1.159,"b0":15.523,"bw":0.314,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQIEBAUFBwwREhERFCBCmv/9ok0gDQYDAgIBAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CE":{"m":41.898,"s":1.133,"b0":14.016,"bw":0.4724,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQQMEg8MG3z/4lQOBQIBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CG":{"m":24.896,"s":1.296,"b0":12.286,"bw":0.3547,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAgMHDRESEhYhQ5r9/6tfNB4SCwYDAgIDAwIBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"H":{"m":8.174,"s":0.611,"b0":0.056,"bw":0.1081,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAQIDBQgMEhwoNEJVbISdtsrb7//0yph0YFFDNSgdFQ8KBgQDAwIBAQICAQEBAQAAAAAAAAAAAAAAAAAAAAAA"},"HA":{"m":4.255,"s":0.437,"b0":-0.082,"bw":0.0727,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQEBAQICAwQFBgcIDBIZJDNHZ5K83PD/+sqObmBPPTEoIR0ZGBYSDw0KCAUDAgEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB2":{"m":1.776,"s":0.259,"b0":-0.819,"bw":0.0425,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAAEBAQEBAQEBAQECAgICAwMEBAUGCAkKDA8SGB8nLztKXnuj0PH/++K4iWFCKxwTDQkGBAMCAgEBAQEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB3":{"m":1.748,"s":0.273,"b0":-0.998,"bw":0.044,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQEBAQEBAQICAwMDAwQFBgcICgwPEhccIys0QE9oi7jk+//vy6J3UTUhFQ4KBwQDAgIBAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HD2":{"m":1.604,"s":0.23,"b0":-1.641,"bw":0.0783,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQECAgMEBQcKDxYhN2K1/9llHgsFAwIBAQAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HD3":{"m":1.596,"s":0.227,"b0":-0.997,"bw":0.0385,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQEBAQEBAQICAgMDAwQFBQYHCAkLDRATFx4oM0FVc57W/+WWUy0YDQkGBAMCAgIBAQEBAAAAAAAAAAAAAAAAAAAAAAEBAAAAAAAAAAAAAAAAAAAA"},"HE2":{"m":2.91,"s":0.207,"b0":0.33,"bw":0.036,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAQEBAQEBAQECAgICAwMEBAQEBQUGCAoMDhEWHCY2S2eSyf/9s2IyGxAKBwQDAgEBAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HE3":{"m":2.904,"s":0.212,"b0":0.725,"bw":0.0326,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAQEBAQEBAQECAgICAgICAgMEBAQFBQUGCAoLDRATFx8oNEZhgKrg/9iJTSwZDwoHBAMCAgEBAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HG2":{"m":1.364,"s":0.266,"b0":-1.27,"bw":0.044,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQEBAQICAwMDBAQFBQYHCAkLDA4QFBogKTdIXnyn3P/zvIZjRC0cEQsGBAMCAgIBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HG3":{"m":1.349,"s":0.278,"b0":-1.239,"bw":0.0438,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQEBAgICAgMDAwMEBAQFBgcICgsMDhATFx0lLz5SbJG97f/WnXNRNyQWDggFAwICAgEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"N":{"m":121.083,"s":3.73,"b0":99.827,"bw":0.4358,"h":"AAAAAAAAAAAAAAAAAAAAAAEBAQEBAgICAwQFBwkMDhMZISk2RVRicoeZp7nN1uDz//bm286/s6B+YlZPSkM7NTAsJR0XFBAMCAYFBAMCAQEBAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"NZ":{"m":50.555,"s":32.855,"b0":2.68,"bw":1.4604,"h":"AgEBAgIBAAAAAAABAgEAAAECDljh/4IbBgYLDwkECx8rFgsOBgABAwQCAAACAwMDAgAAAAACBQUGBAEAAAAAAAAAAAAAAQIDBwcGCggFBw4ZHBEJBgUEAwMCAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgIF"}},"MET":{"C":{"m":176.243,"s":2.049,"b0":165.972,"bw":0.161,"h":"AAAAAAAAAAAAAAAAAAABAQEBAQIBAQIDAgMEBggICAoOEBAQFRsfISQpLTA1O0dRV19obGtrdHl+jp2z0ez/++7Xt6ylkYqVoKGclpGRi3xyZVhMPzIlGxUQDg0JBwcGBQQDAgIBAAAAAAAAAAAAAAAAAAAAAAAA"},"CA":{"m":56.126,"s":2.236,"b0":36.186,"bw":0.3123,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQECAwUICw8VGyMwRVllcHyOsOX/15yAdGVaWltcXV9dUj8sHxQLBgMCAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CB":{"m":32.935,"s":2.303,"b0":4.337,"bw":0.4903,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQECAwQGCg8XIC8+TGWV3P/HgF5JOCwmIRwXEAoHBQMCAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CE":{"m":17.155,"s":2.032,"b0":0.234,"bw":0.4683,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAgUKERYdMWPG/71gMhsQCQYEAwIBAQAAAAAAAAABAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CG":{"m":32.031,"s":1.504,"b0":2.548,"bw":0.4963,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQECBAcNFR8vTpr8/6RWLxcKBgQDAgEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"H":{"m":8.25,"s":0.601,"b0":-0.133,"bw":0.1532,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQMFCQ8aKTxVdJS55//ip3daRjMhFAwHBAIBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HA":{"m":4.393,"s":0.48,"b0":-0.891,"bw":0.0783,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQEBAQICAwMEBAUGCQ0RFhwkNExqjq69z+7/04lgU0Y3LScjIBwXExENCwkGAwIBAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB2":{"m":2.022,"s":0.37,"b0":-2.97,"bw":0.0809,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQEBAgIDBAUGBgcLERgiMURfkNb/4qFrQyofGBAKBgMCAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB3":{"m":1.993,"s":0.373,"b0":-2.777,"bw":0.0733,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQEBAQECAgIEBQcHCQ0SFh0mMUNehcH3/9icZUEuJBwVDQgFAwIBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HG2":{"m":2.411,"s":0.431,"b0":-3.856,"bw":0.1678,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQIEBgkNFSQ+bMH/xFYbBwIBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HG3":{"m":2.388,"s":0.436,"b0":-3.75,"bw":0.1008,"h":"AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAgIBAgIDBAYICQsOEhokMkZhi8v/5pVPJhAHBAICAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"N":{"m":120.119,"s":3.519,"b0":87.927,"bw":0.655,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQECAgQHCRAXIC08TmaAo8jo/v/r1sKcb1JFPTQqIhkSDAkGAwICAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}},"PHE":{"C":{"m":175.48,"s":1.978,"b0":166.537,"bw":0.1539,"h":"AAAAAAAAAAAAAQEBAQIBAgICAgMEBAUHCAkLDhEVGh4gJi0wMTU6QktQVFxlb3yEho2bpa60uMTX8f/48OTX2dPEvLSfkId9dnJqXVFFPzs1LiQbFhINCwoKCAYFBAQCAgEBAQEBAQEAAAAAAAAAAAAAAAAAAAAA"},"CA":{"m":58.086,"s":2.654,"b0":22.929,"bw":0.4226,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQECAwQHDBEXHSc0TW+XvtXd7f/jpH1yb3F0fH91X0UtGw4HAgEBAAAAAAAAAAAAAAAAAAAAAAAA"},"CB":{"m":39.878,"s":2.118,"b0":21.603,"bw":0.4051,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQECAgQGCQ0THScwP1d5pt7/3p53Z1xSSUA3LyYaEAkFBAIBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CD1":{"m":131.523,"s":2.016,"b0":75.334,"bw":0.6142,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAwUKFCAwX8P/v1YdCQMBAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CD2":{"m":131.55,"s":1.507,"b0":91.597,"bw":0.4076,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQECAwQFCREZHSMzWKDt/8JsMxkLBAIBAQAAAAAAAAAAAAAA"},"CE1":{"m":130.663,"s":2.107,"b0":74.256,"bw":0.6306,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEAAAAAAAAAAAABAQIECREeNGrF/8dWFwgDAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CE2":{"m":130.72,"s":1.552,"b0":90.223,"bw":0.497,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAABAgMGCxIbKEF7yP/mfSkPCAMBAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CG":{"m":138.175,"s":5.213,"b0":37.251,"bw":0.9962,"h":"AgEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAwYHBwwRDgsWMnLU/7VZMBoIAQAAAAAAAAEBAQEC"},"CZ":{"m":129.219,"s":1.724,"b0":88.19,"bw":0.6479,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEAAQEBAQIDBg0VKFeo/f+fSScUCQQCAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"H":{"m":8.332,"s":0.724,"b0":3.586,"bw":0.0734,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQABAQECAgICAgIDBAYHBwkLDhEXHCAmKzI7RU5XZHWCipu51vH/8+DSxLarqaqlnI+Adm5kWU1BMycfGhUPCwgFBgcGBQMDAQEBAQEAAAEBAQEBAQEAAAAAAAAAAAAA"},"HA":{"m":4.611,"s":0.57,"b0":1.353,"bw":0.0464,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQECAgICAgMEBQcJCgoKDA4QEhMVGh8iKDE7RU5YYWl1gIyfrrW6wdLl9P/rwqqdk5CGeXRwa2FWUkxCPjsyLS0rJyEeGxcTEA4NCwgGBQQDAgIBAQEAAAAAAAAB"},"HB2":{"m":2.994,"s":0.377,"b0":-0.44,"bw":0.0467,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAAAAAAAAAAEBAgEBAgICAgICAgMDAwMDBAQFBggKCwwPEhUYHSMrMzpGWWx7jZyqxuHz//vv4cCcgWpWRDQmGhQPCwgFBAQDAgEBAQAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB3":{"m":2.936,"s":0.393,"b0":-0.192,"bw":0.0409,"h":"AAAAAAAAAAAAAAAAAQAAAAABAQEBAAEBAQEBAQEBAgICAQEBAgICAwMDAwQFBQUFBQYHBwgKDA4QERMVGR8kKC84RVVmcn6Onqmzw9ny//jw7OPOspJ0X1FFNyogGBMPCwkGBQQEAwIBAQEBAAAAAAAAAAAAAAAA"},"HD1":{"m":7.045,"s":0.357,"b0":3.158,"bw":0.0552,"h":"AAEAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAgICAgMEBQcJCgsMDQ8SGCApMz1HVGV+n7vN5v/2vn9PMCAWDwsIBgQCAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HD2":{"m":7.045,"s":0.377,"b0":3.028,"bw":0.0563,"h":"AQEAAQAAAAAAAAABAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQECAgMDBAQGCAkLDAwOEhcdJjA7RVBkf5u0y+j/77d2Ri0eEw4JBwUEAgEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HE1":{"m":7.065,"s":0.389,"b0":2.98,"bw":0.0604,"h":"AAEBAQEBAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAgMDBAUGBwcJCw4RFBgfJzA+Ump+kajC2/L/4ZZQKhgNBwUEAgEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HE2":{"m":7.062,"s":0.402,"b0":2.98,"bw":0.0604,"h":"AAEBAQEBAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAgIDBAUGBwgJCw4RFBgfKDE+VGx+jqXC2u//5JdQKRgOCAUEAgEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HZ":{"m":6.979,"s":0.481,"b0":1.144,"bw":0.1072,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAQEBAQEBAQAAAAAAAAEBAQEBAQICAwMFBgkLDRMbISUwSGaFpsr4/7NVIxAHBAIBAQABAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"N":{"m":120.384,"s":4.202,"b0":67.719,"bw":0.8374,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAwUHDBckMDxKXnSOr9b3/+fCn4VxW0c5LCAVDgkFAgEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}},"PRO":{"C":{"m":176.756,"s":1.495,"b0":150.722,"bw":0.2744,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQECAgMDBAUHCQwRFx0lLTI6RlVqjs7/67WKZko7MSolHhYPCAQCAQEBAQAAAAAA"},"CA":{"m":63.3,"s":1.722,"b0":30.232,"bw":0.3616,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAgMFCAsQFR8vRWKR2P/Og1xMRT42LB8SCQQCAQAAAAAAAAAAAAAAAAAA"},"CB":{"m":31.831,"s":1.251,"b0":6.336,"bw":0.4522,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQIDBQgNExklP2vJ/6Q8GQ4LCAQCAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CD":{"m":50.32,"s":1.262,"b0":20.102,"bw":0.3859,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQECBAgOERIVIkaBz//KaiwPBgMBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CG":{"m":27.207,"s":1.329,"b0":2.659,"bw":0.4464,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQECAQIGDhkcGBoxjf/ziToVCAMBAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HA":{"m":4.382,"s":0.351,"b0":0.671,"bw":0.0698,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQEBAQEBAQEBAgIDBAUGCAoNERcgKzxVfb7//K5pSzgoGxQPDAoHBQQDAgIBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB2":{"m":2.068,"s":0.369,"b0":-1.471,"bw":0.0594,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAEBAAAAAQEBAQEBAQICAgICAwMDAwQFBgcICgsMDxEVGyUxRmaNp6SNf5DK/+ehYjYeEQkEAgIBAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB3":{"m":1.998,"s":0.377,"b0":-1.721,"bw":0.0591,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAQEBAQEBAQIDAwMCAwMEBQUFBQYICQsNDxETFx4oOVJ5tO//1p6DjbLCnmxDJBMKBQMCAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HD2":{"m":3.643,"s":0.379,"b0":-0.723,"bw":0.0702,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQEBAQECAwMDBAQEBQUGBgcICw4RFhsiLkBZg8X5//TaoWdAKRkPCgYEAgIBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HD3":{"m":3.609,"s":0.403,"b0":-0.731,"bw":0.0588,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAQEBAQECAgIDAwMEBAUEBAUGBgYGBwgICQoMDxMXHSQtOk1mjc3/+d/NsINZOyYaEw0IBgQCAgEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HG2":{"m":1.919,"s":0.335,"b0":-1.198,"bw":0.0512,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQEBAQECAQEBAgMDAwMDAwMDBAQEBQUGCAoLDRATGB8mMD9Wf8D9/8GAWDokFAwHBAICAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HG3":{"m":1.896,"s":0.349,"b0":-1.493,"bw":0.0537,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQEBAQEBAQECAgICAgMDAwMDBAUFBgcICQoMDhEVGiAoNUhjjtH/249aOiMTCgYDAgIBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"N":{"m":134.06,"s":14.489,"b0":1.36,"bw":2.4405,"h":"AAAAAAAAAAAAAAABAQEAAAAAAAABAQAAAAAAAAAAAAAAAAAAAAAAAAABCRINCQsNDw4KCA8vhfj/hSIGAQABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEAAAAA"}},"SER":{"C":{"m":174.633,"s":1.732,"b0":157.917,"bw":0.3279,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQIDBAYJDBMbJTE9SFJfeKLd/9iVbFhMRD00JhkSDgoGBAMCAQEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CA":{"m":58.666,"s":2.157,"b0":26.064,"bw":0.5312,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEDBgkPFydEZHiQ1f+1ZlNTW1g+IxMJBAIBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CB":{"m":63.743,"s":2.077,"b0":18.511,"bw":0.641,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAgYNGCpWoPX/oVQ5JBMJBAIBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"H":{"m":8.274,"s":0.581,"b0":1.499,"bw":0.0973,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQECAgMEBggMEBUdJzRBTV1xhZ7I9P/dqHtgUUY7MSchGhMOCwgGBQMDAgEBAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HA":{"m":4.473,"s":0.406,"b0":1.303,"bw":0.0512,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQEBAQEBAQEBAgICAwMEBQcKDRMbJC46Sl10jKTB5//stHtcU09FNiokIBsWFBMREQ8ODQwLCwoIBgYEAwMDAgIBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB2":{"m":3.868,"s":0.27,"b0":1.189,"bw":0.0429,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAEAAAEBAQEBAQEBAQECAgICAwMDBAUGBwgLDRAUHCQtOUtiiML3/9yxiGVJMiMcFhEODAsIBQMCAgEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB3":{"m":3.844,"s":0.287,"b0":0.637,"bw":0.0535,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQEBAQEBAQEBAQICAgMDBAUGBggLDxQcJzNCWXu19v/OmGhCKhwUEA0KBgMCAgEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HG":{"m":5.388,"s":1.176,"b0":0.177,"bw":0.0936,"h":"AwEAAAAAAAABBQcDAgUIDAkFBAUHCAYCAQMEAwMHCAUFBAQIDBUkJSMuMzI/TFBwzf/Ks72urbKlq8fPsZmeoo5wXUAjGxoZHBsSDg0LCAUNFA4JCw0QEBISBwABBAUCAAECAgICAgEAAwYDAAAAAAAAAQICAgID"},"N":{"m":116.307,"s":3.49,"b0":93.85,"bw":0.5,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAQICAQECAwMFBgkNERYcJC88SVZmeoyfvOT//OXOtI1rWUxAOTMtKCIdFxIOCwkHBQMCAgEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}},"THR":{"C":{"m":174.55,"s":1.732,"b0":165.449,"bw":0.1713,"h":"AAAAAAAAAAAAAAAAAAAAAQEBAQECAgIDBQYICgwMDQ8SFRshJis0O0FNWmRtc3aAkZ+y1fb/58Cpop+VhXh0bmZdTz81LSQbFxMPDAsJBwcIBgQDAgICAgEBAQEBAQEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CA":{"m":62.212,"s":2.609,"b0":35.352,"bw":0.3917,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAgIEBgoOFB0rPldteX6Fqe3/unFOPDEsKyssMjpAOCcZEgwHBAIBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CB":{"m":69.622,"s":2.311,"b0":18.148,"bw":0.6802,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQIDBgwXLmCi6/+2cE4wGQoDAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CG2":{"m":21.545,"s":1.155,"b0":7.309,"bw":0.2644,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQICAgMGChAVFhUTFBknQm+//+qkaUIqHBMOCQYEAwIBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"H":{"m":8.226,"s":0.627,"b0":2.749,"bw":0.0791,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQECAwMDBAYICg4SGSAmLjpETFRhb36WueH/+9iujHtxamRbUEc/ODAmHhgSDgsIBQQEBAMDAgIBAQEBAQEBAQAAAAAAAAAAAAAAAAAA"},"HA":{"m":4.449,"s":0.476,"b0":0.897,"bw":0.055,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAQICAwMEBQgLEBcgKzlGT1liZ259mc3//NKqkoJ0aV1TS0VAOTMwLiolIBsZFhIOCwgHBgQDAgEBAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB":{"m":4.165,"s":0.338,"b0":0.121,"bw":0.0688,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQEBAQEBAgIDAwUGCQ4WJDhQa4ecsdT7/86QaE48MiwiFAkFAwEBAQAAAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HG1":{"m":5.149,"s":1.446,"b0":-1.73,"bw":0.1066,"h":"BQQCAQEAAAAAAAAAAAEBAQAAAwcGAwULEhglNCwVCAMDBgsLBwMCBAUJDAkIBwcIBwsPFR0iLz5IUlmC2v/bzuLizdTq5suqlZmhk3FFMi4iGREKCAgGCAwIAwQKDQ0LCQgJCwsIBAICAwQEAgEBAQAAAAAAAAEC"},"N":{"m":115.328,"s":4.784,"b0":67.006,"bw":0.8117,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQECAwYJDBIaJS00QU5WX3CRudv2/+nGq41uWUo7LykiGhIMBwQCAgIBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}},"TRP":{"C":{"m":176.209,"s":1.986,"b0":166.839,"bw":0.1461,"h":"AQAAAAAAAAAAAQAAAQIBAQEBAQECAwMEBAQFBgcICgwOEBQcHxwdIyoyNTpFTE5Za3R6gYiLiY6bpKm0w9bl7Pz/4tTVzcCxpJuRjJCLfnp+dF5PS0c7MSklIyAYFRIOCwoHBQUEAwIBAQEBAQEAAAAAAAAAAAAB"},"CA":{"m":57.696,"s":2.582,"b0":28.986,"bw":0.4856,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQIEBQYLFSQxPU1if6fJ5f/3xp+RiX1rXlREMiMVCQMBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CB":{"m":29.977,"s":2.256,"b0":1.887,"bw":0.5749,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACBAcMFiU7XZHY/9ibeWFNOyobEAkFAgEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CD1":{"m":126.509,"s":2.238,"b0":86.156,"bw":0.604,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAQEBAQIEBwkLEBsrQFRojtX/yXI7HA4GAwEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CD2":{"m":126.716,"s":14.65,"b0":2.218,"bw":1.28,"h":"BAEAAQMBAAAAAAAAAAAAAQMBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMFBQsQNpjp/8hRCwEAAAEDAQAAAAAAAAAAAAEE"},"CE2":{"m":137.36,"s":9.322,"b0":56.923,"bw":1.0108,"h":"BQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAECAQAAAggMCwQAAAECAQEDBAIAAQQSKkyy/58kAgAAAAAAAAAAAQIBAAAAAAECAQAAAAAAAAABAgICAgEAAAEC"},"CE3":{"m":120.413,"s":2.699,"b0":70.793,"bw":0.7055,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAQECBAYLFipSo///mUAaDQkFAgICAQEBAQABAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CG":{"m":110.628,"s":6.003,"b0":25.643,"bw":0.8708,"h":"BAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgUCAAAAAAAAAAAAAAAAAAAAAAAAAQIBAgYFCCpkoNP8/65aMBQJAgAAAAAAAAECAQAAAAEE"},"CH2":{"m":123.754,"s":2.433,"b0":76.971,"bw":0.7016,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQECBAkRHzVbqP/udyEIAwIBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CZ2":{"m":114.258,"s":2.125,"b0":73.694,"bw":0.5886,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQMEBxEdKUmj/+BvJAsEAgEBAQAAAQEBAAEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CZ3":{"m":121.375,"s":2.154,"b0":80.658,"bw":0.6768,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAgICBQ4bL12t//WIMRgPBwMCAQEBAQEAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"H":{"m":8.262,"s":0.78,"b0":3.456,"bw":0.0695,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEDBAQDAwQFBQcJCwwOEhMUFRQVFxsdIi0zOEROWWFtf4mcwuX6//TcxLy+ubCtqZmMg4GBdGRdW049NTMrJB4WEQ8LCAcFBAMDAwICAwEAAAAAAAAAAAAAAAAA"},"HA":{"m":4.673,"s":0.532,"b0":2.082,"bw":0.0781,"h":"AAAAAQABAQIBAgICAgIDBAUGCQ0UHicwQlpvhJywxur/7celkH9ybGZYSDs0LCAYFREMCggGAwICAwIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB2":{"m":3.177,"s":0.346,"b0":0.441,"bw":0.0411,"h":"AAAAAAAAAAAAAAABAAABAQAAAAABAQIBAQIBAQECAQEBAgMDBAQFBgUEBQYGCAkKDA8SFBgeJCk0P05hcH2Mna/A0OX//uHLt5p8Z1VIQTIkHBYQDAkHBQQDAgEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB3":{"m":3.117,"s":0.368,"b0":-0.356,"bw":0.0427,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAQEBAQEBAQIBAQIDAwMDBAUFBgcICQkJCQkLDA4QFBofJC85Qk1ZbYWSl6O0xNvx//LUuZt9Z1pINiojGxMOCwcFAwIBAQEBAQAAAAAAAAAAAAAA"},"HD1":{"m":7.128,"s":0.351,"b0":4.617,"bw":0.0444,"h":"AQAAAAAAAAEBAQEBAAEBAQEBAQEBAQICAgIDAwICBAUGBwcHBwgKDRAPERMWGR8oMjxFUmN3jKK60u//6LaLcl1KOyoeFxEMCggHBQQDAwIBAQEBAQEAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HE1":{"m":10.087,"s":0.681,"b0":-1.199,"bw":0.1607,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQEBAQEBAQICAgIBAQIDBAUGCREcJzlaovj/tmw/JRYPCwkHBAIBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HE3":{"m":7.308,"s":0.484,"b0":2.321,"bw":0.0829,"h":"AQEAAAAAAAAAAAAAAAEBAAAAAAAAAAAAAAAAAAAAAAABAQECAgIDBAUFBQQEBQYHCQwQFBomNEZhgaLB3/T//9F9QCgeEwoIBgQCAQEAAAAAAAAAAAAAAAAAAAEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HH2":{"m":6.958,"s":0.446,"b0":2.874,"bw":0.0672,"h":"AwEAAAAAAAABAAABAQEAAAAAAAAAAAAAAAAAAAAAAQEBAQECAgIDAwQFBQUFBgYHBwoNEhYdJjE/U2RvgqTI7f/QdzwkFgwHBAICAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HZ2":{"m":7.272,"s":0.39,"b0":3.272,"bw":0.0631,"h":"AQAAAAEBAQAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQIBAQECAgMDBAQEBAYICgsNExgdJC87SVhnhbLl/9J9QCUWDAYFAwICAgEAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HZ3":{"m":6.859,"s":0.43,"b0":2.835,"bw":0.0507,"h":"AgEBAQAAAAAAAAAAAAAAAAEBAQAAAQAAAAAAAAAAAAAAAAEBAAAAAAAAAQEBAQIDBAMCAwMEBQYGBgYHCAkMCwwQExQXHSc4SVhshJSZmqjJ3tvr/9qSXT4qHxwXDwoIBgQDBAMBAAEBAQAAAAAAAAAAAAAAAAAA"},"N":{"m":121.576,"s":4.162,"b0":99.042,"bw":0.4279,"h":"AAAAAAAAAAAAAAAAAAAAAAABAgMDAwUHBwcIDA0LCgsMDRAVHCMnKS04RVVndX+OpsPg+v/t1MCskHVjVlBLRD03NTQwLCckIRgUEg0LCQYEAwICAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"NE1":{"m":129.249,"s":2.541,"b0":72.039,"bw":0.7372,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAAAAAQEAAAAAAAABAQEBAQEDBAUIDBYpUJPk/8RzPCEUDAcEAgEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}},"TYR":{"C":{"m":175.509,"s":1.998,"b0":133.313,"bw":0.4307,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQECBAYJDxYhL0JceZStzO7/7ciig3BjUDkjFQ4IAwIBAAAAAAAA"},"CA":{"m":58.128,"s":2.522,"b0":29.066,"bw":0.3389,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQIDBAYKDhEUGiMuO05jepeuv83X6//lrYJsYVpZXGRsbGJTQjAfEwsGBAIBAQAAAAAAAAAAAAAA"},"CB":{"m":39.242,"s":2.174,"b0":18.585,"bw":0.4105,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQIDBAYJDhUdJjJBV3yw6f/SlHZqYVxZT0I1KBwTDAcEAgEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CD1":{"m":132.671,"s":1.909,"b0":85.056,"bw":0.4729,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAgMDBQkRGyMwUZj0/5s6EgYDAgEBAAAAAAAAAAAA"},"CD2":{"m":132.647,"s":2.163,"b0":85.048,"bw":0.4569,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEAAAAAAAAAAAAAAAAAAAAAAAEBAQIDBAcOFh4kNGK8/89nJQsEAwICAQEAAAAA"},"CE1":{"m":117.919,"s":1.796,"b0":78.232,"bw":0.6349,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQECBw8VIFrU/4siCQMCAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CE2":{"m":117.92,"s":1.427,"b0":97.653,"bw":0.4348,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEDBw0REhQnXMH/s0QWCgQDAgEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CG":{"m":128.273,"s":12.412,"b0":7.813,"bw":1.4,"h":"AQAAAAAAAAEAAAAAAQECAQAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEDBgwTIVG4/79OFgYDBAMAAAEAAAAAAAAAAQIBAAAAAAAAAAAAAAAB"},"CZ":{"m":156.304,"s":9.594,"b0":31.86,"bw":1.1202,"h":"AgEAAAAAAAEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEAAQEBAAAAAAAAAAAAAAAAAAAAAQEBDEGFzP/EWSEOBwMC"},"H":{"m":8.285,"s":0.734,"b0":2.573,"bw":0.0817,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQIDAwMFBgYHCQwPEhceJS04QkxWYnOImrPU7v/+5MWxp6CZk46HgX10Z1pOQzctJBwUDQoIBQQEAwICAQEAAAABAAAAAAAAAAAAAAAAAAAA"},"HA":{"m":4.608,"s":0.558,"b0":0.47,"bw":0.056,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQICAwUFAwMEBAUGCAsNDhIXHCUwOUVVZnmNnae2x9Tn/P/iu6aelol8cGVbV1ZQRj85Mi0oJCAYEhAOCwoJBwUEAwICAgEBAQEBAAAAAAAA"},"HB2":{"m":2.899,"s":0.382,"b0":-0.47,"bw":0.048,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAAABAQEBAQIBAQEBAgICAgICAwQEBAQFBgcJDA4PERQYHSQsN0RQYXKCj52zzev+//jq0rSVel9IOi0jGRALCQcGBAMCAgICAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB3":{"m":2.837,"s":0.402,"b0":-0.167,"bw":0.0502,"h":"AAAAAAAAAAAAAAAAAQEBAQEBAQEBAgICAgMDAgIDAwMDBAQFBQYICAgJCw0RFhseIyw3QU9id4iVpr3V6/r/8+DKsJV2WEExJhwUDgoIBgQDAgIBAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HD1":{"m":6.931,"s":0.309,"b0":3.32,"bw":0.0601,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAgIDAwMDBAUFBgcKDhASFx4nNEVbcoqnx+f/8rd2SCwcEgoFAwICAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HD2":{"m":6.926,"s":0.324,"b0":3.26,"bw":0.0606,"h":"AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQICAwMDBAQFBgYICw4QFBsjLTtPaIKcudb0/9aPWDchFAwGAwICAgEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HE1":{"m":6.699,"s":0.24,"b0":3.709,"bw":0.0458,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQECAgMDAwQHCQoMDxEVGyY0Q1Zqgp6/6P/loWE9KBsUDwsHBQQDAgEBAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HE2":{"m":6.699,"s":0.242,"b0":4.497,"bw":0.038,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAgIDAwMDBAcICQsNEBIVGyMuO0dUZnqRqsTk//e8d044KRwTEA4KBgUEBAMCAQEBAQEBAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAA"},"HH":{"m":9.002,"s":1.845,"b0":-0.69,"bw":0.1964,"h":"CAMAAAAAAAAAAAAAAAAAAAAABAkIBAEBAwEABAgEAQYOFRsbICs6PzAqLzQtHjlpdK//1ZCGgGhINkJDKyAdEAYIDQ8NCQUBAAEDAQAAAAAAAAABAwEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEE"},"N":{"m":120.446,"s":4.329,"b0":19.118,"bw":1.4375,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQIECRMlQGSQzP/5voBZPykYDAYCAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}},"VAL":{"C":{"m":175.702,"s":1.883,"b0":148.497,"bw":0.4787,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQECBAgMExwtS3Kbusvj/+6/pI1oRS0bDggFAwEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CA":{"m":62.51,"s":2.877,"b0":31.862,"bw":0.5008,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQMFBwsSIDhTbIekvtXm//WnaFdQUmSAk4xkMxIGAgEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CB":{"m":32.681,"s":1.81,"b0":15.759,"bw":0.3235,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQECAwUHCxAVGiEtRWia1//37fvnqH5xaWZkXE9AMCAUCwYEAgEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CG1":{"m":21.483,"s":1.426,"b0":0.904,"bw":0.3631,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQIDBQkPFRsgJjJPidj/572Xc1U+KxwRCwYDAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"CG2":{"m":21.295,"s":1.577,"b0":0.815,"bw":0.3731,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQIDBAYKEhwlKzA4TXa28//Zq4hqUTwpGxAJBAIBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"H":{"m":8.266,"s":0.67,"b0":2.632,"bw":0.1011,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQIDBAQGCQ0TGiMuO0VQXm18k7jk//vkxa2gmJOMgXRiSjQkGBAKBwUDAgIBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HA":{"m":4.165,"s":0.58,"b0":-1.461,"bw":0.0918,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQICAwUIDhYkN09ogJCZnKTK//zFoZaOhXtuYlZIOS0jGBALBgQDAgEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"HB":{"m":1.983,"s":0.321,"b0":-1.384,"bw":0.0621,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQEBAQEBAQICAwMEBAYICgwPExkhLT5XcpS54v/wwpVtSzEgFQ4IBQMCAgEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"N":{"m":121.064,"s":4.503,"b0":52.377,"bw":1.1542,"h":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQMFCAwPExggLURpo+P/6beKbVxLOCMSCAQCAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}}};
+const ATOMS_BY_ELEM={"C":["C","CA","CB","CG","CG1","CG2","CD","CD1","CD2","CE","CE1","CE2","CE3","CZ","CZ2","CZ3","CH2"],"H":["H","HA","HA2","HA3","HB","HB2","HB3","HG","HG1","HG12","HG13","HG2","HG3","HD1","HD2","HD21","HD22","HD3","HE","HE1","HE2","HE21","HE22","HE3","HZ","HZ2","HZ3","HH","HH11","HH12","HH2","HH21","HH22","H1"],"N":["N","ND1","ND2","NE","NE1","NE2","NZ","NH1","NH2"]};
+
+
+const AA=['ALA','ARG','ASN','ASP','CYS','GLN','GLU','GLY','HIS','ILE','LEU','LYS','MET','PHE','PRO','SER','THR','TRP','TYR','VAL'];
+const AA1={ALA:'A',ARG:'R',ASN:'N',ASP:'D',CYS:'C',GLN:'Q',GLU:'E',GLY:'G',HIS:'H',ILE:'I',LEU:'L',LYS:'K',MET:'M',PHE:'F',PRO:'P',SER:'S',THR:'T',TRP:'W',TYR:'Y',VAL:'V'};
+const ONE2THREE={}; for(const k in AA1) ONE2THREE[AA1[k]]=k;
+const RES_COLORS={ALA:'#d62728',ARG:'#1f77b4',ASN:'#2ca02c',ASP:'#9467bd',CYS:'#ff7f0e',
+  GLN:'#17a2b8',GLU:'#e377c2',GLY:'#8c564b',HIS:'#a4a400',ILE:'#7f7f7f',LEU:'#393b79',
+  LYS:'#5c7a1e',MET:'#8c6d31',PHE:'#843c39',PRO:'#7b4173',SER:'#3182bd',THR:'#e6550d',
+  TRP:'#2c944c',TYR:'#756bb1',VAL:'#4d4d4d'};
+const SPEC_COLORS=['#12355b','#b4530f','#2c944c','#7b4173','#0f766e','#a4a400','#843c39','#3182bd'];
+const ZTOL={H:{min:0.01,max:0.10,step:0.01,def:0.05},
+            C:{min:0.05,max:1.00,step:0.05,def:0.10},
+            N:{min:0.50,max:2.00,step:0.10,def:0.50}};
+
+/* ================= error capture ================= */
+const errLog=[];
+function logErr(where,msg,extra){
+  errLog.push({where,msg,extra:extra||'',t:new Date().toLocaleTimeString()});
+  const b=document.getElementById('errbox');
+  b.style.display='';
+  b.textContent=errLog.map(e=>'['+e.t+'] '+e.where+'\n  '+e.msg+(e.extra?'\n  '+e.extra:'')).join('\n\n');
+}
+window.addEventListener('error',e=>{
+  logErr('runtime', (e.error&&e.error.message)||e.message,
+    (e.error&&e.error.stack||'').split('\n').slice(0,3).join(' | '));
+});
+window.addEventListener('unhandledrejection',e=>logErr('promise',String(e.reason)));
+
+/* ================= parser ================= */
+function parseUcsf(buf){
+  const dv=new DataView(buf);
+  if(buf.byteLength<200) throw new Error('File too small to be a UCSF spectrum ('+buf.byteLength+' bytes).');
+  if(new TextDecoder().decode(new Uint8Array(buf,0,8))!=="UCSF NMR")
+    throw new Error('Not a UCSF file (magic bytes missing).');
+  const ndim=dv.getUint8(10), ncomp=dv.getUint8(11);
+  if(ndim<2||ndim>3) throw new Error('Only 2D or 3D supported (this file reports ndim='+ndim+').');
+  if(ncomp!==1) throw new Error('Expected real data (ncomponents='+ncomp+').');
+  const FH=180,AH=128,axes=[];
+  for(let i=0;i<ndim;i++){
+    const b=FH+i*AH;
+    const nuc=new TextDecoder().decode(new Uint8Array(buf,b,6)).replace(/\0.*$/,"").trim();
+    const npts=dv.getUint32(b+8,false), bsize=dv.getUint32(b+16,false);
+    const sf=dv.getFloat32(b+20,false), sw=dv.getFloat32(b+24,false), cen=dv.getFloat32(b+28,false);
+    if(!(npts>0)) throw new Error('Axis '+i+' ("'+nuc+'") reports npoints='+npts+'.');
+    if(!(bsize>0)) throw new Error('Axis '+i+' ("'+nuc+'") reports tile size='+bsize+'.');
+    if(!(sf>0)||!isFinite(sw)) throw new Error('Axis '+i+' ("'+nuc+'") has invalid sf='+sf+' sw='+sw+'.');
+    const swppm=sw/sf, first=cen+swppm/2, last=cen+swppm/2-(swppm*(npts-1))/npts;
+    const ppm=new Float32Array(npts);
+    for(let k=0;k<npts;k++) ppm[k]= npts>1 ? first+((last-first)*k)/(npts-1) : first;
+    axes.push({nuc,npts,bsize,sf,sw,cen,ppm});
+  }
+  const N=axes.map(a=>a.npts), B=axes.map(a=>a.bsize), NT=N.map((n,i)=>Math.ceil(n/B[i]));
+  const off=FH+ndim*AH;
+  const need=NT.reduce((a,b,i)=>a*b*B[i],1)*4;
+  if(buf.byteLength-off < need)
+    throw new Error('Truncated data: header needs '+need+' bytes of float32 but only '+
+      (buf.byteLength-off)+' are present.');
+  const bytes=new Uint8Array(buf,off);
+  for(let p=0;p+3<bytes.length;p+=4){const x=bytes[p],y=bytes[p+1];
+    bytes[p]=bytes[p+3];bytes[p+3]=x;bytes[p+1]=bytes[p+2];bytes[p+2]=y;}
+  const data=new Float32Array(N.reduce((a,b)=>a*b,1));
+  const flat=new Float32Array(buf,off,NT.reduce((a,b,i)=>a*b*B[i],1));
+  let idx=0;
+  if(ndim===2){
+    const [n0,n1]=N,[b0,b1]=B;
+    for(let t0=0;t0<NT[0];t0++)for(let t1=0;t1<NT[1];t1++)
+      for(let r=0;r<b0;r++){const g0=t0*b0+r,rb=g0*n1;
+        for(let c=0;c<b1;c++){const v=flat[idx++],g1=t1*b1+c; if(g0<n0&&g1<n1)data[rb+g1]=v;}}
+  }else{
+    const [n0,n1,n2]=N,[b0,b1,b2]=B,s0=n1*n2;
+    for(let t0=0;t0<NT[0];t0++)for(let t1=0;t1<NT[1];t1++)for(let t2=0;t2<NT[2];t2++)
+      for(let r0=0;r0<b0;r0++){const g0=t0*b0+r0;
+        for(let r1=0;r1<b1;r1++){const g1=t1*b1+r1,base=g0*s0+g1*n2,ok=(g0<n0&&g1<n1);
+          for(let r2=0;r2<b2;r2++){const v=flat[idx++],g2=t2*b2+r2; if(ok&&g2<n2)data[base+g2]=v;}}}
+  }
+  return {data,ndim,N,axes};
+}
+
+/* ================= global state ================= */
+let specs=[], focus=null, seq='', seqStart=1;
+let xElem='C',yElem='C',xAtoms=new Set(),yAtoms=new Set();
+let sigMode=false,d1=1.0,d2=2.0,lvlX=90,lvlY=90,showLabels=false,xOff=0,yOff=0;
+let activeRes=new Set(),hoverRes=null;
+let mouseMode='zoom',showCross=true,symCross=false,showDiag=false;
+let hover=null;            // {sp,f1,f2,x,y}
+let pkSeq=1;
+const M={l:60,r:12,t:12,b:38};
+const stage=document.getElementById('stage'), statusEl=document.getElementById('status');
+
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function fmt(v){ if(v==null||typeof v!=='number'||!isFinite(v))return '—';
+  const a=Math.abs(v); return a>=100?v.toFixed(1):a>=10?v.toFixed(2):v.toFixed(3); }
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+function elemOf(n){const e=String(n==null?'':n).replace(/^\d+/,'').toUpperCase();
+  return ['C','N','H'].includes(e)?e:(['C','N','H'].includes(e[0])?e[0]:null);}
+function defRange(e){return {C:[190,-5],N:[140,95],H:[12,-1]}[e]||[200,0];}
+function niceStep(s,t){if(!(s>0))return 1;const raw=s/t,mag=Math.pow(10,Math.floor(Math.log10(raw))),n=raw/mag;
+  return (n<1.5?1:n<3?2:n<7?5:10)*mag;}
+function robustSigma(d){const N=d.length,st=Math.max(1,Math.floor(N/200000)),s=[];
+  for(let i=0;i<N;i+=st)s.push(Math.abs(d[i])); s.sort((a,b)=>a-b);
+  return (s[s.length>>1]||1)*1.4826||1;}
+
+/* ================= per-spectrum plane / view ================= */
+function buildPlane(sp){
+  try{
+    if(sp.ndim===2){ sp.plane={d:sp.data,n0:sp.N[0],n1:sp.N[1],a0:sp.axes[0],a1:sp.axes[1]}; }
+    else{
+      const [n0,n1,n2]=sp.N, z=sp.zAxis;
+      sp.zIdx=clamp(sp.zIdx|0,0,sp.axes[z].npts-1);
+      const k=sp.zIdx;
+      let d,m0,m1,A0,A1;
+      if(z===0){m0=n1;m1=n2;A0=sp.axes[1];A1=sp.axes[2];d=sp.data.subarray(k*n1*n2,(k+1)*n1*n2);}
+      else if(z===1){m0=n0;m1=n2;A0=sp.axes[0];A1=sp.axes[2];d=new Float32Array(m0*m1);
+        for(let i=0;i<m0;i++){const b=i*n1*n2+k*n2,o=i*m1;for(let j=0;j<m1;j++)d[o+j]=sp.data[b+j];}}
+      else{m0=n0;m1=n1;A0=sp.axes[0];A1=sp.axes[1];d=new Float32Array(m0*m1);
+        for(let i=0;i<m0;i++){const o=i*m1;for(let j=0;j<m1;j++)d[o+j]=sp.data[i*n1*n2+j*n2+k];}}
+      sp.plane={d,n0:m0,n1:m1,a0:A0,a1:A1};
+    }
+    sp.sigma=robustSigma(sp.plane.d);
+  }catch(e){ logErr('buildPlane ['+sp.name+']', e.message, (e.stack||'').split('\n')[1]||''); }
+}
+function zPpm(sp){ if(sp.ndim!==3)return null;
+  const a=sp.axes[sp.zAxis]; const v=a&&a.ppm?a.ppm[clamp(sp.zIdx|0,0,a.npts-1)]:undefined;
+  return (typeof v==='number'&&isFinite(v))?v:null; }
+function boundsOf(sp){
+  const p=sp.plane; if(!p)return {xMax:200,xMin:0,yMax:200,yMin:0};
+  const p0=p.a0.ppm,p1=p.a1.ppm;
+  return {xMax:Math.max(p1[0],p1[p.n1-1]),xMin:Math.min(p1[0],p1[p.n1-1]),
+          yMax:Math.max(p0[0],p0[p.n0-1]),yMin:Math.min(p0[0],p0[p.n0-1])};
+}
+function clampView(sp){
+  const v=sp.view; if(!v)return; const b=boundsOf(sp);
+  const sx=v.xHi-v.xLo, sy=v.yHi-v.yLo;
+  if(!(sx>0)||sx>=b.xMax-b.xMin){v.xHi=b.xMax;v.xLo=b.xMin;}
+  else{ if(v.xHi>b.xMax){v.xHi=b.xMax;v.xLo=b.xMax-sx;} if(v.xLo<b.xMin){v.xLo=b.xMin;v.xHi=b.xMin+sx;} }
+  if(!(sy>0)||sy>=b.yMax-b.yMin){v.yHi=b.yMax;v.yLo=b.yMin;}
+  else{ if(v.yHi>b.yMax){v.yHi=b.yMax;v.yLo=b.yMax-sy;} if(v.yLo<b.yMin){v.yLo=b.yMin;v.yHi=b.yMin+sy;} }
+}
+function defaultView(sp){
+  const p=sp.plane; if(!p){sp.view=null;return;}
+  const p0=p.a0.ppm,p1=p.a1.ppm;
+  const e2=elemOf(p.a1.nuc), e1=elemOf(p.a0.nuc);
+  const r2=e2?defRange(e2):[p1[0],p1[p.n1-1]], r1=e1?defRange(e1):[p0[0],p0[p.n0-1]];
+  sp.view={xHi:Math.min(Math.max(p1[0],p1[p.n1-1]),r2[0]),
+           xLo:Math.max(Math.min(p1[0],p1[p.n1-1]),r2[1]),
+           yHi:Math.min(Math.max(p0[0],p0[p.n0-1]),r1[0]),
+           yLo:Math.max(Math.min(p0[0],p0[p.n0-1]),r1[1])};
+  if(!(sp.view.xHi>sp.view.xLo)||!(sp.view.yHi>sp.view.yLo)){
+    const b=boundsOf(sp); sp.view={xHi:b.xMax,xLo:b.xMin,yHi:b.yMax,yLo:b.yMin};
+  }
+  clampView(sp);
+}
+const TX=(sp,v)=>sp.plot.x+(sp.view.xHi-v)/(sp.view.xHi-sp.view.xLo)*sp.plot.w;
+const TY=(sp,v)=>sp.plot.y+(v-sp.view.yLo)/(sp.view.yHi-sp.view.yLo)*sp.plot.h;
+const IX=(sp,px)=>sp.view.xHi-(px-sp.plot.x)/sp.plot.w*(sp.view.xHi-sp.view.xLo);
+const IY=(sp,py)=>sp.view.yLo+(py-sp.plot.y)/sp.plot.h*(sp.view.yHi-sp.view.yLo);
+
+/* ================= layer 1: contours ================= */
+const CASES={1:[2,1],2:[1,3],3:[2,3],4:[0,3],5:[2,0,1,3],6:[0,1],7:[2,0],
+  8:[0,2],9:[0,1],10:[0,3,2,1],11:[0,3],12:[2,3],13:[1,3],14:[2,1]};
+function drawContours(g,owner,src){
+  const P=owner.plot, xHi=owner.view.xHi, xLo=owner.view.xLo,
+        yHi=owner.view.yHi, yLo=owner.view.yLo;
+  const pl=src.plane; if(!pl)return;
+  const p0=pl.a0.ppm,p1=pl.a1.ppm,n0=pl.n0,n1=pl.n1,data=pl.d;
+  const c2i=p=>(p-p1[0])/(p1[n1-1]-p1[0])*(n1-1), r2i=p=>(p-p0[0])/(p0[n0-1]-p0[0])*(n0-1);
+  let cL=c2i(xHi),cR=c2i(xLo); if(cL>cR)[cL,cR]=[cR,cL];
+  let rT=r2i(yLo),rB=r2i(yHi); if(rT<rB)[rT,rB]=[rB,rT];
+  const cA=Math.floor(clamp(cL,0,n1-1)),cB=Math.ceil(clamp(cR,0,n1-1));
+  const rBo=Math.floor(clamp(rB,0,n0-1)),rTo=Math.ceil(clamp(rT,0,n0-1));
+  const cols=Math.max(2,Math.min(460,cB-cA+1)), rows=Math.max(2,Math.min(460,rTo-rBo+1));
+  const grid=new Float32Array(rows*cols);
+  const halfR=(rTo-rBo)/(rows-1)/2, halfC=(cB-cA)/(cols-1)/2;
+  for(let gi=0;gi<rows;gi++){
+    const rc=rTo-(rTo-rBo)*gi/(rows-1);
+    let rlo=Math.round(rc-halfR),rhi=Math.round(rc+halfR); if(rhi<=rlo)rhi=rlo+1;
+    rlo=clamp(rlo,0,n0-1);rhi=clamp(rhi,0,n0);
+    for(let gj=0;gj<cols;gj++){
+      const cc=cA+(cB-cA)*gj/(cols-1);
+      let clo=Math.round(cc-halfC),chi=Math.round(cc+halfC); if(chi<=clo)chi=clo+1;
+      clo=clamp(clo,0,n1-1);chi=clamp(chi,0,n1);
+      let m=-Infinity;
+      for(let r=rlo;r<rhi;r++){const b=r*n1;for(let c=clo;c<chi;c++){const v=data[b+c];if(v>m)m=v;}}
+      grid[gi*cols+gj]=m;
+    }
+  }
+  const base=src.sigma*src.levelMult;
+  const gx=gj=>P.x+gj/(cols-1)*P.w, gy=gi=>P.y+gi/(rows-1)*P.h;
+  g.strokeStyle=src.color;g.lineWidth=0.6;g.globalAlpha=.9;g.beginPath();
+  for(let L=0;L<14;L++){const lev=base*Math.pow(1.30,L);
+    for(let gi=0;gi<rows-1;gi++){const ro=gi*cols,ro2=(gi+1)*cols;
+      for(let gj=0;gj<cols-1;gj++){
+        const tl=grid[ro+gj],tr=grid[ro+gj+1],br=grid[ro2+gj+1],bl=grid[ro2+gj];
+        let id=0; if(tl>lev)id|=8; if(tr>lev)id|=4; if(br>lev)id|=2; if(bl>lev)id|=1;
+        if(id===0||id===15)continue;
+        const E={0:()=>[gi,gj+(lev-tl)/(tr-tl)],1:()=>[gi+1,gj+(lev-bl)/(br-bl)],
+                 2:()=>[gi+(lev-tl)/(bl-tl),gj],3:()=>[gi+(lev-tr)/(br-tr),gj+1]};
+        const sg=CASES[id];
+        for(let k=0;k<sg.length;k+=2){const a=E[sg[k]](),b=E[sg[k+1]]();
+          g.moveTo(gx(a[1]),gy(a[0]));g.lineTo(gx(b[1]),gy(b[0]));}
+      }}}
+  g.stroke();g.globalAlpha=1;
+}
+function renderSpectrum(sp){
+  const g=sp.gS; if(!g)return;
+  g.setTransform(sp.dpr,0,0,sp.dpr,0,0); g.clearRect(0,0,sp.offS.width,sp.offS.height);
+  const P=sp.plot; if(!P||P.w<=0||!sp.view||!sp.plane)return;
+  const {xHi,xLo,yHi,yLo}=sp.view;
+  g.fillStyle=css('--plot'); g.fillRect(P.x,P.y,P.w,P.h);
+  g.strokeStyle=css('--grid'); g.lineWidth=1; g.fillStyle=css('--muted'); g.font='10px '+css('--mono');
+  const xs=niceStep(xHi-xLo,6); g.textAlign='center'; g.textBaseline='top';
+  for(let v=Math.ceil(xLo/xs)*xs;v<=xHi;v+=xs){const px=TX(sp,v);
+    g.beginPath();g.moveTo(px,P.y);g.lineTo(px,P.y+P.h);g.stroke();g.fillText(fmt(v),px,P.y+P.h+5);}
+  const ys=niceStep(yHi-yLo,6); g.textAlign='right'; g.textBaseline='middle';
+  for(let v=Math.ceil(yLo/ys)*ys;v<=yHi;v+=ys){const py=TY(sp,v);
+    g.beginPath();g.moveTo(P.x,py);g.lineTo(P.x+P.w,py);g.stroke();g.fillText(fmt(v),P.x-7,py);}
+
+  const pl=sp.plane;
+  g.save();g.beginPath();g.rect(P.x,P.y,P.w,P.h);g.clip();
+  for(const src of (alignMode==='stack'?shown():[sp])) drawContours(g,sp,src);
+  if(showDiag){const lo=Math.max(xLo,yLo),hi=Math.min(xHi,yHi);
+    if(hi>lo){g.strokeStyle=css('--accent');g.setLineDash([5,4]);g.lineWidth=1;
+      g.beginPath();g.moveTo(TX(sp,hi),TY(sp,hi));g.lineTo(TX(sp,lo),TY(sp,lo));g.stroke();g.setLineDash([]);}}
+  g.restore();
+  g.strokeStyle=css('--line');g.lineWidth=1;g.strokeRect(P.x+.5,P.y+.5,P.w,P.h);
+  g.fillStyle=css('--ink');g.font='600 11px '+css('--ui');g.textAlign='center';g.textBaseline='bottom';
+  g.fillText(pl.a1.nuc+'  F2 (ppm)',P.x+P.w/2,P.y+P.h+M.b-1);
+  g.save();g.translate(11,P.y+P.h/2);g.rotate(-Math.PI/2);g.textBaseline='top';
+  g.fillText(pl.a0.nuc+'  F1 (ppm)',0,0);g.restore();
+}
+
+/* ================= layer 2: overlay + peaks ================= */
+const HCACHE=new Map();
+function hist(st){let h=HCACHE.get(st); if(h)return h;
+  const bin=atob(st.h); h=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)h[i]=bin.charCodeAt(i);
+  HCACHE.set(st,h);return h;}
+function binsPassing(st,axis){
+  const L=(axis==='x'?lvlX:lvlY), h=hist(st), thr=L/100*255, idx=[];
+  for(let i=0;i<h.length;i++) if(h[i]>=thr) idx.push(i);
+  if(!idx.length){let bi=0; for(let i=1;i<h.length;i++) if(h[i]>h[bi])bi=i; idx.push(bi);}
+  return {idx,h};
+}
+function ringFor(st,axis){
+  if(sigMode){const ds=[...new Set([Math.min(d1,d2),Math.max(d1,d2)])];
+    return ds.map(d=>({c:st.m,r:d*st.s}));}
+  const L=(axis==='x'?lvlX:lvlY), h=hist(st), thr=L/100*255;
+  let lo=-1,hi=-1;
+  for(let i=0;i<h.length;i++) if(h[i]>=thr){ if(lo<0)lo=i; hi=i; }
+  if(lo<0) return [{c:st.m,r:st.bw/2}];
+  const a=st.b0+lo*st.bw-st.bw/2, b=st.b0+hi*st.bw+st.bw/2;
+  return [{c:(a+b)/2,r:(b-a)/2}];
+}
+function visiblePeaks(sp){
+  if(sp.ndim!==3)return sp.peaks;
+  const z=zPpm(sp); if(z==null)return sp.peaks;
+  const tol=curZTol(sp);
+  return sp.peaks.filter(p=>p.z==null||Math.abs(p.z-z)<=tol);
+}
+function renderOverlay(sp){
+  const g=sp.gA; if(!g)return;
+  g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,sp.offA.width,sp.offA.height);
+  g.drawImage(sp.offS,0,0); g.setTransform(sp.dpr,0,0,sp.dpr,0,0);
+  const P=sp.plot; if(!P||P.w<=0||!sp.view||!sp.plane)return;
+  g.save();g.beginPath();g.rect(P.x,P.y,P.w,P.h);g.clip();
+  // BMRB statistics — only on panes whose nuclei match the chosen overlay axes
+  const eX=elemOf(sp.plane.a1.nuc), eY=elemOf(sp.plane.a0.nuc);
+  if(eX===xElem&&eY===yElem){
+    const sxPx=s=>Math.abs(s/(sp.view.xHi-sp.view.xLo)*P.w),
+          syPx=s=>Math.abs(s/(sp.view.yHi-sp.view.yLo)*P.h);
+    const xa=[...xAtoms],ya=[...yAtoms];
+    const disp=hoverRes?[hoverRes]:[...activeRes];
+    if(sigMode&&xa.length&&ya.length) for(const res of disp){
+      const col=RES_COLORS[res],st=BMRB_STATS[res]; if(!st)continue;
+      for(const ax of xa){const sx=st[ax]; if(!sx)continue;
+        const RX=ringFor(sx,'x');
+        for(const ay of ya){const sy=st[ay]; if(!sy)continue;
+          const RY=ringFor(sy,'y'), nR=Math.max(RX.length,RY.length);
+          for(let i=0;i<nR;i++){
+            const rx=RX[Math.min(i,RX.length-1)], ry=RY[Math.min(i,RY.length-1)];
+            g.beginPath();
+            g.ellipse(TX(sp,rx.c+xOff),TY(sp,ry.c+yOff),
+              Math.max(sxPx(rx.r),0.4),Math.max(syPx(ry.r),0.4),0,0,2*Math.PI);
+            g.fillStyle=col;g.globalAlpha=i===0?0.14:0.06;g.fill();
+            g.globalAlpha=i===0?0.95:0.5;g.strokeStyle=col;g.lineWidth=i===0?1.3:1;g.stroke();
+          }
+          g.globalAlpha=1;
+          if(showLabels){const rx=RX[RX.length-1],ry=RY[RY.length-1];
+            g.font='700 9px '+css('--mono');g.fillStyle=col;g.textAlign='left';g.textBaseline='alphabetic';
+            g.fillText(ax===ay?ax:ax+'·'+ay, TX(sp,rx.c+xOff)+sxPx(rx.r)*0.3, TY(sp,ry.c+yOff)-syPx(ry.r)*0.3);}
+        }}
+    }
+    if(!sigMode&&xa.length&&ya.length){
+      let budget=140000;
+      for(const res of disp){
+        const col=RES_COLORS[res],st=BMRB_STATS[res]; if(!st)continue;
+        g.fillStyle=col;
+        for(const ax of xa){const sx=st[ax]; if(!sx)continue;
+          const BX=binsPassing(sx,'x'); if(!BX.idx.length)continue;
+          for(const ay of ya){const sy=st[ay]; if(!sy)continue;
+            const BY=binsPassing(sy,'y'); if(!BY.idx.length)continue;
+            if((budget-=BX.idx.length*BY.idx.length)<0){budget=-1;break;}
+            let lx=Infinity,ty=Infinity;
+            for(const i of BX.idx){
+              const c=sx.b0+i*sx.bw+xOff;
+              const xa1=TX(sp,c+sx.bw/2), xa2=TX(sp,c-sx.bw/2);
+              const bx=Math.min(xa1,xa2), bw=Math.max(Math.abs(xa2-xa1),1);
+              if(bx+bw<P.x||bx>P.x+P.w)continue;
+              const wx=BX.h[i]/255;
+              for(const j of BY.idx){
+                const d=sy.b0+j*sy.bw+yOff;
+                const ya1=TY(sp,d-sy.bw/2), ya2=TY(sp,d+sy.bw/2);
+                const by=Math.min(ya1,ya2), bh=Math.max(Math.abs(ya2-ya1),1);
+                if(by+bh<P.y||by>P.y+P.h)continue;
+                g.globalAlpha=0.10+0.55*wx*(BY.h[j]/255);
+                g.fillRect(bx,by,bw,bh);
+                if(bx<lx)lx=bx; if(by<ty)ty=by;
+              }
+            }
+            g.globalAlpha=1;
+            if(showLabels&&isFinite(lx)){
+              g.font='700 9px '+css('--mono');g.fillStyle=col;
+              g.textAlign='left';g.textBaseline='alphabetic';
+              g.fillText(ax===ay?ax:ax+'·'+ay, lx+2, ty-2);
+              g.fillStyle=col;
+            }
+          }
+          if(budget<0)break;
+        }
+        if(budget<0)break;
+      }
+      g.globalAlpha=1;
+    }
+  }
+  // peaks: "+" when unselected, "x" when selected
+  for(const src of (alignMode==='stack'?shown():[sp]))
+  for(const pk of visiblePeaks(src)){
+    const px=TX(sp,pk.f2),py=TY(sp,pk.f1),on=src.sel.has(pk.id);
+    g.lineWidth=on?2:1.2; g.strokeStyle=on?css('--sel'):src.color;
+    g.beginPath();
+    if(on){g.moveTo(px-5,py-5);g.lineTo(px+5,py+5);g.moveTo(px+5,py-5);g.lineTo(px-5,py+5);}
+    else  {g.moveTo(px-5,py);g.lineTo(px+5,py);g.moveTo(px,py-5);g.lineTo(px,py+5);}
+    g.stroke();
+    if(pk.label){g.font='700 9.5px '+css('--mono');g.fillStyle=on?css('--sel'):css('--ink');
+      g.textAlign='left';g.textBaseline='bottom';g.fillText(pk.label,px+7,py-4);}
+  }
+  g.restore();
+}
+
+/* ================= layer 3: paint + synced crosshair ================= */
+function crossLines(sp){
+  // -> {x:ppm|null, y:ppm|null} for this pane given the global hover
+  if(!hover||!hover.sp||!hover.sp.plane||!sp.plane)return {x:null,y:null};
+  if(hover.sp===sp) return {x:hover.f2,y:hover.f1};
+  const sE1=elemOf(hover.sp.plane.a0.nuc), sE2=elemOf(hover.sp.plane.a1.nuc);
+  const tE1=elemOf(sp.plane.a0.nuc), tE2=elemOf(sp.plane.a1.nuc);
+  const pick=(te,samePos,otherPos,sameE,otherE)=>
+    te==null?null:(te===sameE?samePos:(te===otherE?otherPos:null));
+  return {x:pick(tE2,hover.f2,hover.f1,sE2,sE1), y:pick(tE1,hover.f1,hover.f2,sE1,sE2)};
+}
+function paint(sp){
+  const g=sp.ctx; if(!g)return;
+  g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,sp.cv.width,sp.cv.height);
+  g.drawImage(sp.offA,0,0); g.setTransform(sp.dpr,0,0,sp.dpr,0,0);
+  const P=sp.plot; if(!P||P.w<=0||!sp.view)return;
+  g.save();g.beginPath();g.rect(P.x,P.y,P.w,P.h);g.clip();
+  if(showCross&&hover){
+    const cl=crossLines(sp), self=(hover.sp===sp);
+    g.strokeStyle=css('--accent');g.globalAlpha=self?.55:.4;g.lineWidth=1;g.setLineDash([4,3]);
+    g.beginPath();
+    if(cl.y!=null){const py=TY(sp,cl.y);g.moveTo(P.x,py);g.lineTo(P.x+P.w,py);}
+    if(cl.x!=null){const px=TX(sp,cl.x);g.moveTo(px,P.y);g.lineTo(px,P.y+P.h);}
+    g.stroke();
+    if(symCross){
+      g.strokeStyle=css('--sel');g.globalAlpha=.4;g.setLineDash([2,3]);g.beginPath();
+      if(cl.x!=null){const my=TY(sp,cl.x);g.moveTo(P.x,my);g.lineTo(P.x+P.w,my);}
+      if(cl.y!=null){const mx=TX(sp,cl.y);g.moveTo(mx,P.y);g.lineTo(mx,P.y+P.h);}
+      g.stroke();
+    }
+    g.setLineDash([]);g.globalAlpha=1;
+  }
+  if(sp.drag&&sp.drag.moved){
+    const c=mouseMode==='zoom'?css('--accent'):css('--sel');
+    g.strokeStyle=c;g.fillStyle=c+'18';g.lineWidth=1;g.setLineDash([4,3]);
+    const x=Math.min(sp.drag.x0,sp.drag.x1),y=Math.min(sp.drag.y0,sp.drag.y1);
+    g.fillRect(x,y,Math.abs(sp.drag.x1-sp.drag.x0),Math.abs(sp.drag.y1-sp.drag.y0));
+    g.strokeRect(x,y,Math.abs(sp.drag.x1-sp.drag.x0),Math.abs(sp.drag.y1-sp.drag.y0));
+    g.setLineDash([]);
+  }
+  g.restore();
+}
+function fullOne(sp){renderSpectrum(sp);renderOverlay(sp);paint(sp);}
+function overlayAll(){paneOwners.forEach(sp=>{renderOverlay(sp);paint(sp);});}
+function paintAll(){paneOwners.forEach(paint);}
+function fullAll(){paneOwners.forEach(fullOne);}
+const shown=()=>specs.filter(s=>s.shown);
+let alignMode='horizontal', paneOwners=[];
+const ownerOf=sp=>alignMode==='stack'?(focus||sp):sp;
+function redraw(sp){const o=ownerOf(sp); if(o&&o.gA){renderOverlay(o);paint(o);}}
+function syncViews(src){
+  if(alignMode==='stack'||!src.view||!src.plane)return;
+  const key = alignMode==='vertical' ? 'x' : 'y';
+  const sE = key==='x' ? elemOf(src.plane.a1.nuc) : elemOf(src.plane.a0.nuc);
+  for(const sp of paneOwners){
+    if(sp===src||!sp.view||!sp.plane)continue;
+    const tE = key==='x' ? elemOf(sp.plane.a1.nuc) : elemOf(sp.plane.a0.nuc);
+    if(tE!==sE)continue;                       // only align matching nuclei
+    if(key==='x'){sp.view.xHi=src.view.xHi;sp.view.xLo=src.view.xLo;}
+    else{sp.view.yHi=src.view.yHi;sp.view.yLo=src.view.yLo;}
+    clampView(sp); fullOne(sp);
+  }
+}
+
+/* ================= peak picking (2D + 3D) ================= */
+function at3(sp,r,c,k){
+  const [n0,n1,n2]=sp.N;
+  if(sp.zAxis===0)return sp.data[k*n1*n2+r*n2+c];
+  if(sp.zAxis===1)return sp.data[r*n1*n2+k*n2+c];
+  return sp.data[r*n1*n2+c*n2+k];
+}
+const atP=(sp,r,c,k)=> sp.ndim===2 ? sp.plane.d[r*sp.plane.n1+c] : at3(sp,r,c,k);
+function idxOf(arr,n,v){return (v-arr[0])/(arr[n-1]-arr[0])*(n-1);}
+function refine(get,i,n){ if(i<=0||i>=n-1)return i;
+  const a=get(i-1),b=get(i),c=get(i+1),den=a-2*b+c; if(!isFinite(den)||den===0)return i;
+  return i+clamp(0.5*(a-c)/den,-1,1); }
+const lerpA=(arr,n,f)=>{const i=clamp(Math.floor(f),0,n-2);return arr[i]+(arr[i+1]-arr[i])*(f-i);};
+function zSpan(sp){
+  if(sp.ndim!==3)return 0;
+  const a=sp.axes[sp.zAxis]; if(a.npts<2)return 0;
+  const per=Math.abs(a.ppm[1]-a.ppm[0]);
+  return Math.max(1,Math.round(curZTol(sp)/(per||1)));
+}
+function pick(sp,mx,my,rad){
+  const pl=sp.plane; if(!pl)return null;
+  const p0=pl.a0.ppm,p1=pl.a1.ppm,n0=pl.n0,n1=pl.n1;
+  const ri=idxOf(p0,n0,IY(sp,my)), ci=idxOf(p1,n1,IX(sp,mx));
+  const dr=Math.max(2,Math.abs(idxOf(p0,n0,IY(sp,my+rad))-ri));
+  const dc=Math.max(2,Math.abs(idxOf(p1,n1,IX(sp,mx+rad))-ci));
+  const r0=clamp(Math.round(ri-dr),0,n0-1),r1=clamp(Math.round(ri+dr),0,n0-1);
+  const c0=clamp(Math.round(ci-dc),0,n1-1),c1=clamp(Math.round(ci+dc),0,n1-1);
+  const is3=sp.ndim===3, zn=is3?sp.axes[sp.zAxis].npts:1, dz=is3?zSpan(sp):0;
+  const k0=is3?clamp(sp.zIdx-dz,0,zn-1):0, k1=is3?clamp(sp.zIdx+dz,0,zn-1):0;
+  let best=-Infinity,br=-1,bc=-1,bk=k0;
+  for(let k=k0;k<=k1;k++)
+    for(let r=r0;r<=r1;r++)
+      for(let c=c0;c<=c1;c++){const v=atP(sp,r,c,k); if(v>best){best=v;br=r;bc=c;bk=k;}}
+  if(br<0)return null;
+  const fr=refine(i=>atP(sp,i,bc,bk),br,n0), fc=refine(i=>atP(sp,br,i,bk),bc,n1);
+  const out={f1:lerpA(p0,n0,fr),f2:lerpA(p1,n1,fc),h:best,z:null};
+  if(is3){ const za=sp.axes[sp.zAxis];
+    const fk=refine(i=>atP(sp,br,bc,i),bk,zn);
+    out.z=lerpA(za.ppm,zn,fk); }
+  return out;
+}
+function pickBox(sp,x0,y0,x1,y1){
+  const pl=sp.plane; if(!pl)return [];
+  const p0=pl.a0.ppm,p1=pl.a1.ppm,n0=pl.n0,n1=pl.n1;
+  let ra=idxOf(p0,n0,IY(sp,Math.min(y0,y1))),rb=idxOf(p0,n0,IY(sp,Math.max(y0,y1)));
+  let ca=idxOf(p1,n1,IX(sp,Math.min(x0,x1))),cb=idxOf(p1,n1,IX(sp,Math.max(x0,x1)));
+  const r0=clamp(Math.round(Math.min(ra,rb)),1,n0-2),r1=clamp(Math.round(Math.max(ra,rb)),1,n0-2);
+  const c0=clamp(Math.round(Math.min(ca,cb)),1,n1-2),c1=clamp(Math.round(Math.max(ca,cb)),1,n1-2);
+  const thr=sp.sigma*sp.levelMult, is3=sp.ndim===3;
+  const zn=is3?sp.axes[sp.zAxis].npts:1, dz=is3?zSpan(sp):0;
+  const k0=is3?clamp(sp.zIdx-dz,0,zn-1):0, k1=is3?clamp(sp.zIdx+dz,0,zn-1):0;
+  const found=[];
+  for(let k=k0;k<=k1;k++)
+    for(let r=r0;r<=r1;r++)
+      for(let c=c0;c<=c1;c++){
+        const v=atP(sp,r,c,k); if(v<thr)continue;
+        if(v<atP(sp,r,c-1,k)||v<atP(sp,r,c+1,k))continue;
+        if(v<atP(sp,r-1,c,k)||v<atP(sp,r+1,c,k))continue;
+        if(is3){ if(k>0&&v<atP(sp,r,c,k-1))continue; if(k<zn-1&&v<atP(sp,r,c,k+1))continue; }
+        found.push([v,r,c,k]);
+      }
+  found.sort((a,b)=>b[0]-a[0]);
+  const out=[];
+  for(const [v,r,c,k] of found.slice(0,600)){
+    const fr=refine(i=>atP(sp,i,c,k),r,n0), fc=refine(i=>atP(sp,r,i,k),c,n1);
+    const f1=lerpA(p0,n0,fr),f2=lerpA(p1,n1,fc);
+    if(out.some(o=>Math.abs(TX(sp,o.f2)-TX(sp,f2))<6&&Math.abs(TY(sp,o.f1)-TY(sp,f1))<6))continue;
+    let z=null;
+    if(is3){const za=sp.axes[sp.zAxis];z=lerpA(za.ppm,zn,refine(i=>atP(sp,r,c,i),k,zn));}
+    out.push({f1,f2,h:v,z});
+    if(out.length>=120)break;
+  }
+  return out;
+}
+function addPeaks(sp,list){
+  for(const p of list) sp.peaks.push({id:pkSeq++,f1:p.f1,f2:p.f2,z:p.z,label:'',asg:null});
+  refreshPkPanels();
+}
+
+
+/* ================= Hunt: walk one dimension, holding the others fixed ================= */
+const dimsOf=sp=>sp.ndim===3?['y','x','z']:['y','x'];
+function dimNuc(sp,d){
+  if(!sp.plane)return '';
+  if(d==='y')return sp.plane.a0.nuc;
+  if(d==='x')return sp.plane.a1.nuc;
+  return sp.ndim===3?sp.axes[sp.zAxis].nuc:'';
+}
+function dimVal(sp,pk,d){ return d==='y'?pk.f1:(d==='x'?pk.f2:pk.z); }
+function ensureHuntTol(sp){
+  sp.huntTol=sp.huntTol||{};
+  for(const d of dimsOf(sp)){
+    const e=elemOf(dimNuc(sp,d))||'C', cfg=ZTOL[e]||ZTOL.C;
+    const v=sp.huntTol[d];
+    if(!isFinite(v)||v<cfg.min||v>cfg.max) sp.huntTol[d]=cfg.def;
+  }
+  return sp.huntTol;
+}
+function huntPeaks(sp,ref,scanDim,tol,nsig){
+  const pl=sp.plane; if(!pl)return [];
+  const py=pl.a0.ppm,px=pl.a1.ppm,n0=pl.n0,n1=pl.n1;
+  const is3=sp.ndim===3, za=is3?sp.axes[sp.zAxis]:null;
+  const pz=is3?za.ppm:null, nz=is3?za.npts:1;
+  const ix=(arr,n,v)=>(v-arr[0])/(arr[n-1]-arr[0])*(n-1);
+  const win=(arr,n,c,t)=>{let a=ix(arr,n,c-t),b=ix(arr,n,c+t); if(a>b){const q=a;a=b;b=q;}
+    return [clamp(Math.floor(a),0,n-1),clamp(Math.ceil(b),0,n-1)];};
+  let yR=[0,n0-1],xR=[0,n1-1],zR=[0,nz-1];
+  if(scanDim!=='y') yR=win(py,n0,ref.f1,tol.y);
+  if(scanDim!=='x') xR=win(px,n1,ref.f2,tol.x);
+  if(is3&&scanDim!=='z'&&ref.z!=null) zR=win(pz,nz,ref.z,tol.z);
+  const nD = scanDim==='y'?n0 : scanDim==='x'?n1 : nz;
+  if(nD<3)return [];
+  const prof=new Float32Array(nD),bR=new Int32Array(nD),bC=new Int32Array(nD),bK=new Int32Array(nD);
+  for(let t=0;t<nD;t++){
+    const r0=scanDim==='y'?t:yR[0], r1=scanDim==='y'?t:yR[1];
+    const c0=scanDim==='x'?t:xR[0], c1=scanDim==='x'?t:xR[1];
+    const k0=scanDim==='z'?t:zR[0], k1=scanDim==='z'?t:zR[1];
+    let m=-Infinity,mr=r0,mc=c0,mk=k0;
+    for(let k=k0;k<=k1;k++)for(let r=r0;r<=r1;r++)for(let c=c0;c<=c1;c++){
+      const v=atP(sp,r,c,k); if(v>m){m=v;mr=r;mc=c;mk=k;}}
+    prof[t]=m;bR[t]=mr;bC[t]=mc;bK[t]=mk;
+  }
+  // a candidate must also be a true local maximum in every dimension, otherwise
+  // taking the window max at each scan position lets noise through
+  const isMax=(r,c,k)=>{
+    const v=atP(sp,r,c,k);
+    for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)for(let dk=(is3?-1:0);dk<=(is3?1:0);dk++){
+      if(!dr&&!dc&&!dk)continue;
+      const rr=r+dr,cc=c+dc,kk=k+dk;
+      if(rr<0||rr>=n0||cc<0||cc>=n1||kk<0||kk>=nz)continue;
+      if(atP(sp,rr,cc,kk)>v)return false;
+    }
+    return true;
+  };
+  const thr=sp.sigma*(isFinite(nsig)?nsig:sp.levelMult), out=[];
+  for(let t=1;t<nD-1;t++){
+    if(!(prof[t]>=thr))continue;
+    if(prof[t]<prof[t-1]||prof[t]<prof[t+1])continue;
+    const r=bR[t],c=bC[t],k=bK[t];
+    if(!isMax(r,c,k))continue;
+    const fr=refine(i=>atP(sp,i,c,k),r,n0), fc=refine(i=>atP(sp,r,i,k),c,n1);
+    const q={f1:lerpA(py,n0,fr),f2:lerpA(px,n1,fc),z:null,h:prof[t]};
+    if(is3){const fk=refine(i=>atP(sp,r,c,i),k,nz); q.z=lerpA(pz,nz,fk);}
+    q.nsig=prof[t]/sp.sigma;
+    out.push(q);
+    if(out.length>=300)break;
+  }
+  return out;
+}
+function addHunted(sp,list){
+  const pl=sp.plane;
+  const dY=Math.abs(pl.a0.ppm[1]-pl.a0.ppm[0])||0.01;
+  const dX=Math.abs(pl.a1.ppm[1]-pl.a1.ppm[0])||0.01;
+  const za=sp.ndim===3?sp.axes[sp.zAxis]:null;
+  const dZ=(za&&za.npts>1)?Math.abs(za.ppm[1]-za.ppm[0]):0.01;
+  let added=0;
+  for(const p of list){
+    const dup=sp.peaks.some(q=>Math.abs(q.f1-p.f1)<=2*dY&&Math.abs(q.f2-p.f2)<=2*dX&&
+      (p.z==null||q.z==null||Math.abs(q.z-p.z)<=2*dZ));
+    if(dup)continue;
+    sp.peaks.push({id:pkSeq++,f1:p.f1,f2:p.f2,z:p.z,label:'',asg:null});
+    added++;
+  }
+  return added;
+}
+function openHunt(sp,ref){
+  ensureHuntTol(sp);
+  const ds=dimsOf(sp);
+  let scan = ds.find(d=>d!=='y') || ds[0];
+  const m=document.createElement('div'); m.className='modal';
+  const box=document.createElement('div'); box.className='box'; box.style.maxWidth='520px';
+  const h=document.createElement('h3');
+  h.innerHTML='<span class="dot" style="background:'+sp.color+'"></span>Intra-hunt — '+sp.name;
+  box.appendChild(h);
+  const refline=document.createElement('div'); refline.className='hint'; refline.style.margin='0';
+  refline.textContent='Reference peak '+(ref.label||'(unassigned)')+':  '+
+    ds.map(d=>dimNuc(sp,d)+'('+d+') '+fmt(dimVal(sp,ref,d))).join('   ');
+  box.appendChild(refline);
+
+  const t1=document.createElement('div'); t1.className='axttl'; t1.textContent='Scan along';
+  box.appendChild(t1);
+  const segs=document.createElement('div'); segs.className='modes';
+  segs.style.gridTemplateColumns='repeat('+ds.length+',1fr)';
+  box.appendChild(segs);
+  const t2=document.createElement('div'); t2.className='axttl';
+  t2.textContent='Match tolerance on the held dimensions'; box.appendChild(t2);
+  const tolBox=document.createElement('div'); box.appendChild(tolBox);
+  const t3=document.createElement('div'); t3.className='axttl';
+  t3.textContent='Minimum peak height'; box.appendChild(t3);
+  let nsig=Math.max(sp.levelMult,1);
+  const thRow=document.createElement('div'); thRow.className='row';
+  const thLb=document.createElement('label'); thLb.style.minWidth='96px'; thLb.textContent='Threshold';
+  const thSl=document.createElement('input'); thSl.type='range';
+  thSl.min=1; thSl.max=30; thSl.step=0.5; thSl.value=nsig;
+  const thVv=document.createElement('span'); thVv.className='val'; thVv.textContent=nsig.toFixed(1)+'σ';
+  thSl.addEventListener('input',()=>{nsig=+thSl.value; thVv.textContent=nsig.toFixed(1)+'σ'; rebuild();});
+  thRow.appendChild(thLb); thRow.appendChild(thSl); thRow.appendChild(thVv); box.appendChild(thRow);
+  const note=document.createElement('div'); note.className='hint'; note.style.margin='0';
+  box.appendChild(note);
+
+  function rebuild(){
+    segs.innerHTML='';
+    for(const d of ds){
+      const b=document.createElement('div'); b.className='mode'+(d===scan?' on':'');
+      b.textContent=dimNuc(sp,d)+' ('+d+')';
+      b.addEventListener('click',()=>{scan=d;rebuild();});
+      segs.appendChild(b);
+    }
+    tolBox.innerHTML='';
+    for(const d of ds){
+      if(d===scan)continue;
+      const e=elemOf(dimNuc(sp,d))||'C', cfg=ZTOL[e]||ZTOL.C;
+      const r=document.createElement('div'); r.className='row';
+      const lb=document.createElement('label'); lb.style.minWidth='96px';
+      lb.textContent=dimNuc(sp,d)+' ('+d+') ±';
+      const sl=document.createElement('input'); sl.type='range';
+      sl.min=cfg.min; sl.max=cfg.max; sl.step=cfg.step; sl.value=sp.huntTol[d];
+      const vv=document.createElement('span'); vv.className='val';
+      vv.textContent=(+sl.value).toFixed(2)+' ppm';
+      sl.addEventListener('input',()=>{sp.huntTol[d]=+sl.value; vv.textContent=(+sl.value).toFixed(2)+' ppm';});
+      r.appendChild(lb); r.appendChild(sl); r.appendChild(vv); tolBox.appendChild(r);
+    }
+    note.textContent='Walks '+dimNuc(sp,scan)+' ('+scan+') and keeps every true local maximum above '+
+      nsig.toFixed(1)+'σ, holding the other dimension'+(ds.length>2?'s':'')+
+      ' at the reference value within the tolerance above. Raise the threshold if noise creeps in.';
+  }
+  rebuild();
+
+  const bar=document.createElement('div'); bar.className='row'; bar.style.margin='0';
+  const run=document.createElement('button'); run.className='btn'; run.textContent='Find & add';
+  const undo=document.createElement('button'); undo.className='btn ghost';
+  undo.textContent='Undo last add'; undo.disabled=true;
+  const status=document.createElement('div'); status.className='hint'; status.style.margin='0';
+  let lastIds=[];
+  run.addEventListener('click',()=>{
+    try{
+      const found=huntPeaks(sp,ref,scan,sp.huntTol,nsig);
+      const before=sp.peaks.length;
+      const added=addHunted(sp,found);
+      lastIds=sp.peaks.slice(before).map(p=>p.id);
+      undo.disabled=!lastIds.length;
+      const hs=found.map(f=>f.nsig).filter(isFinite);
+      status.textContent='Found '+found.length+' maxima along '+dimNuc(sp,scan)+' ('+scan+') — added '+
+        added+' new peak'+(added===1?'':'s')+
+        (found.length-added?' ('+(found.length-added)+' already listed)':'')+
+        (hs.length?'. Heights '+Math.min(...hs).toFixed(1)+'–'+Math.max(...hs).toFixed(1)+'σ.':'.');
+      refreshPkPanels(); fullOne(ownerOf(sp));
+    }catch(err){ status.textContent='Hunt failed: '+err.message;
+      logErr('hunt ['+sp.name+']', err.message, (err.stack||'').split('\n')[1]||''); }
+  });
+  undo.addEventListener('click',()=>{
+    const set=new Set(lastIds);
+    sp.peaks=sp.peaks.filter(p=>!set.has(p.id));
+    lastIds.forEach(id=>sp.sel.delete(id));
+    status.textContent='Removed '+set.size+' peak'+(set.size===1?'':'s')+' from the last hunt.';
+    lastIds=[]; undo.disabled=true;
+    refreshPkPanels(); fullOne(ownerOf(sp));
+  });
+  const close=document.createElement('button'); close.className='btn ghost';
+  close.textContent='Close'; close.style.marginLeft='auto';
+  const shut=()=>{m.remove();document.removeEventListener('keydown',esc);};
+  const esc=e=>{if(e.key==='Escape')shut();};
+  close.addEventListener('click',shut); document.addEventListener('keydown',esc);
+  bar.appendChild(run); bar.appendChild(undo); bar.appendChild(close);
+  box.appendChild(bar); box.appendChild(status);
+  m.appendChild(box); document.body.appendChild(m);
+  m.addEventListener('mousedown',e=>{ if(e.target===m) shut(); });
+}
+
+/* ================= Cross-hunt: correlate one residue's pattern across spectra ============ */
+// Given a set of source peaks the user believes are one residue, take the spread of values
+// along ONE chosen source dimension as a "pattern" (e.g. the CA/CB/CG carbons). In every other
+// shown spectrum, find a group of peaks that (a) reproduces that pattern along a chosen matching
+// dimension and (b) is self-consistent (equal within tolerance) on all its OTHER dimensions.
+// Matches are drawn first from the target's existing peak list, then any still-missing pattern
+// values are filled by scanning the raw data at the discovered anchor.
+let crossSeq=1;
+function patternSpread(sp,pks,d){
+  const vs=pks.map(p=>dimVal(sp,p,d)).filter(v=>v!=null&&isFinite(v));
+  if(vs.length<2)return 0;
+  return Math.max(...vs)-Math.min(...vs);
+}
+function patternVals(sp,pks,d){
+  const vs=pks.map(p=>dimVal(sp,p,d)).filter(v=>v!=null&&isFinite(v)).sort((a,b)=>a-b);
+  const out=[]; for(const v of vs) if(!out.some(u=>Math.abs(u-v)<1e-3)) out.push(v);
+  return out;
+}
+function crossIsMax(T,r,c,k,n0,n1,nz,is3){
+  const v=atP(T,r,c,k);
+  for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)for(let dk=(is3?-1:0);dk<=(is3?1:0);dk++){
+    if(!dr&&!dc&&!dk)continue;
+    const rr=r+dr,cc=c+dc,kk=k+dk;
+    if(rr<0||rr>=n0||cc<0||cc>=n1||kk<0||kk>=nz)continue;
+    if(atP(T,rr,cc,kk)>v)return false;
+  }
+  return true;
+}
+// windowed maximum around a fully-specified point (match dim = pval, others = anchor).
+// When z is a HELD dimension and allZ is set, its window spans the WHOLE axis so the
+// correlated peak is found no matter which z-plane it sits on ("slide through all planes").
+function crossPoint(T,dc,pval,anchor,tol,thr,allZ){
+  const is3=T.ndim===3;
+  const py=T.plane.a0.ppm,px=T.plane.a1.ppm,n0=T.plane.n0,n1=T.plane.n1;
+  const za=is3?T.axes[T.zAxis]:null,pz=is3?za.ppm:null,nz=is3?za.npts:1;
+  const ix=(arr,n,v)=>(v-arr[0])/(arr[n-1]-arr[0])*(n-1);
+  const win=(arr,n,c,t)=>{let a=ix(arr,n,c-t),b=ix(arr,n,c+t);if(a>b){const q=a;a=b;b=q;}
+    return [clamp(Math.floor(a),0,n-1),clamp(Math.ceil(b),0,n-1)];};
+  const cy=dc==='y'?pval:anchor.y, cx=dc==='x'?pval:anchor.x, cz=dc==='z'?pval:anchor.z;
+  const yR=win(py,n0,cy,tol.y), xR=win(px,n1,cx,tol.x);
+  const zR=is3?((dc!=='z'&&allZ)?[0,nz-1]:win(pz,nz,cz,tol.z)):[0,0];
+  let m=-Infinity,mr=yR[0],mc=xR[0],mk=zR[0];
+  for(let k=zR[0];k<=zR[1];k++)for(let r=yR[0];r<=yR[1];r++)for(let c=xR[0];c<=xR[1];c++){
+    const v=atP(T,r,c,k); if(v>m){m=v;mr=r;mc=c;mk=k;}}
+  if(!(m>=thr))return null;
+  if(!crossIsMax(T,mr,mc,mk,n0,n1,nz,is3))return null;
+  const fr=refine(i=>atP(T,i,mc,mk),mr,n0), fc=refine(i=>atP(T,mr,i,mk),mc,n1);
+  const out={f1:lerpA(py,n0,fr),f2:lerpA(px,n1,fc),z:null,h:m};
+  if(is3){const fk=refine(i=>atP(T,mr,mc,i),mk,nz);out.z=lerpA(pz,nz,fk);}
+  return out;
+}
+// all true local maxima whose match-dim coordinate is within tol of pval (other dims free)
+function crossSlice(T,dc,pval,tol,thr,cap){
+  const is3=T.ndim===3;
+  const py=T.plane.a0.ppm,px=T.plane.a1.ppm,n0=T.plane.n0,n1=T.plane.n1;
+  const za=is3?T.axes[T.zAxis]:null,pz=is3?za.ppm:null,nz=is3?za.npts:1;
+  const ix=(arr,n,v)=>(v-arr[0])/(arr[n-1]-arr[0])*(n-1);
+  const win=(arr,n,c,t)=>{let a=ix(arr,n,c-t),b=ix(arr,n,c+t);if(a>b){const q=a;a=b;b=q;}
+    return [clamp(Math.floor(a),0,n-1),clamp(Math.ceil(b),0,n-1)];};
+  let rR=[0,n0-1], cR=[0,n1-1], kR=[0,nz-1];
+  if(dc==='y') rR=win(py,n0,pval,tol.y);
+  else if(dc==='x') cR=win(px,n1,pval,tol.x);
+  else if(is3) kR=win(pz,nz,pval,tol.z);
+  const found=[];
+  for(let k=kR[0];k<=kR[1];k++)for(let r=rR[0];r<=rR[1];r++)for(let c=cR[0];c<=cR[1];c++){
+    const v=atP(T,r,c,k); if(v<thr)continue;
+    if(!crossIsMax(T,r,c,k,n0,n1,nz,is3))continue;
+    found.push([v,r,c,k]);
+  }
+  found.sort((a,b)=>b[0]-a[0]);
+  const out=[];
+  for(const [v,r,c,k] of found){
+    const fr=refine(i=>atP(T,i,c,k),r,n0), fc=refine(i=>atP(T,r,i,k),c,n1);
+    const pk={f1:lerpA(py,n0,fr),f2:lerpA(px,n1,fc),z:null,h:v};
+    if(is3){const fk=refine(i=>atP(T,r,c,i),k,nz);pk.z=lerpA(pz,nz,fk);}
+    out.push(pk);
+    if(out.length>=cap)break;
+  }
+  return out;
+}
+// group items {pk,pi} so every "other" dimension stays within tolerance of the cluster seed
+// (membership tested against the fixed seed so the radius is exactly the tolerance; the reported
+// anchor is the running mean of the members, used for the raw-data fill).
+function crossCluster(T,items,others,tol){
+  const cls=[];
+  for(const it of items){
+    let best=null;
+    for(const cl of cls){
+      if(others.every(od=>Math.abs(dimVal(T,it.pk,od)-cl.seed[od])<=tol[od])){best=cl;break;}
+    }
+    if(!best){best={items:[],seed:{},anchor:{},n:0};
+      others.forEach(od=>{best.seed[od]=dimVal(T,it.pk,od);}); cls.push(best);}
+    best.items.push(it); best.n++;
+    others.forEach(od=>{best.anchor[od]=((best.anchor[od]||0)*(best.n-1)+dimVal(T,it.pk,od))/best.n;});
+  }
+  return cls;
+}
+function bestCluster(cls){
+  let best=null,bs=-1;
+  for(const cl of cls){
+    const s=new Set(cl.items.map(x=>x.pi)).size;
+    if(s>bs||(s===bs&&best&&cl.items.length>best.items.length)){best=cl;bs=s;}
+  }
+  return {cl:best,score:bs};
+}
+// core: find ALL groups in a target that match pattern P along dc. A group is a self-consistent
+// cluster (equal on the held dims) whose match-dim values reproduce >= 2 of the pattern values.
+// Returns groups ranked by coverage, then peak count, then height. Each group carries its matched
+// existing peaks, raw-scanned fills, held-dimension anchor and representative z-plane.
+function groupZ(T,dc,g){
+  if(T.ndim!==3)return null;
+  if(dc!=='z') return (g.anchor&&isFinite(g.anchor.z))?g.anchor.z:null;
+  const zs=g.existing.map(p=>p.z).concat(g.addedPk.map(a=>a.pk.z))
+    .filter(v=>v!=null&&isFinite(v)).sort((a,b)=>a-b);
+  return zs.length?zs[zs.length>>1]:null; // z is the match dim: peaks span planes, use the median
+}
+function crossHuntGroups(T,dc,P,tol,thr,useRaw,allZ){
+  allZ=allZ!==false;
+  const others=dimsOf(T).filter(d=>d!==dc);
+  const need=Math.min(2,P.length);
+  const cov=cl=>new Set(cl.items.map(x=>x.pi)).size;
+  // Phase 1 — cluster the existing peaks that hit a pattern value
+  const items=[];
+  for(const q of T.peaks){
+    const v=dimVal(T,q,dc); if(v==null||!isFinite(v))continue;
+    let bi=-1,bd=Infinity;
+    for(let i=0;i<P.length;i++){const dd=Math.abs(v-P[i]); if(dd<=tol[dc]&&dd<bd){bd=dd;bi=i;}}
+    if(bi>=0) items.push({pk:q,pi:bi,q});
+  }
+  let groups=crossCluster(T,items,others,tol).filter(c=>cov(c)>=need).map(cl=>{
+    const anchor={}; others.forEach(od=>anchor[od]=cl.anchor[od]);
+    const byPi=new Map();
+    for(const it of cl.items){const d=Math.abs(dimVal(T,it.q,dc)-P[it.pi]);
+      if(!byPi.has(it.pi)||d<byPi.get(it.pi).d)byPi.set(it.pi,{q:it.q,d});}
+    const existing=[],covered=new Set();
+    for(const [pi,o] of byPi){existing.push(o.q);covered.add(pi);}
+    return {T,dc,anchor,existing,addedPk:[],covered};
+  });
+  // Phase 2a — fill each existing-peak group's missing pattern values at its own anchor
+  if(useRaw) for(const g of groups)
+    for(let i=0;i<P.length;i++){ if(g.covered.has(i))continue;
+      const hit=crossPoint(T,dc,P[i],g.anchor,tol,thr,allZ);
+      if(hit){g.addedPk.push({pk:hit,pi:i});g.covered.add(i);} }
+  // Phase 2b — no existing groups: discover clusters from raw local maxima
+  if(!groups.length&&useRaw){
+    const all=[];
+    for(let i=0;i<P.length;i++) for(const pk of crossSlice(T,dc,P[i],tol,thr,120)) all.push({pk,pi:i});
+    groups=crossCluster(T,all,others,tol).filter(c=>cov(c)>=need).map(cl=>{
+      const anchor={}; others.forEach(od=>anchor[od]=cl.anchor[od]);
+      const byPi=new Map();
+      for(const it of cl.items) if(!byPi.has(it.pi)||it.pk.h>byPi.get(it.pi).pk.h) byPi.set(it.pi,it);
+      const addedPk=[],covered=new Set();
+      for(const [pi,it] of byPi){addedPk.push({pk:it.pk,pi});covered.add(pi);}
+      return {T,dc,anchor,existing:[],addedPk,covered};
+    });
+  }
+  const H=g=>g.addedPk.reduce((s,a)=>s+(a.pk.h||0),0);
+  groups.sort((a,b)=>(b.covered.size-a.covered.size)||
+    ((b.existing.length+b.addedPk.length)-(a.existing.length+a.addedPk.length))||(H(b)-H(a)));
+  for(const g of groups) g.zRep=groupZ(T,dc,g);
+  return groups.slice(0,12);
+}
+// jump a 3D spectrum's displayed plane to a given z ppm (nearest index) and repaint
+function gotoZ(sp,zppm){
+  if(sp.ndim!==3||zppm==null)return;
+  const a=sp.axes[sp.zAxis]; if(!a||!a.ppm)return;
+  let bi=0,bd=Infinity;
+  for(let k=0;k<a.npts;k++){const d=Math.abs(a.ppm[k]-zppm); if(d<bd){bd=d;bi=k;}}
+  sp.zIdx=bi; buildPlane(sp);
+  const meta=sp.el&&sp.el.querySelector('.meta');
+  if(meta)meta.textContent=sp.ndim+'D '+sp.N.join('×')+' · Z '+fmt(zPpm(sp))+' ppm';
+  fullOne(ownerOf(sp));
+}
+function defaultCrossTag(srcSp,srcSel){
+  const asg=srcSel.map(p=>p.asg).find(a=>a&&(a.idx||a.res));
+  if(asg){const t=(asg.res?(AA1[asg.res]||asg.res):'')+(asg.idx||''); if(t)return t;}
+  const lbl=srcSel.map(p=>p.label).find(Boolean);
+  if(lbl)return lbl.split(/\s+/)[0];
+  return 'SS'+crossSeq;
+}
+function openCrossHunt(srcSp){
+  const srcSel=srcSp.peaks.filter(p=>srcSp.sel.has(p.id));
+  if(srcSel.length<2){ statusEl.textContent='Inter-hunt needs at least 2 selected peaks.'; return; }
+  const sds=dimsOf(srcSp);
+  let pdim=sds[0], bestS=-1;
+  for(const d of sds){const s=patternSpread(srcSp,srcSel,d); if(s>bestS){bestS=s;pdim=d;}}
+  const targets=shown().filter(s=>s!==srcSp&&s.plane);
+  const cfgs=targets.map(T=>{
+    const dims=dimsOf(T);
+    const pe=elemOf(dimNuc(srcSp,pdim))||'C';
+    let dc=null; for(const d of dims) if((elemOf(dimNuc(T,d))||'')===pe) dc=d;
+    if(!dc)dc=dims.find(d=>d!=='y')||dims[0];
+    const tol={}; for(const d of dims){const e=elemOf(dimNuc(T,d))||'C',cf=ZTOL[e]||ZTOL.C; tol[d]=cf.def;}
+    return {T,dims,dc,tol,include:true};
+  });
+
+  const m=document.createElement('div'); m.className='modal';
+  const box=document.createElement('div'); box.className='box'; box.style.maxWidth='640px';
+  const h=document.createElement('h3');
+  h.innerHTML='<span class="dot" style="background:'+srcSp.color+'"></span>Inter-hunt — '+srcSp.name;
+  box.appendChild(h);
+
+  const t0=document.createElement('div'); t0.className='axttl'; t0.textContent='Pattern from source ('+srcSel.length+' selected peaks) — take the spread along'; box.appendChild(t0);
+  const segs=document.createElement('div'); segs.className='modes';
+  segs.style.gridTemplateColumns='repeat('+sds.length+',1fr)'; box.appendChild(segs);
+  const prev=document.createElement('div'); prev.className='hint'; prev.style.margin='0'; box.appendChild(prev);
+
+  const lr=document.createElement('div'); lr.className='row';
+  const ll=document.createElement('label'); ll.textContent='Spin-system label'; ll.style.minWidth='108px';
+  const lin=document.createElement('input'); lin.type='text'; lin.style.flex='1';
+  lr.appendChild(ll); lr.appendChild(lin); box.appendChild(lr);
+
+  let P=[];
+  function refreshPattern(){
+    segs.innerHTML='';
+    for(const d of sds){
+      const b=document.createElement('div'); b.className='mode'+(d===pdim?' on':'');
+      b.textContent=dimNuc(srcSp,d)+' ('+d+')';
+      b.addEventListener('click',()=>{pdim=d;refreshPattern();});
+      segs.appendChild(b);
+    }
+    P=patternVals(srcSp,srcSel,pdim);
+    prev.textContent='Pattern along '+dimNuc(srcSp,pdim)+' ('+pdim+'): '+P.map(v=>fmt(v)).join(', ')+
+      '   ·  '+P.length+' value'+(P.length===1?'':'s');
+    lin.placeholder=defaultCrossTag(srcSp,srcSel);
+  }
+  refreshPattern();
+
+  const tt=document.createElement('div'); tt.className='axttl'; tt.textContent='Target spectra — pick the matching dimension and per-dimension tolerance'; box.appendChild(tt);
+  const wrap=document.createElement('div'); wrap.style.cssText='overflow:auto;display:flex;flex-direction:column;gap:8px;padding-right:2px';
+  box.appendChild(wrap);
+  if(!cfgs.length){const e=document.createElement('div');e.className='hint';e.style.margin='0';
+    e.textContent='No other spectra are shown. Open and check at least one more spectrum to cross-hunt into.';wrap.appendChild(e);}
+  for(const cfg of cfgs){
+    const T=cfg.T;
+    const sec=document.createElement('div');
+    sec.style.cssText='border:1px solid var(--line);border-left:3px solid '+T.color+';border-radius:8px;padding:8px 9px';
+    const hd=document.createElement('label'); hd.className='chk'; hd.style.fontWeight='650'; hd.style.marginBottom='4px';
+    const inc=document.createElement('input'); inc.type='checkbox'; inc.checked=cfg.include;
+    inc.addEventListener('change',()=>{cfg.include=inc.checked; sec.style.opacity=inc.checked?'1':'0.5';});
+    hd.appendChild(inc);
+    const hs=document.createElement('span'); hs.innerHTML='<span class="dot" style="display:inline-block;width:8px;height:8px;border-radius:2px;background:'+T.color+';margin-right:5px"></span>'+T.name+' · '+T.ndim+'D';
+    hd.appendChild(hs); sec.appendChild(hd);
+    const t1=document.createElement('div'); t1.className='axttl'; t1.textContent='Match pattern along'; sec.appendChild(t1);
+    const ms=document.createElement('div'); ms.className='modes'; ms.style.gridTemplateColumns='repeat('+cfg.dims.length+',1fr)'; sec.appendChild(ms);
+    function refreshMs(){ ms.innerHTML='';
+      for(const d of cfg.dims){
+        const b=document.createElement('div'); b.className='mode'+(d===cfg.dc?' on':'');
+        b.textContent=dimNuc(T,d)+' ('+d+')';
+        b.addEventListener('click',()=>{cfg.dc=d;refreshMs();});
+        ms.appendChild(b);
+      }
+    }
+    refreshMs();
+    for(const d of cfg.dims){
+      const e=elemOf(dimNuc(T,d))||'C', cf=ZTOL[e]||ZTOL.C;
+      const r=document.createElement('div'); r.className='row'; r.style.margin='5px 0 0';
+      const lb=document.createElement('label'); lb.style.minWidth='108px'; lb.textContent=dimNuc(T,d)+' ('+d+') ±';
+      const sl=document.createElement('input'); sl.type='range'; sl.min=cf.min; sl.max=cf.max; sl.step=cf.step; sl.value=cfg.tol[d];
+      const vv=document.createElement('span'); vv.className='val'; vv.textContent=(+cfg.tol[d]).toFixed(2)+' ppm';
+      sl.addEventListener('input',()=>{cfg.tol[d]=+sl.value; vv.textContent=(+sl.value).toFixed(2)+' ppm';});
+      r.appendChild(lb); r.appendChild(sl); r.appendChild(vv); sec.appendChild(r);
+    }
+    wrap.appendChild(sec);
+  }
+
+  let useRaw=true, allZ=true, nsig=Math.max(srcSp.levelMult||3,3);
+  if(cfgs.some(c=>c.T.ndim===3)){
+    const azRow=document.createElement('label'); azRow.className='chk'; azRow.style.marginTop='2px';
+    const azCb=document.createElement('input'); azCb.type='checkbox'; azCb.checked=allZ;
+    azCb.addEventListener('change',()=>{allZ=azCb.checked;});
+    azRow.appendChild(azCb);
+    azRow.appendChild(document.createTextNode(' Search all Z-planes for 3D targets (don’t limit a held Z-dimension to its tolerance)'));
+    box.appendChild(azRow);
+  }
+  const rawRow=document.createElement('label'); rawRow.className='chk'; rawRow.style.marginTop='2px';
+  const rawCb=document.createElement('input'); rawCb.type='checkbox'; rawCb.checked=useRaw;
+  rawCb.addEventListener('change',()=>{useRaw=rawCb.checked; thRow.style.display=useRaw?'':'none';});
+  rawRow.appendChild(rawCb); rawRow.appendChild(document.createTextNode(' Fill missing pattern values by scanning raw data'));
+  box.appendChild(rawRow);
+  const thRow=document.createElement('div'); thRow.className='row'; thRow.style.margin='0';
+  const thLb=document.createElement('label'); thLb.style.minWidth='108px'; thLb.textContent='Raw-scan threshold';
+  const thSl=document.createElement('input'); thSl.type='range'; thSl.min=1; thSl.max=30; thSl.step=0.5; thSl.value=nsig;
+  const thVv=document.createElement('span'); thVv.className='val'; thVv.textContent=nsig.toFixed(1)+'σ';
+  thSl.addEventListener('input',()=>{nsig=+thSl.value; thVv.textContent=nsig.toFixed(1)+'σ';});
+  thRow.appendChild(thLb); thRow.appendChild(thSl); thRow.appendChild(thVv); box.appendChild(thRow);
+
+  const bar=document.createElement('div'); bar.className='row'; bar.style.margin='0';
+  const run=document.createElement('button'); run.className='btn'; run.textContent='Find & mark';
+  const undo=document.createElement('button'); undo.className='btn ghost'; undo.textContent='Undo last'; undo.disabled=true;
+  const status=document.createElement('div'); status.className='hint'; status.style.margin='0';
+
+  // ---- results navigator (populated after a run) ----
+  const resBox=document.createElement('div');
+  resBox.style.cssText='display:none;flex-direction:column;gap:6px;border-top:1px dashed var(--line);padding-top:8px';
+  const nav=document.createElement('div'); nav.className='row'; nav.style.margin='0';
+  const prevB=document.createElement('button'); prevB.className='btn ghost sm'; prevB.textContent='◀ Prev';
+  const cntS=document.createElement('span'); cntS.className='val'; cntS.style.minWidth='70px'; cntS.style.textAlign='center';
+  const nextB=document.createElement('button'); nextB.className='btn ghost sm'; nextB.textContent='Next ▶';
+  nav.appendChild(prevB); nav.appendChild(cntS); nav.appendChild(nextB);
+  const curInfo=document.createElement('div'); curInfo.className='hint'; curInfo.style.margin='0';
+  const listWrap=document.createElement('div');
+  listWrap.style.cssText='max-height:150px;overflow:auto;display:flex;flex-direction:column;gap:3px';
+  resBox.appendChild(nav); resBox.appendChild(curInfo); resBox.appendChild(listWrap);
+
+  let undoLog=null, results=[], curIdx=-1;
+
+  function floatDialog(){ // let the spectra stay visible + interactive while browsing groups
+    m.style.background='transparent'; m.style.pointerEvents='none';
+    m.style.alignItems='flex-start'; m.style.justifyContent='flex-end';
+    box.style.pointerEvents='auto'; box.style.width='min(440px,44vw)'; box.style.maxHeight='94vh';
+  }
+  function renderList(){
+    listWrap.innerHTML='';
+    results.forEach((r,i)=>{
+      const row=document.createElement('div');
+      row.style.cssText='display:flex;gap:8px;align-items:center;font-size:11px;padding:3px 6px;border-radius:5px;cursor:pointer;'+
+        (i===curIdx?'background:var(--accent);color:#fff':'background:#f2f5f8;color:var(--ink)');
+      row.innerHTML='<span style="width:10px;height:10px;border-radius:2px;background:'+r.T.color+';flex:none"></span>'+
+        '<b>'+r.label+'</b><span style="opacity:.85">'+r.T.name+'</span>'+
+        '<span style="margin-left:auto;font-family:var(--mono)">'+r.covered+'/'+r.total+
+        (r.zRep!=null?(' · z '+fmt(r.zRep)):'')+'</span>';
+      row.addEventListener('click',()=>selectResult(i));
+      listWrap.appendChild(row);
+    });
+  }
+  function selectResult(i){
+    if(i<0||i>=results.length)return;
+    curIdx=i; const r=results[i];
+    r.T.sel.clear(); r.peakIds.forEach(id=>r.T.sel.add(id));
+    focus=r.T; specs.forEach(s=>{if(s.el)s.el.classList.toggle('focus',s===r.T);});
+    if(r.T.ndim===3&&r.zRep!=null) gotoZ(r.T,r.zRep);
+    else { const o=ownerOf(r.T); if(o&&o.gA){renderOverlay(o);paint(o);} }
+    if(alignMode==='stack')fullAll();
+    refreshFocusBox(); refreshSpecList(); refreshPkPanels();
+    cntS.textContent=(i+1)+' / '+results.length;
+    curInfo.textContent='Group “'+r.label+'” in '+r.T.name+' — '+r.covered+'/'+r.total+' pattern values'+
+      (r.zRep!=null?(', Z-plane set to '+fmt(r.zRep)+' ppm'):'')+' · '+r.peakIds.length+' peak'+(r.peakIds.length===1?'':'s')+' selected.';
+    prevB.disabled=(i<=0); nextB.disabled=(i>=results.length-1);
+    renderList();
+  }
+  function revert(){
+    const aff=new Set(); if(!undoLog)return aff;
+    for(const a of undoLog.added){ a.T.peaks=a.T.peaks.filter(p=>p.id!==a.id); a.T.sel.delete(a.id); aff.add(a.T); }
+    for(const r of undoLog.relabel){ r.pk.label=r.prev; if(!r.wasSel)r.T.sel.delete(r.pk.id); aff.add(r.T); }
+    undoLog=null; return aff;
+  }
+
+  run.addEventListener('click',()=>{
+    try{
+      if(!P.length){status.textContent='Nothing to match — the selected peaks share one value on this dimension.';return;}
+      revert(); // clear a previous run so re-running with new settings doesn't stack duplicates
+      const baseTag=(lin.value.trim()||defaultCrossTag(srcSp,srcSel));
+      const found=[], parts=[];
+      for(const cfg of cfgs){
+        if(!cfg.include)continue;
+        const T=cfg.T, thr=(T.sigma||0)*nsig;
+        const gs=crossHuntGroups(T,cfg.dc,P,cfg.tol,thr,useRaw,allZ);
+        parts.push(T.name+': '+gs.length+' group'+(gs.length===1?'':'s'));
+        for(const g of gs) found.push(g);
+      }
+      if(!found.length){
+        status.textContent='No matching pattern found. '+parts.join(' · ');
+        results=[]; curIdx=-1; resBox.style.display='none'; undo.disabled=true; return;
+      }
+      undoLog={added:[],relabel:[]}; results=[];
+      const byT=new Map(); for(const g of found){ if(!byT.has(g.T))byT.set(g.T,[]); byT.get(g.T).push(g); }
+      for(const [T,gs] of byT){
+        gs.forEach((g,gi)=>{
+          const tag=baseTag+(gs.length>1?('#'+(gi+1)):'');
+          const ids=[];
+          for(const q of g.existing){ undoLog.relabel.push({T,pk:q,prev:q.label,wasSel:T.sel.has(q.id)});
+            if(!(q.asg&&q.label)) q.label=tag; ids.push(q.id); }
+          for(const a of g.addedPk){ const np={id:pkSeq++,f1:a.pk.f1,f2:a.pk.f2,z:a.pk.z,label:tag,asg:null};
+            T.peaks.push(np); undoLog.added.push({T,id:np.id}); ids.push(np.id); }
+          results.push({T,label:tag,peakIds:ids,covered:g.covered.size,total:P.length,zRep:g.zRep});
+        });
+      }
+      if(/^SS\d+$/.test(baseTag)&&baseTag==='SS'+crossSeq) crossSeq++;
+      undo.disabled=false;
+      const totalPk=results.reduce((s,r)=>s+r.peakIds.length,0);
+      status.textContent='Found '+results.length+' group'+(results.length===1?'':'s')+' ('+totalPk+' peak'+
+        (totalPk===1?'':'s')+'). '+parts.join(' · ')+'  —  step with ◀ ▶ (or ↑ ↓); the Z-plane follows each group.';
+      resBox.style.display='flex'; floatDialog(); selectResult(0);
+    }catch(err){ status.textContent='Inter-hunt failed: '+err.message;
+      logErr('inter-hunt ['+srcSp.name+']', err.message, (err.stack||'').split('\n')[1]||''); }
+  });
+  prevB.addEventListener('click',()=>selectResult(curIdx-1));
+  nextB.addEventListener('click',()=>selectResult(curIdx+1));
+  undo.addEventListener('click',()=>{
+    const affected=revert();
+    status.textContent='Reverted the last inter-hunt.'; undo.disabled=true;
+    results=[]; curIdx=-1; resBox.style.display='none';
+    refreshPkPanels();
+    for(const T of affected){ const o=ownerOf(T); if(o&&o.gA){renderOverlay(o);paint(o);} }
+    if(alignMode==='stack')fullAll();
+  });
+  const close=document.createElement('button'); close.className='btn ghost'; close.textContent='Close'; close.style.marginLeft='auto';
+  const shut=()=>{m.remove();document.removeEventListener('keydown',esc);};
+  const esc=e=>{
+    if(e.key==='Escape'){shut();return;}
+    if(!results.length)return;
+    const tn=(e.target&&e.target.tagName||'').toLowerCase();
+    if(tn==='input'||tn==='select'||tn==='textarea')return;
+    if(e.key==='ArrowDown'||e.key==='ArrowRight'){e.preventDefault();selectResult(Math.min(curIdx+1,results.length-1));}
+    else if(e.key==='ArrowUp'||e.key==='ArrowLeft'){e.preventDefault();selectResult(Math.max(curIdx-1,0));}
+  };
+  close.addEventListener('click',shut); document.addEventListener('keydown',esc);
+  bar.appendChild(run); bar.appendChild(undo); bar.appendChild(close);
+  box.appendChild(bar); box.appendChild(status); box.appendChild(resBox);
+  m.appendChild(box); document.body.appendChild(m);
+  m.addEventListener('mousedown',e=>{ if(e.target===m) shut(); });
+}
+
+/* ================= panes ================= */
+function layout(){
+  const sh=shown();
+  stage.innerHTML='';
+  if(!sh.length){ stage.className='stage none';
+    stage.innerHTML='<span>Open a <b>.ucsf</b> file, then check it in the Spectra list.</span>';
+    refreshPkPanels(); return; }
+  stage.className='stage';
+  if(!focus||!focus.shown)focus=sh[0];
+  let owners;
+  if(alignMode==='stack'){
+    owners=[focus];
+    stage.style.gridTemplateColumns='1fr';
+  }else if(alignMode==='vertical'){
+    owners=sh; stage.style.gridTemplateColumns='1fr';
+  }else{
+    owners=sh; stage.style.gridTemplateColumns='repeat('+sh.length+',minmax(0,1fr))';
+  }
+  stage.style.gridAutoRows='minmax(0,1fr)';
+  paneOwners=owners;
+  for(const sp of owners){
+    const pane=document.createElement('div'); pane.className='pane'+(focus===sp?' focus':'');
+    const t=document.createElement('div'); t.className='ptitle';
+    const names = alignMode==='stack'
+      ? sh.map(x=>'<span class="dot" style="background:'+x.color+'"></span><span>'+x.name+'</span>').join('')
+      : '<span class="dot" style="background:'+sp.color+'"></span><span>'+sp.name+'</span>';
+    t.innerHTML=names+'<span class="meta">'+sp.ndim+'D '+sp.N.join('×')+
+      (sp.ndim===3?' · Z '+fmt(zPpm(sp))+' ppm':'')+
+      (alignMode==='stack'&&sh.length>1?' · stacked ×'+sh.length:'')+'</span>';
+    const wrap=document.createElement('div'); wrap.className='cvwrap';
+    const cv=document.createElement('canvas');
+    const ro=document.createElement('div'); ro.className='readout';
+    wrap.appendChild(cv); wrap.appendChild(ro);
+    pane.appendChild(t); pane.appendChild(wrap); stage.appendChild(pane);
+    sp.el=pane; sp.cv=cv; sp.ctx=cv.getContext('2d'); sp.wrap=wrap; sp.ro=ro;
+    sp.offS=document.createElement('canvas'); sp.gS=sp.offS.getContext('2d');
+    sp.offA=document.createElement('canvas'); sp.gA=sp.offA.getContext('2d');
+    attach(sp);
+    pane.addEventListener('mousedown',()=>setFocus(sp),true);
+  }
+  resizeAll(); refreshPkPanels();
+}
+function resizeAll(){
+  for(const sp of paneOwners){
+    const r=sp.wrap.getBoundingClientRect();
+    sp.dpr=Math.min(window.devicePixelRatio||1,2);
+    for(const c of [sp.cv,sp.offS,sp.offA]){c.width=Math.round(r.width*sp.dpr);c.height=Math.round(r.height*sp.dpr);}
+    sp.ctx.setTransform(sp.dpr,0,0,sp.dpr,0,0);
+    sp.plot={x:M.l,y:M.t,w:Math.max(10,r.width-M.l-M.r),h:Math.max(10,r.height-M.t-M.b)};
+    if(!sp.view)defaultView(sp);
+    fullOne(sp);
+  }
+}
+window.addEventListener('resize',resizeAll);
+function setFocus(sp){ if(focus===sp)return; focus=sp;
+  specs.forEach(s=>{if(s.el)s.el.classList.toggle('focus',s===sp);});
+  refreshFocusBox(); refreshSpecList(); }
+
+function attach(sp){
+  const cv=sp.cv;
+  const pos=e=>{const r=cv.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top];};
+  const zone=(mx,my)=>{const P=sp.plot;
+    const inX=mx>=P.x&&mx<=P.x+P.w, inY=my>=P.y&&my<=P.y+P.h;
+    if(inX&&inY)return 'plot'; if(inX&&my>P.y+P.h)return 'xaxis'; if(inY&&mx<P.x)return 'yaxis'; return 'none';};
+  cv.addEventListener('mousedown',e=>{const [mx,my]=pos(e);
+    if(zone(mx,my)!=='plot'||!sp.view)return; sp.drag={x0:mx,y0:my,x1:mx,y1:my,moved:false};});
+  cv.addEventListener('mousemove',e=>{
+    const [mx,my]=pos(e), z=zone(mx,my);
+    if(z==='plot'&&sp.view){
+      hover={sp,f1:IY(sp,my),f2:IX(sp,mx),x:mx,y:my};
+      let t='F1 '+fmt(hover.f1)+'   F2 '+fmt(hover.f2);
+      if(sp.ndim===3)t+='\nZ  '+fmt(zPpm(sp))+' ('+sp.axes[sp.zAxis].nuc+')';
+      sp.ro.textContent=t; sp.ro.style.opacity=1;
+    }else{ sp.ro.style.opacity=0; if(hover&&hover.sp===sp)hover=null; }
+    if(sp.drag){sp.drag.x1=mx;sp.drag.y1=my;
+      if(Math.abs(mx-sp.drag.x0)>3||Math.abs(my-sp.drag.y0)>3)sp.drag.moved=true;}
+    paintAll();
+  });
+  cv.addEventListener('mouseleave',()=>{sp.ro.style.opacity=0;sp.drag=null;
+    if(hover&&hover.sp===sp)hover=null; paintAll();});
+  cv.addEventListener('mouseup',e=>{
+    if(!sp.drag)return;
+    const [mx,my]=pos(e); sp.drag.x1=mx;sp.drag.y1=my;
+    const d=sp.drag; sp.drag=null; if(!sp.view){paint(sp);return;}
+    setFocus(sp);
+    try{
+      if(mouseMode==='zoom'){
+        if(d.moved){
+          const xA=IX(sp,Math.min(d.x0,d.x1)),xB=IX(sp,Math.max(d.x0,d.x1));
+          const yA=IY(sp,Math.min(d.y0,d.y1)),yB=IY(sp,Math.max(d.y0,d.y1));
+          sp.view={xHi:Math.max(xA,xB),xLo:Math.min(xA,xB),yHi:Math.max(yA,yB),yLo:Math.min(yA,yB)};
+          clampView(sp); fullOne(sp); syncViews(sp); return;
+        }
+      }else if(mouseMode==='pick'){
+        if(d.moved){const got=pickBox(sp,d.x0,d.y0,d.x1,d.y1); if(got.length)addPeaks(sp,got);}
+        else{
+          let best=null,bd=1e9;
+          for(const pk of visiblePeaks(sp)){
+            const dd=Math.hypot(TX(sp,pk.f2)-d.x0,TY(sp,pk.f1)-d.y0);
+            if(dd<bd){bd=dd;best=pk;}}
+          if(best&&bd<12){ if(!e.shiftKey&&!sp.sel.has(best.id))sp.sel.clear();
+            sp.sel.has(best.id)?sp.sel.delete(best.id):sp.sel.add(best.id); refreshPkPanels(); }
+          else{const p=pick(sp,d.x0,d.y0,10); if(p)addPeaks(sp,[p]);}
+        }
+        redraw(sp);return;
+      }else{
+        if(d.moved){
+          const xa=Math.min(d.x0,d.x1),xb=Math.max(d.x0,d.x1),ya=Math.min(d.y0,d.y1),yb=Math.max(d.y0,d.y1);
+          if(!e.shiftKey)sp.sel.clear();
+          for(const pk of visiblePeaks(sp)){const px=TX(sp,pk.f2),py=TY(sp,pk.f1);
+            if(px>=xa&&px<=xb&&py>=ya&&py<=yb)sp.sel.add(pk.id);}
+        }else{
+          let best=null,bd=1e9;
+          for(const pk of visiblePeaks(sp)){
+            const dd=Math.hypot(TX(sp,pk.f2)-d.x0,TY(sp,pk.f1)-d.y0);
+            if(dd<bd){bd=dd;best=pk;}}
+          if(best&&bd<12){ if(!e.shiftKey&&!sp.sel.has(best.id))sp.sel.clear();
+            sp.sel.has(best.id)?sp.sel.delete(best.id):sp.sel.add(best.id); }
+          else if(!e.shiftKey)sp.sel.clear();
+        }
+        refreshPkPanels();redraw(sp);return;
+      }
+    }catch(err){ logErr('mouseup ['+sp.name+']',err.message,(err.stack||'').split('\n')[1]||''); }
+    paint(sp);
+  });
+  let raf=false;
+  cv.addEventListener('wheel',e=>{
+    if(!sp.view)return; e.preventDefault();
+    const [mx,my]=pos(e), z=zone(mx,my); if(z==='none')return;
+    const f=e.deltaY<0?1/1.15:1.15, v=sp.view;
+    if(z==='xaxis'||z==='plot'){const xc=IX(sp,mx);v.xHi=xc+(v.xHi-xc)*f;v.xLo=xc+(v.xLo-xc)*f;}
+    if(z==='yaxis'||z==='plot'){const yc=IY(sp,my);v.yHi=yc+(v.yHi-yc)*f;v.yLo=yc+(v.yLo-yc)*f;}
+    clampView(sp);
+    if(!raf){raf=true;requestAnimationFrame(()=>{raf=false;fullOne(sp);syncViews(sp);});}
+  },{passive:false});
+}
+
+/* ================= spectra list / focus controls ================= */
+const speclist=document.getElementById('speclist'), focusbox=document.getElementById('focusbox');
+const zwrap=document.getElementById('zwrap'), zaxisSel=document.getElementById('zaxis');
+const zsl=document.getElementById('zslider'), zval=document.getElementById('zval');
+function zElem(sp){return sp.ndim===3?(elemOf(sp.axes[sp.zAxis].nuc)||'C'):null;}
+function curZTol(sp){const e=zElem(sp); if(!e)return 0;
+  const v=sp.zTol&&sp.zTol[e]; return (typeof v==='number'&&isFinite(v))?v:(ZTOL[e]||ZTOL.C).def;}
+function refreshSpecList(){
+  speclist.style.display=specs.length?'':'none';
+  speclist.innerHTML='';
+  specs.forEach(sp=>{
+    const d=document.createElement('div'); d.className='item'+(focus===sp?' on':'');
+    const cb=document.createElement('input'); cb.type='checkbox'; cb.checked=sp.shown;
+    cb.style.accentColor=sp.color;
+    cb.addEventListener('click',ev=>{ev.stopPropagation();
+      sp.shown=cb.checked; if(!sp.shown&&focus===sp)focus=null;
+      if(sp.shown&&!focus)focus=sp;
+      layout(); refreshFocusBox(); refreshSpecList();});
+    d.appendChild(cb);
+    const sv=document.createElement('span'); sv.className='sv'; sv.textContent='\u2913';
+    sv.title='Save session (.save): source path, display settings and peak list';
+    sv.addEventListener('click',ev=>{ev.stopPropagation(); saveSession(sp);});
+    d.appendChild(sv);
+    const dot=document.createElement('span'); dot.className='dot'; dot.style.background=sp.color; d.appendChild(dot);
+    const nm=document.createElement('span'); nm.textContent=sp.name; d.appendChild(nm);
+    const meta=document.createElement('span'); meta.style.color='var(--muted)';
+    meta.textContent=sp.ndim+'D'; d.appendChild(meta);
+    const x=document.createElement('span'); x.className='x'; x.textContent='×'; x.title='Unload';
+    x.addEventListener('click',ev=>{ev.stopPropagation(); unload(sp);});
+    d.appendChild(x);
+    d.addEventListener('click',()=>{ if(sp.shown)setFocus(sp); });
+    speclist.appendChild(d);
+  });
+}
+function unload(sp){
+  const i=specs.indexOf(sp); if(i<0)return;
+  specs.splice(i,1);
+  sp.data=null; sp.plane=null;
+  if(focus===sp) focus=specs.find(s=>s.shown)||null;
+  layout(); refreshFocusBox(); refreshSpecList();
+  statusEl.textContent=specs.length?specs.length+' spectra loaded':'No spectrum loaded.';
+}
+function refreshFocusBox(){
+  const sp=focus;
+  focusbox.style.display=sp?'':'none';
+  if(!sp)return;
+  document.getElementById('lev').value=sp.levelMult;
+  document.getElementById('levval').textContent=sp.levelMult.toFixed(1)+'σ';
+  if(sp.ndim===3){
+    zwrap.style.display='';
+    zaxisSel.innerHTML=sp.axes.map((a,i)=>'<option value="'+i+'">'+a.nuc+' (axis '+i+', '+a.npts+' pts)</option>').join('');
+    zaxisSel.value=String(sp.zAxis);
+    const za=sp.axes[sp.zAxis];
+    zsl.min=0; zsl.max=Math.max(0,za.npts-1); zsl.value=sp.zIdx;
+    // Z readout/entry is in ppm; step ≈ one plane so ↑/↓ moves plane by plane
+    if(za.npts>1){ zval.step=Math.abs(za.ppm[1]-za.ppm[0]).toPrecision(3);
+      zval.min=Math.min(za.ppm[0],za.ppm[za.npts-1]); zval.max=Math.max(za.ppm[0],za.ppm[za.npts-1]); }
+    const zp=zPpm(sp); zval.value=(zp!=null)?zp.toFixed(3):'';
+  }else zwrap.style.display='none';
+}
+function zMeta(sp){ const meta=sp.el&&sp.el.querySelector('.meta');
+  if(meta)meta.textContent=sp.ndim+'D '+sp.N.join('×')+' · Z '+fmt(zPpm(sp))+' ppm'; }
+zaxisSel.addEventListener('change',()=>{const sp=focus; if(!sp||sp.ndim!==3)return;
+  sp.zAxis=+zaxisSel.value; sp.zIdx=Math.min(sp.zIdx,sp.axes[sp.zAxis].npts-1);
+  buildPlane(sp); defaultView(sp); refreshFocusBox(); layout();});
+zsl.addEventListener('input',()=>{const sp=focus; if(!sp||sp.ndim!==3)return;
+  sp.zIdx=clamp(+zsl.value|0,0,sp.axes[sp.zAxis].npts-1);
+  const zp=zPpm(sp); zval.value=(zp!=null)?zp.toFixed(3):'';
+  zMeta(sp); buildPlane(sp); fullOne(ownerOf(sp)); refreshPkPanels();});
+// type a ppm → snap to the nearest plane
+zval.addEventListener('input',()=>{const sp=focus; if(!sp||sp.ndim!==3)return;
+  const v=parseFloat(zval.value); if(!isFinite(v))return;
+  const a=sp.axes[sp.zAxis]; let bi=0,bd=Infinity;
+  for(let k=0;k<a.npts;k++){const d=Math.abs(a.ppm[k]-v); if(d<bd){bd=d;bi=k;}}
+  sp.zIdx=bi; zsl.value=bi; zMeta(sp); buildPlane(sp); fullOne(ownerOf(sp)); refreshPkPanels();});
+zval.addEventListener('change',()=>{const sp=focus; if(sp&&sp.ndim===3){const zp=zPpm(sp); if(zp!=null)zval.value=zp.toFixed(3);}});
+document.getElementById('lev').addEventListener('input',e=>{const sp=focus; if(!sp)return;
+  sp.levelMult=clamp(+e.target.value,0.1,20);
+  document.getElementById('levval').textContent=sp.levelMult.toFixed(1)+'σ'; fullOne(sp);});
+document.getElementById('reset').addEventListener('click',()=>{const sp=focus; if(!sp)return;
+  defaultView(sp); fullOne(sp); syncViews(sp);});
+
+/* ================= color scheme (accent) picker ================= */
+const ACCENT_DEFAULT='#0f766e';
+function hexToRgb(h){h=String(h).replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');
+  return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+const toHex=(r,g,b)=>'#'+[r,g,b].map(v=>clamp(v|0,0,255).toString(16).padStart(2,'0')).join('');
+function currentAccent(){const v=css('--accent')||ACCENT_DEFAULT;
+  if(v[0]==='#')return hexToRgb(v);
+  const m=v.match(/(\d+)[ ,]+(\d+)[ ,]+(\d+)/); return m?[+m[1],+m[2],+m[3]]:hexToRgb(ACCENT_DEFAULT);}
+function setAccent(r,g,b){document.documentElement.style.setProperty('--accent',toHex(r,g,b));
+  if(paneOwners&&paneOwners.length)fullAll();}
+function openColorScheme(){
+  let [r,g,b]=currentAccent();
+  const m=document.createElement('div'); m.className='modal';
+  const box=document.createElement('div'); box.className='box'; box.style.maxWidth='380px';
+  const h=document.createElement('h3'); h.textContent='Color scheme'; box.appendChild(h);
+  const sw=document.createElement('div'); sw.style.cssText='height:34px;border-radius:8px;border:1px solid var(--line)';
+  const info=document.createElement('div'); info.className='hint'; info.style.margin='0';
+  box.appendChild(sw); box.appendChild(info);
+  const upSw=()=>{sw.style.background=toHex(r,g,b);
+    info.textContent='Accent '+toHex(r,g,b)+'  ·  rgb('+(r|0)+', '+(g|0)+', '+(b|0)+')';};
+  const mkS=(name,val,set)=>{const row=document.createElement('div');row.className='row';row.style.margin='6px 0 0';
+    const lb=document.createElement('label');lb.textContent=name;lb.style.minWidth='18px';
+    const sl=document.createElement('input');sl.type='range';sl.min=0;sl.max=255;sl.step=1;sl.value=val;
+    const vv=document.createElement('span');vv.className='val';vv.style.minWidth='34px';vv.textContent=val;
+    sl.addEventListener('input',()=>{set(+sl.value);vv.textContent=sl.value;setAccent(r,g,b);upSw();});
+    row.appendChild(lb);row.appendChild(sl);row.appendChild(vv);box.appendChild(row);};
+  mkS('R',r,v=>r=v); mkS('G',g,v=>g=v); mkS('B',b,v=>b=v); upSw();
+  const bar=document.createElement('div'); bar.className='row'; bar.style.margin='8px 0 0';
+  const shut=()=>{m.remove();document.removeEventListener('keydown',esc);};
+  const esc=e=>{if(e.key==='Escape')shut();};
+  const rst=document.createElement('button'); rst.className='btn ghost'; rst.textContent='Reset default';
+  rst.addEventListener('click',()=>{const d=hexToRgb(ACCENT_DEFAULT);setAccent(d[0],d[1],d[2]);shut();openColorScheme();});
+  const done=document.createElement('button'); done.className='btn'; done.textContent='Done'; done.style.marginLeft='auto';
+  done.addEventListener('click',shut); document.addEventListener('keydown',esc);
+  bar.appendChild(rst); bar.appendChild(done); box.appendChild(bar);
+  m.appendChild(box); document.body.appendChild(m);
+  m.addEventListener('mousedown',e=>{if(e.target===m)shut();});
+}
+document.getElementById('colorscheme').addEventListener('click',openColorScheme);
+
+/* ================= file loading ================= */
+document.getElementById('file').addEventListener('change',ev=>{
+  const files=[...ev.target.files]; if(!files.length)return;
+  statusEl.classList.remove('warn'); statusEl.textContent='Reading '+files.length+' file(s) …';
+  let done=0, ok=0, failed=0;
+  files.forEach(f=>{
+    const fr=new FileReader();
+    fr.onload=()=>setTimeout(()=>{
+      try{
+        const s=parseUcsf(fr.result);
+        s.name=f.name.replace(/\.ucsf$/i,''); s.fileName=f.name; s.filePath=f.name;
+        s.color=SPEC_COLORS[specs.length%SPEC_COLORS.length];
+        s.shown=true; s.zAxis=0; s.zIdx=Math.floor(s.N[0]/2);
+        s.zTol={H:ZTOL.H.def,C:ZTOL.C.def,N:ZTOL.N.def};
+        s.levelMult=3.0; s.peaks=[]; s.sel=new Set(); s.view=null;
+        buildPlane(s); defaultView(s);
+        specs.push(s); if(!focus)focus=s; ok++;
+      }catch(err){
+        failed++;
+        const hdr=describe(fr.result);
+        logErr('load "'+f.name+'"', err.message, hdr);
+      }
+      if(++done===files.length){
+        statusEl.textContent=(ok?ok+' loaded':'')+(failed?(ok?', ':'')+failed+' failed — see Spectra panel':'');
+        if(failed)statusEl.classList.add('warn');
+        layout(); refreshSpecList(); refreshFocusBox();
+      }
+    },10);
+    fr.onerror=()=>{failed++;logErr('read "'+f.name+'"','FileReader could not read the file.');
+      if(++done===files.length){layout();refreshSpecList();refreshFocusBox();}};
+    fr.readAsArrayBuffer(f);
+  });
+  ev.target.value='';
+});
+function describe(buf){
+  try{
+    if(!buf||buf.byteLength<20)return 'file size '+(buf?buf.byteLength:0)+' bytes';
+    const dv=new DataView(buf);
+    const magic=new TextDecoder().decode(new Uint8Array(buf,0,8));
+    const nd=dv.getUint8(10), nc=dv.getUint8(11), ver=dv.getUint8(13);
+    let s='magic="'+magic+'" ndim='+nd+' ncomp='+nc+' ver='+ver+' size='+buf.byteLength;
+    for(let i=0;i<Math.min(nd,3);i++){const b=180+i*128;
+      if(b+32>buf.byteLength)break;
+      const nuc=new TextDecoder().decode(new Uint8Array(buf,b,6)).replace(/\0.*$/,'');
+      s+='\n  axis'+i+': nuc="'+nuc+'" npts='+dv.getUint32(b+8,false)+
+         ' tile='+dv.getUint32(b+16,false)+' sf='+dv.getFloat32(b+20,false).toFixed(3)+
+         ' sw='+dv.getFloat32(b+24,false).toFixed(1)+' cen='+dv.getFloat32(b+28,false).toFixed(3);}
+    return s;
+  }catch(e){ return 'could not read header: '+e.message; }
+}
+
+/* ================= mouse mode / crosshair ================= */
+const HINTS={zoom:'Drag a box to zoom in. Wheel over the X or Y axis zooms that axis only.',
+  pick:'Click to pick the nearest maximum (in 3D, across Z too), or drag a box to pick many. Clicking an existing peak selects it.',
+  select:'Click a peak to select it (Shift-click to add), or drag a box to select many.'};
+document.querySelectorAll('.modes .mode[data-mode]').forEach(m=>m.addEventListener('click',()=>{
+  document.querySelectorAll('.mode[data-mode]').forEach(x=>x.classList.remove('on'));
+  m.classList.add('on'); mouseMode=m.dataset.mode;
+  document.getElementById('modehint').innerHTML=HINTS[mouseMode];}));
+document.querySelectorAll('#alignmodes .mode').forEach(m=>m.addEventListener('click',()=>{
+  document.querySelectorAll('#alignmodes .mode').forEach(x=>x.classList.remove('on'));
+  m.classList.add('on'); alignMode=m.dataset.align; layout();}));
+document.getElementById('cross').addEventListener('change',e=>{showCross=e.target.checked;paintAll();});
+document.getElementById('symcross').addEventListener('change',e=>{symCross=e.target.checked;paintAll();});
+document.getElementById('diag').addEventListener('change',e=>{showDiag=e.target.checked;fullAll();});
+
+/* ================= overlay axes ================= */
+function offCfg(e){return e==='H'?{min:-3,max:3,step:0.02}:{min:-10,max:10,step:0.1};}
+function buildSubs(axis){
+  const elem=axis==='x'?xElem:yElem, cont=document.getElementById(axis+'subs');
+  const set=axis==='x'?xAtoms:yAtoms; set.clear(); cont.innerHTML='';
+  const all=document.createElement('label'); all.className='chk all';
+  all.innerHTML='<input type="checkbox"> all'; const allCb=all.querySelector('input');
+  allCb.addEventListener('change',()=>{cont.querySelectorAll('input.sub').forEach(cb=>{
+    cb.checked=allCb.checked; if(allCb.checked)set.add(cb.value); else set.delete(cb.value);});overlayAll();});
+  cont.appendChild(all);
+  (ATOMS_BY_ELEM[elem]||[]).forEach(a=>{
+    const w=document.createElement('label'); w.className='chk';
+    w.innerHTML='<input type="checkbox" class="sub" value="'+a+'"> '+a;
+    const cb=w.querySelector('input');
+    cb.addEventListener('change',()=>{cb.checked?set.add(a):set.delete(a);
+      allCb.checked=[...cont.querySelectorAll('input.sub')].every(x=>x.checked);overlayAll();});
+    cont.appendChild(w);});
+  refreshPkPanels();
+}
+function setElem(axis,elem){
+  if(axis==='x')xElem=elem; else yElem=elem;
+  document.getElementById(axis+'elem').value=elem;
+  buildSubs(axis);
+  const c=offCfg(elem), sl=document.getElementById(axis+'off');
+  sl.min=c.min;sl.max=c.max;sl.step=c.step;sl.value=0;
+  if(axis==='x'){xOff=0;document.getElementById('xoffv').textContent='0.0';}
+  else{yOff=0;document.getElementById('yoffv').textContent='0.0';}
+  overlayAll();
+}
+document.getElementById('xelem').addEventListener('change',e=>setElem('x',e.target.value));
+document.getElementById('yelem').addEventListener('change',e=>setElem('y',e.target.value));
+
+/* ================= statistics controls ================= */
+document.getElementById('sigmode').addEventListener('change',e=>{
+  sigMode=e.target.checked;
+  document.getElementById('sigbox').style.display=sigMode?'':'none';
+  document.getElementById('pctbox').style.display=sigMode?'none':'';
+  overlayAll();});
+const bind=(id,fn)=>document.getElementById(id).addEventListener('input',fn);
+bind('d1',e=>{d1=+e.target.value;document.getElementById('d1v').textContent=d1.toFixed(1)+'σ';overlayAll();});
+bind('d2',e=>{d2=+e.target.value;document.getElementById('d2v').textContent=d2.toFixed(1)+'σ';overlayAll();});
+bind('px',e=>{lvlX=+e.target.value;document.getElementById('pxv').textContent=lvlX+'%';overlayAll();});
+bind('py',e=>{lvlY=+e.target.value;document.getElementById('pyv').textContent=lvlY+'%';overlayAll();});
+bind('xoff',e=>{xOff=+e.target.value;document.getElementById('xoffv').textContent=xOff.toFixed(xElem==='H'?2:1);overlayAll();});
+bind('yoff',e=>{yOff=+e.target.value;document.getElementById('yoffv').textContent=yOff.toFixed(yElem==='H'?2:1);overlayAll();});
+document.getElementById('lbl').addEventListener('change',e=>{showLabels=e.target.checked;overlayAll();});
+
+/* ================= residue chips ================= */
+const chipsEl=document.getElementById('chips');
+function refreshChips(){
+  const any=activeRes.size>0;
+  const ar=document.getElementById('allres');
+  if(ar){ar.checked=activeRes.size===AA.length;
+    ar.indeterminate=activeRes.size>0&&activeRes.size<AA.length;}
+  chipsEl.querySelectorAll('.chip').forEach(ch=>{
+    const res=ch.dataset.res,col=RES_COLORS[res],on=activeRes.has(res);
+    ch.style.borderColor=col; ch.style.background=on?col:'#fff'; ch.style.color=on?'#fff':col;
+    ch.classList.toggle('dim',any&&!on);});
+}
+AA.forEach(res=>{
+  const ch=document.createElement('div');ch.className='chip';ch.dataset.res=res;ch.title=res;
+  ch.innerHTML=AA1[res]+'<span class="three">'+res+'</span>';
+  ch.addEventListener('mouseenter',()=>{hoverRes=res;overlayAll();});
+  ch.addEventListener('mouseleave',()=>{hoverRes=null;overlayAll();});
+  ch.addEventListener('click',()=>{activeRes.has(res)?activeRes.delete(res):activeRes.add(res);
+    refreshChips();overlayAll();});
+  chipsEl.appendChild(ch);});
+document.getElementById('allres').addEventListener('change',e=>{
+  activeRes.clear(); if(e.target.checked)AA.forEach(r=>activeRes.add(r));
+  refreshChips(); overlayAll();});
+refreshChips();
+
+/* ================= FASTA ================= */
+const seqbox=document.getElementById('seqbox');
+function resAt(num){ const p=num-seqStart; return (seq&&p>=0&&p<seq.length)?ONE2THREE[seq[p]]:null; }
+// residue number -> {sp,pk} for any residue whose CA has been assigned in any spectrum
+function residueCAmap(){
+  const map=new Map();
+  for(const sp of specs) for(const pk of sp.peaks){ const g=pk.asg; if(!g)continue;
+    const base=parseInt(g.idx,10); if(!isFinite(base))continue;
+    const dims=[['a1','i1'],['a2','i2'],['a3','i3']];
+    for(const [ak,ik] of dims) if((g[ak]||'')==='CA'){ const num=base+(g[ik]|0);
+      if(!map.has(num))map.set(num,{sp,pk}); }
+  }
+  return map;
+}
+// jump a spectrum to the plane holding a peak (incl. Z) and centre + select it
+function jumpToPeak(sp,pk){
+  const wasShown=sp.shown; sp.shown=true; focus=sp;
+  if(!wasShown){ layout(); refreshSpecList(); }
+  else specs.forEach(s=>{if(s.el)s.el.classList.toggle('focus',s===sp);});
+  if(sp.ndim===3&&pk.z!=null){ const a=sp.axes[sp.zAxis];
+    if(a&&a.ppm){ let bi=0,bd=Infinity; for(let k=0;k<a.npts;k++){const d=Math.abs(a.ppm[k]-pk.z);if(d<bd){bd=d;bi=k;}}
+      sp.zIdx=bi; buildPlane(sp);} }
+  if(sp.plane){ const sx=sp.view?Math.abs(sp.view.xHi-sp.view.xLo):20, sy=sp.view?Math.abs(sp.view.yHi-sp.view.yLo):20;
+    sp.view={xHi:pk.f2+sx/2,xLo:pk.f2-sx/2,yHi:pk.f1+sy/2,yLo:pk.f1-sy/2}; clampView(sp); }
+  sp.sel.clear(); sp.sel.add(pk.id);
+  refreshFocusBox(); refreshPkPanels(); fullOne(ownerOf(sp));
+}
+function renderSeqBox(){
+  if(!seq){ seqbox.textContent='No sequence loaded. Residue numbering falls back to manual entry.'; return; }
+  const ca=residueCAmap();
+  const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  let body='';
+  for(let i=0;i<seq.length;i++){
+    if(i>0){ if(i%20===0) body+='\n'; else if(i%10===0) body+=' '; }   // 20/line, groups of 10
+    const num=seqStart+i, L=esc(seq[i]), hit=ca.get(num);
+    if(hit){ const three=ONE2THREE[seq[i]], col=(three&&RES_COLORS[three])||'var(--accent)';
+      body+='<a href="#" data-res="'+num+'" title="'+seq[i]+num+' CA — jump to its plane" '+
+        'style="color:'+col+';font-weight:700">'+L+'</a>';
+    } else body+=L;
+  }
+  seqbox.innerHTML='<div>'+seq.length+' residues, numbered '+seqStart+'–'+(seqStart+seq.length-1)+'</div>'+
+    '<div class="seqgrid">'+body+'</div>';
+  seqbox.querySelectorAll('a[data-res]').forEach(a=>a.addEventListener('click',ev=>{
+    ev.preventDefault(); const hit=residueCAmap().get(+a.getAttribute('data-res')); if(hit)jumpToPeak(hit.sp,hit.pk);
+  }));
+}
+document.getElementById('fasta').addEventListener('change',ev=>{
+  const f=ev.target.files[0]; if(!f)return;
+  const fr=new FileReader();
+  fr.onload=()=>{ try{
+      seq=String(fr.result).split(/\r?\n/).filter(l=>!l.startsWith('>')).join('')
+        .replace(/[^A-Za-z]/g,'').toUpperCase();
+      seqStart = seq[0]==='M' ? 0 : 1;               // Met start → number from 0, else from 1
+      document.getElementById('seqstart').value=seqStart;
+      renderSeqBox(); refreshPkPanels();
+    }catch(e){ logErr('FASTA "'+f.name+'"', e.message); } };
+  fr.onerror=()=>logErr('FASTA "'+f.name+'"','Could not read the file.');
+  fr.readAsText(f); ev.target.value='';
+});
+document.getElementById('clrseq').addEventListener('click',()=>{seq='';renderSeqBox();refreshPkPanels();});
+document.getElementById('seqstart').addEventListener('input',e=>{
+  const v=parseInt(e.target.value,10); seqStart=isFinite(v)?v:1; renderSeqBox();});
+
+/* ================= peak panels (one per shown spectrum) ================= */
+const pkpanels=document.getElementById('pkpanels');
+function refreshPkPanels(){
+  const sh=shown();
+  pkpanels.innerHTML='';
+  for(const sp of sh){
+    const card=document.createElement('div'); card.className='card'; card.__sp=sp;
+    card.style.borderLeft='3px solid '+sp.color;
+    const h=document.createElement('h2');
+    h.innerHTML='<span style="display:flex;align-items:center;gap:6px">'+
+      '<span style="width:9px;height:9px;border-radius:3px;background:'+sp.color+'"></span>'+
+      'Peaks — '+sp.name+'</span>';
+    const tg=document.createElement('button'); tg.className='tg'; tg.textContent='\u2212';
+    tg.addEventListener('click',ev=>{ev.stopPropagation();
+      const c=card.classList.toggle('collapsed'); tg.textContent=c?'+':'\u2212';});
+    h.appendChild(tg); card.appendChild(h);
+
+    const bar=document.createElement('div'); bar.className='row';
+    const mk=(txt,fn,dis)=>{const b=document.createElement('button');b.className='btn ghost sm';
+      b.textContent=txt;b.disabled=!!dis;b.addEventListener('click',fn);return b;};
+    bar.appendChild(mk('Delete',()=>{sp.peaks=sp.peaks.filter(p=>!sp.sel.has(p.id));sp.sel.clear();
+      refreshPkPanels();redraw(sp);}, sp.sel.size===0));
+    bar.appendChild(mk('Clear all',()=>{sp.peaks=[];sp.sel.clear();
+      refreshPkPanels();redraw(sp);}));
+    bar.style.flexWrap='wrap';
+    bar.appendChild(mk('Intra-hunt',()=>{
+      const first=sp.peaks.find(p=>sp.sel.has(p.id));
+      if(first)openHunt(sp,first);
+    }, sp.sel.size===0));
+    bar.appendChild(mk('Inter-hunt',()=>{
+      if(sp.sel.size>=2)openCrossHunt(sp);
+    }, sp.sel.size<2));
+    const imp=document.createElement('span'); imp.className='btn ghost sm file';
+    imp.textContent='Import';
+    const fi=document.createElement('input'); fi.type='file';
+    fi.accept='.list,.txt,.peaks,.save,.json';
+    fi.addEventListener('change',ev=>{const f=ev.target.files[0];
+      if(f)importInto(sp,f); ev.target.value='';});
+    imp.appendChild(fi); bar.appendChild(imp);
+    const exp=mk('Export',()=>exportPeaks(sp)); exp.style.marginLeft='auto'; bar.appendChild(exp);
+    card.appendChild(bar);
+
+    if(sp.ndim===3){
+      const ze=zElem(sp), cfg=ZTOL[ze]||ZTOL.C;
+      const r=document.createElement('div'); r.className='row';
+      const lb=document.createElement('label');
+      lb.textContent='Z tol '+sp.axes[sp.zAxis].nuc+' (z)'; lb.style.minWidth='92px';
+      const sl=document.createElement('input'); sl.type='range';
+      sl.min=cfg.min; sl.max=cfg.max; sl.step=cfg.step; sl.value=curZTol(sp);
+      const vv=document.createElement('span'); vv.className='val';
+      vv.textContent=curZTol(sp).toFixed(2)+' ppm';
+      sl.addEventListener('input',()=>{ sp.zTol[ze]=+sl.value;
+        vv.textContent=(+sl.value).toFixed(2)+' ppm'; redraw(sp); });
+      sl.addEventListener('change',()=>refreshPkPanels());
+      r.appendChild(lb); r.appendChild(sl); r.appendChild(vv); card.appendChild(r);
+    }
+
+    // header row with real axis names
+    const pl=sp.plane;
+    const head=document.createElement('div'); head.className='thead';
+    head.innerHTML='<span style="flex:1">Assignment</span>'+
+      '<span style="width:64px;text-align:right">'+(pl?pl.a0.nuc:'F1')+' (y)</span>'+
+      '<span style="width:64px;text-align:right">'+(pl?pl.a1.nuc:'F2')+' (x)</span>'+
+      (sp.ndim===3?'<span style="width:64px;text-align:right">'+sp.axes[sp.zAxis].nuc+' (z)</span>':'')+
+      '<span style="width:14px"></span>';
+    const list=document.createElement('div'); list.className='list'; list.style.marginTop='6px';
+    list.appendChild(head);
+    const vis=visiblePeaks(sp);
+    for(const pk of vis){
+      const d=document.createElement('div'); d.className='item'+(sp.sel.has(pk.id)?' on':'');
+      d.innerHTML='<span style="flex:1">'+(pk.label||'')+'</span>'+
+        '<span style="width:64px;text-align:right;color:var(--muted)">'+fmt(pk.f1)+'</span>'+
+        '<span style="width:64px;text-align:right;color:var(--muted)">'+fmt(pk.f2)+'</span>'+
+        (sp.ndim===3?'<span style="width:64px;text-align:right;color:var(--muted)">'+fmt(pk.z)+'</span>':'')+
+        '<span class="x">×</span>';
+      d.addEventListener('click',ev=>{
+        if(ev.target.classList.contains('x')){sp.peaks=sp.peaks.filter(p=>p.id!==pk.id);sp.sel.delete(pk.id);
+          refreshPkPanels();redraw(sp);return;}
+        if(!ev.shiftKey)sp.sel.clear();
+        sp.sel.has(pk.id)?sp.sel.delete(pk.id):sp.sel.add(pk.id);
+        refreshPkPanels();redraw(sp);});
+      list.appendChild(d);
+    }
+    card.appendChild(list);
+    if(!vis.length){const e=document.createElement('div');e.className='hint';
+      e.textContent=sp.peaks.length?('No peaks within the Z tolerance of this plane ('+sp.peaks.length+' total).')
+        :'No peaks yet — switch the mouse to Pick peak.';card.appendChild(e);}
+
+    // assignment
+    if(sp.sel.size){
+      const box=document.createElement('div');
+      box.style.cssText='margin-top:8px;border-top:1px dashed var(--line);padding-top:8px';
+      const r1=document.createElement('div'); r1.className='row';
+      r1.innerHTML='<label>Residue #</label>';
+      const idx=document.createElement('input'); idx.type='number'; idx.style.width='70px';
+      const res=document.createElement('select'); res.style.flex='1';
+      res.innerHTML='<option value="">(residue type)</option>'+AA.map(r=>'<option>'+r+'</option>').join('');
+      const atomRows=[];
+      idx.addEventListener('input',()=>{const t=resAt(parseInt(idx.value,10)); if(t)res.value=t;
+        atomRows.forEach(a=>a.upd());});
+      r1.appendChild(idx); r1.appendChild(res); box.appendChild(r1);
+      // each atom row: [nuc atom] [atom select] [i offset ±1000] [→ derived residue tag]
+      const mkAtom=(lbl,elem)=>{const r=document.createElement('div');r.className='row';
+        const lb=document.createElement('label'); lb.textContent=lbl; lb.style.minWidth='92px';
+        const s=document.createElement('select');s.style.flex='1';
+        s.innerHTML='<option value="">(atom)</option>'+
+          (ATOMS_BY_ELEM[elem]||[]).map(a=>'<option>'+a+'</option>').join('');
+        const il=document.createElement('span'); il.textContent='i'; il.style.cssText='font-size:11px;color:var(--muted)';
+        const off=document.createElement('input'); off.type='number'; off.value='0';
+        off.min=-1000; off.max=1000; off.step=1; off.style.width='54px'; off.title='residue offset i (−1000…+1000)';
+        const tg=document.createElement('span'); tg.className='val'; tg.style.minWidth='40px';
+        const row={sel:s,off,upd:()=>{const b=parseInt(idx.value,10),o=parseInt(off.value,10)||0;
+          if(isFinite(b)){const num=b+o; tg.textContent=(resTypeAt(num)||'?')+num;} else tg.textContent='—';}};
+        off.addEventListener('input',row.upd);
+        r.appendChild(lb); r.appendChild(s); r.appendChild(il); r.appendChild(off); r.appendChild(tg);
+        box.appendChild(r); atomRows.push(row); return row;};
+      const a1=mkAtom((pl?pl.a0.nuc:'F1')+' (y) atom', elemOf(pl&&pl.a0.nuc)||'C');
+      const a2=mkAtom((pl?pl.a1.nuc:'F2')+' (x) atom', elemOf(pl&&pl.a1.nuc)||'C');
+      let a3=null;
+      if(sp.ndim===3) a3=mkAtom(sp.axes[sp.zAxis].nuc+' (z) atom', elemOf(sp.axes[sp.zAxis].nuc)||'C');
+      atomRows.forEach(a=>a.upd());
+      const r2=document.createElement('div'); r2.className='row';
+      const apply=document.createElement('button'); apply.className='btn sm'; apply.textContent='Apply assignment';
+      apply.addEventListener('click',()=>{
+        const n=idx.value.trim(), rt=res.value;
+        for(const pk of sp.peaks){ if(!sp.sel.has(pk.id))continue;
+          pk.asg={idx:n,res:rt,
+            a1:a1.sel.value, i1:parseInt(a1.off.value,10)||0,
+            a2:a2.sel.value, i2:parseInt(a2.off.value,10)||0,
+            a3:a3?a3.sel.value:'', i3:a3?(parseInt(a3.off.value,10)||0):0};
+          pk.label=peakLabel(pk,defOrder(sp));
+        }
+        refreshPkPanels();redraw(sp);});
+      const un=document.createElement('button'); un.className='btn ghost sm'; un.textContent='Unassign';
+      un.addEventListener('click',()=>{for(const pk of sp.peaks) if(sp.sel.has(pk.id)){pk.asg=null;pk.label='';}
+        refreshPkPanels();redraw(sp);});
+      r2.appendChild(apply); r2.appendChild(un); box.appendChild(r2);
+      const n=sp.sel.size;
+      const hh=document.createElement('div'); hh.className='hint';
+      hh.textContent=n+' peak'+(n>1?'s':'')+' selected.';
+      box.appendChild(hh);
+      card.appendChild(box);
+    }
+    pkpanels.appendChild(card);
+  }
+  if(typeof renderSeqBox==='function') renderSeqBox();   // keep CA colouring in sync with assignments
+}
+function colDefs(sp){
+  const pl=sp.plane;
+  return {y:{nuc:pl?pl.a0.nuc:'F1', get:p=>p.f1, atom:g=>g&&g.a1},
+          x:{nuc:pl?pl.a1.nuc:'F2', get:p=>p.f2, atom:g=>g&&g.a2},
+          z:{nuc:sp.ndim===3?sp.axes[sp.zAxis].nuc:'', get:p=>p.z, atom:g=>g&&g.a3}};
+}
+const defOrder=sp=>sp.ndim===3?['y','x','z']:['y','x'];
+function resTypeAt(num){ if(!isFinite(num))return ''; const t=resAt(num); return t?(AA1[t]||t):''; }
+// Each atom carries its own residue offset i (asg.i1/i2/i3); the atom's residue number is
+// (base idx + i) and its type comes from the sequence, so one label can span residues,
+// e.g. L2N-T1CA-T1CB when 15N is +1 relative to the carbons.
+function peakLabel(pk,order){
+  if(!pk.asg) return pk.label||'?';
+  const g=pk.asg, base=parseInt(g.idx,10);
+  const atomOf={y:g.a1,x:g.a2,z:g.a3}, offOf={y:g.i1|0,x:g.i2|0,z:g.i3|0};
+  const parts=[];
+  for(const k of order){ const atom=atomOf[k]; if(!atom)continue;
+    const off=offOf[k]||0; let numStr='',typ='';
+    if(isFinite(base)){ const num=base+off; numStr=String(num);
+      typ=resTypeAt(num)||((off===0&&g.res)?(AA1[g.res]||g.res):''); }
+    else if(off===0&&g.res){ typ=(AA1[g.res]||g.res); }
+    parts.push(typ+numStr+atom);
+  }
+  return parts.join('-')||(pk.label||'?');
+}
+function peakText(sp,order){
+  order=order||defOrder(sp);
+  const C=colDefs(sp);
+  let out='      Assignment';
+  for(const k of order) out+=('  '+C[k].nuc+'('+k+')').padStart(13);
+  out+='\n';
+  for(const p of sp.peaks){
+    out+='  '+peakLabel(p,order).padEnd(18);
+    for(const k of order){const v=C[k].get(p);
+      out+=((v!=null&&isFinite(v))?v.toFixed(3):'-').padStart(13);}
+    out+='\n';
+  }
+  return out;
+}
+function exportPeaks(sp){
+  try{
+    let order=defOrder(sp);
+    openTextDialog('Peak list', sp.color, sp.name+'.list', peakText(sp,order),
+      (bar,setText)=>{
+        const C=colDefs(sp);
+        const holder=document.createElement('span');
+        holder.style.cssText='display:flex;gap:6px;flex-wrap:wrap';
+        const rebuild=()=>{
+          holder.innerHTML='';
+          for(let j=1;j<order.length;j++){
+            const b=document.createElement('button'); b.className='btn ghost sm';
+            b.textContent='swap '+C[order[0]].nuc+'('+order[0]+') '+C[order[j]].nuc+'('+order[j]+')';
+            const jj=j;
+            b.addEventListener('click',()=>{
+              const t=order[0]; order[0]=order[jj]; order[jj]=t;
+              setText(peakText(sp,order)); rebuild();});
+            holder.appendChild(b);
+          }
+        };
+        rebuild(); bar.appendChild(holder);
+      });
+  }catch(e){ logErr('export ['+sp.name+']', e.message); }
+}
+
+/* ---- import: peak list (.list/.txt) or a saved session (.save) ---- */
+function parsePeakList(sp,text){
+  const lines=text.split(/\r?\n/); let order=null; const out=[];
+  for(const raw of lines){
+    const line=raw.trim(); if(!line)continue;
+    if(/\(([xyz])\)/.test(line)&&/assignment/i.test(line)){
+      const m=line.match(/\(([xyz])\)/g);
+      if(m&&m.length>=2) order=m.map(t=>t[1]);
+      continue;
+    }
+    if(/^\s*assignment/i.test(line))continue;
+    const tk=line.split(/\s+/);
+    const nums=[],labelParts=[];
+    for(const t of tk){ const v=parseFloat(t);
+      if(/^[-+]?\d*\.?\d+([eE][-+]?\d+)?$/.test(t)&&isFinite(v))nums.push(v); else labelParts.push(t); }
+    if(nums.length<2)continue;
+    const ord=order&&order.length===nums.length?order:defOrder(sp).slice(0,nums.length);
+    const pk={id:pkSeq++,f1:null,f2:null,z:null,label:'',asg:null};
+    ord.forEach((k,i)=>{ if(k==='y')pk.f1=nums[i]; else if(k==='x')pk.f2=nums[i]; else pk.z=nums[i]; });
+    if(pk.f1==null||pk.f2==null)continue;
+    const lab=labelParts.join('');
+    if(lab&&lab!=='?'){
+      pk.label=lab;
+      const m=lab.match(/^([A-Za-z])(\d+)(.*)$/);
+      if(m&&m[3]){
+        const atoms=m[3].replace(/^-/,'').split('-').filter(Boolean);
+        const asg={idx:m[2],res:ONE2THREE[m[1].toUpperCase()]||'',a1:'',a2:'',a3:''};
+        ord.forEach((k,i)=>{ const a=atoms[i]||'';
+          if(k==='y')asg.a1=a; else if(k==='x')asg.a2=a; else asg.a3=a; });
+        pk.asg=asg; pk.label=peakLabel(pk,defOrder(sp));
+      }
+    }
+    out.push(pk);
+  }
+  return out;
+}
+function applySave(sp,obj){
+  try{
+    const sd=obj.spectrum||{};
+    if(sd.view&&isFinite(sd.view.xHi)){sp.view=Object.assign({},sd.view);clampView(sp);}
+    if(isFinite(sd.levelMult))sp.levelMult=clamp(sd.levelMult,0.1,20);
+    if(sp.ndim===3){
+      if(isFinite(sd.zAxis)&&sd.zAxis<sp.axes.length)sp.zAxis=sd.zAxis|0;
+      if(isFinite(sd.zIdx))sp.zIdx=clamp(sd.zIdx|0,0,sp.axes[sp.zAxis].npts-1);
+      if(sd.zTol)for(const k in sd.zTol)if(isFinite(sd.zTol[k]))sp.zTol[k]=sd.zTol[k];
+      buildPlane(sp);
+    }
+    if(Array.isArray(obj.peaks)){
+      for(const p of obj.peaks){
+        if(!isFinite(p.f1)||!isFinite(p.f2))continue;
+        sp.peaks.push({id:pkSeq++,f1:p.f1,f2:p.f2,z:(p.z==null?null:p.z),
+          label:p.label||'',asg:p.asg||null});
+      }
+    }
+    return (obj.peaks||[]).length;
+  }catch(e){ logErr('restore ['+sp.name+']', e.message); return 0; }
+}
+function importInto(sp,file){
+  const fr=new FileReader();
+  fr.onload=()=>{
+    try{
+      const txt=String(fr.result).trim();
+      let n=0;
+      if(txt.startsWith('{')){
+        const obj=JSON.parse(txt);
+        if(obj&&obj.format==='ucsf-viewer.save'){ n=applySave(sp,obj); }
+        else throw new Error('JSON file is not a ucsf-viewer .save');
+      }else{
+        const got=parsePeakList(sp,txt);
+        sp.peaks=sp.peaks.concat(got); n=got.length;
+      }
+      statusEl.classList.remove('warn');
+      statusEl.textContent='Imported '+n+' peak'+(n===1?'':'s')+' into '+sp.name;
+      refreshFocusBox(); refreshPkPanels(); fullOne(ownerOf(sp));
+    }catch(e){ logErr('import "'+file.name+'" into '+sp.name, e.message); }
+  };
+  fr.onerror=()=>logErr('import "'+file.name+'"','Could not read the file.');
+  fr.readAsText(file);
+}
+
+/* ---- session save (.save) ---- */
+function sessionObj(sp,path){
+  return {
+    format:'ucsf-viewer.save', version:1, saved:new Date().toISOString(),
+    file:{name:sp.fileName||sp.name+'.ucsf', path:path||sp.filePath||sp.fileName||''},
+    spectrum:{ndim:sp.ndim,N:sp.N,color:sp.color,shown:!!sp.shown,
+      axes:sp.axes.map(a=>({nuc:a.nuc,npts:a.npts,sf:a.sf,sw:a.sw,cen:a.cen})),
+      zAxis:sp.zAxis,zIdx:sp.zIdx,zTol:sp.zTol,levelMult:sp.levelMult,
+      view:sp.view?{xHi:sp.view.xHi,xLo:sp.view.xLo,yHi:sp.view.yHi,yLo:sp.view.yLo}:null},
+    display:{alignMode,mouseMode,showCross,symCross,showDiag,
+      overlay:{xElem,yElem,xAtoms:[...xAtoms],yAtoms:[...yAtoms],
+        sigMode,d1,d2,lvlX,lvlY,showLabels,xOff,yOff,activeRes:[...activeRes]},
+      sequence:{seq,seqStart}},
+    peaks:sp.peaks.map(p=>({f1:p.f1,f2:p.f2,z:p.z,label:p.label,asg:p.asg}))
+  };
+}
+function saveSession(sp){
+  try{
+    let path=sp.filePath||sp.fileName||(sp.name+'.ucsf');
+    const text=()=>JSON.stringify(sessionObj(sp,path),null,2);
+    openTextDialog('Session (.json)', sp.color, sp.name+'.json', text(),
+      (bar,setText)=>{
+        const wrap=document.createElement('span');
+        wrap.style.cssText='display:flex;align-items:center;gap:6px;flex:1;min-width:220px';
+        const lb=document.createElement('label'); lb.textContent='Source path';
+        lb.style.cssText='font-size:11.5px;color:var(--muted);font-weight:550';
+        const inp=document.createElement('input'); inp.type='text'; inp.value=path; inp.style.flex='1';
+        inp.title='Browsers cannot read the real path — type or paste it here so the .save records it.';
+        inp.addEventListener('input',()=>{path=inp.value; sp.filePath=path; setText(text());});
+        wrap.appendChild(lb); wrap.appendChild(inp); bar.appendChild(wrap);
+      });
+  }catch(e){ logErr('save ['+sp.name+']', e.message); }
+}
+
+/* ---- generic text dialog (never navigates the frame) ---- */
+function openTextDialog(title,color,filename,initial,mountExtras){
+  const m=document.createElement('div'); m.className='modal';
+  const box=document.createElement('div'); box.className='box';
+  const h=document.createElement('h3');
+  h.innerHTML='<span class="dot" style="background:'+color+'"></span>'+title;
+  const nameRow=document.createElement('div'); nameRow.className='row'; nameRow.style.margin='0';
+  const nl=document.createElement('label'); nl.textContent='File name'; nl.style.minWidth='62px';
+  const ni=document.createElement('input'); ni.type='text'; ni.value=filename; ni.style.flex='1';
+  nameRow.appendChild(nl); nameRow.appendChild(ni);
+  const ta=document.createElement('textarea'); ta.readOnly=true; ta.value=initial; ta.spellcheck=false;
+  const bar=document.createElement('div'); bar.className='row';
+  bar.style.margin='0'; bar.style.flexWrap='wrap';
+  const note=document.createElement('div'); note.className='hint'; note.style.margin='0';
+  note.textContent='Select all and copy, or use the button.';
+  const copy=document.createElement('button'); copy.className='btn'; copy.textContent='Copy to clipboard';
+  copy.addEventListener('click',async()=>{
+    let ok=false;
+    try{ if(navigator.clipboard&&navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(ta.value); ok=true; } }catch(e){}
+    if(!ok){ try{ ta.focus(); ta.select(); ok=document.execCommand('copy'); }catch(e){} }
+    note.textContent=ok?'Copied to clipboard.':
+      'Automatic copy is blocked here — the text is selected, press Ctrl/Cmd+C.';
+    if(!ok){ ta.focus(); ta.select(); }
+  });
+  bar.appendChild(copy);
+  if(mountExtras) mountExtras(bar, t=>{ta.value=t;}, ()=>ta.value);
+  let embedded=true; try{ embedded=(window.self!==window.top); }catch(e){ embedded=true; }
+  if(!embedded){
+    const dl=document.createElement('button'); dl.className='btn ghost'; dl.textContent='Download';
+    dl.addEventListener('click',()=>{
+      try{
+        const b=new Blob([ta.value],{type:'text/plain'}), u=URL.createObjectURL(b);
+        const a=document.createElement('a'); a.href=u; a.download=ni.value||filename;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(()=>URL.revokeObjectURL(u),2000);
+        note.textContent='Download started.';
+      }catch(e){ note.textContent='Download blocked: '+e.message; }
+    });
+    bar.appendChild(dl);
+  }
+  const close=document.createElement('button'); close.className='btn ghost';
+  close.textContent='Close'; close.style.marginLeft='auto';
+  const shut=()=>{m.remove();document.removeEventListener('keydown',esc);};
+  const esc=e=>{if(e.key==='Escape')shut();};
+  close.addEventListener('click',shut);
+  document.addEventListener('keydown',esc);
+  bar.appendChild(close);
+  box.appendChild(h); box.appendChild(nameRow); box.appendChild(ta);
+  box.appendChild(bar); box.appendChild(note);
+  m.appendChild(box); document.body.appendChild(m);
+  m.addEventListener('mousedown',e=>{ if(e.target===m) shut(); });
+  ta.focus(); ta.select();
+}
+
+/* ================= collapsible panels ================= */
+document.querySelectorAll('.panel > .card').forEach(card=>{
+  const h=card.querySelector('h2'); if(!h||h.querySelector('.tg'))return;
+  const b=document.createElement('button'); b.className='tg'; b.textContent='\u2212'; b.title='Collapse / expand';
+  b.addEventListener('click',ev=>{ev.stopPropagation();
+    const c=card.classList.toggle('collapsed'); b.textContent=c?'+':'\u2212';});
+  h.appendChild(b);
+});
+
+/* ============ #3 numeric input beside every slider (typeable + arrow keys) ============ */
+function enhanceRange(sl){
+  if(!sl||sl.dataset.enh)return; sl.dataset.enh='1';
+  const nb=document.createElement('input'); nb.type='number';
+  if(sl.min!=='')nb.min=sl.min; if(sl.max!=='')nb.max=sl.max; nb.step=sl.step||'any'; nb.value=sl.value;
+  nb.style.cssText='width:52px;margin-left:5px;flex:none;font-family:var(--mono);font-size:10.5px;'+
+    'padding:2px 4px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink)';
+  const back=()=>{ if(nb.value!==sl.value)nb.value=sl.value; };
+  sl.addEventListener('input',back); sl.addEventListener('change',back);
+  nb.addEventListener('input',()=>{ sl.value=nb.value; sl.dispatchEvent(new Event('input',{bubbles:true})); });
+  nb.addEventListener('change',()=>{ sl.value=nb.value; sl.dispatchEvent(new Event('change',{bubbles:true})); });
+  sl.insertAdjacentElement('afterend', nb);
+}
+const enhanceAll=root=>(root||document).querySelectorAll('input[type=range]').forEach(enhanceRange);
+new MutationObserver(ms=>{ for(const mm of ms) for(const nd of mm.addedNodes){ if(nd.nodeType!==1)continue;
+  if(nd.matches&&nd.matches('input[type=range]'))enhanceRange(nd);
+  if(nd.querySelectorAll)nd.querySelectorAll('input[type=range]').forEach(enhanceRange); }
+}).observe(document.body,{childList:true,subtree:true});
+
+/* ============ #1 make dialog boxes draggable by their title bar ============ */
+function makeBoxDraggable(box){
+  const h=box.querySelector('h3'); if(!h||h.dataset.drag)return; h.dataset.drag='1';
+  h.style.cursor='move'; h.style.userSelect='none';
+  h.addEventListener('mousedown',e=>{
+    if(e.target.closest('button,input,select,a,textarea'))return;
+    e.preventDefault();
+    const r=box.getBoundingClientRect();
+    box.style.position='fixed'; box.style.margin='0'; box.style.left=r.left+'px'; box.style.top=r.top+'px';
+    const offX=e.clientX-r.left, offY=e.clientY-r.top;
+    const move=ev=>{ box.style.left=Math.max(0,Math.min(window.innerWidth-40,ev.clientX-offX))+'px';
+      box.style.top=Math.max(0,Math.min(window.innerHeight-24,ev.clientY-offY))+'px'; };
+    const up=()=>{document.removeEventListener('mousemove',move);document.removeEventListener('mouseup',up);};
+    document.addEventListener('mousemove',move); document.addEventListener('mouseup',up);
+  });
+}
+new MutationObserver(ms=>{ for(const mm of ms) for(const nd of mm.addedNodes){ if(nd.nodeType!==1)continue;
+  const box = nd.classList&&nd.classList.contains('modal') ? nd.querySelector('.box')
+            : (nd.classList&&nd.classList.contains('box') ? nd : null);
+  if(box) makeBoxDraggable(box);
+}}).observe(document.body,{childList:true});
+
+/* ============ #5 drag-to-reorder panels (grab a header and hold) ============ */
+function makeSortable(container,handleSel,onEnd,ignoreSel){
+  if(!container)return;
+  container.addEventListener('mousedown',e=>{
+    if(e.button!==0)return;
+    if(e.target.closest('button,input,select,a,textarea'))return;
+    if(ignoreSel&&e.target.closest(ignoreSel))return;   // e.g. don't hijack the peak panels
+    const handle=e.target.closest(handleSel); if(!handle||!container.contains(handle))return;
+    let it=handle; while(it&&it.parentElement!==container)it=it.parentElement;
+    if(!it||it.parentElement!==container)return;
+    e.preventDefault(); it.style.opacity='0.55'; document.body.style.cursor='grabbing';
+    const move=ev=>{
+      const sibs=[...container.children].filter(x=>x!==it);
+      let placed=false;
+      for(const s of sibs){ const r=s.getBoundingClientRect();
+        if(ev.clientY<r.top+r.height/2){ container.insertBefore(it,s); placed=true; break; } }
+      if(!placed) container.appendChild(it);
+    };
+    const up=()=>{ document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',up);
+      it.style.opacity=''; document.body.style.cursor=''; if(onEnd)onEnd([...container.children]); };
+    document.addEventListener('mousemove',move); document.addEventListener('mouseup',up);
+  });
+}
+
+/* ============ #4 open a saved .json session onto a loaded spectrum ============ */
+document.getElementById('openjson').addEventListener('change',ev=>{
+  const f=ev.target.files[0]; if(!f)return;
+  const fr=new FileReader();
+  fr.onload=()=>{ try{
+    const obj=JSON.parse(String(fr.result));
+    if(!obj||obj.format!=='ucsf-viewer.save') throw new Error('not a UCSFViewer .json session');
+    const want=(obj.file&&(obj.file.name||obj.file.path))||'';
+    const target=specs.find(s=>want&&((s.fileName&&want.indexOf(s.fileName)>=0)||(s.name&&want.indexOf(s.name)>=0)))
+      || focus || specs[0];
+    if(!target){ statusEl.classList.add('warn');
+      statusEl.textContent='Open the matching .ucsf first, then load this .json onto it.'; return; }
+    const n=applySave(target,obj);
+    if(obj.display&&obj.display.sequence&&obj.display.sequence.seq){
+      seq=obj.display.sequence.seq; seqStart=obj.display.sequence.seqStart|0;
+      document.getElementById('seqstart').value=seqStart; renderSeqBox();
+    }
+    statusEl.classList.remove('warn');
+    statusEl.textContent='Loaded '+n+' peak'+(n===1?'':'s')+' from '+f.name+' into '+target.name+'.';
+    refreshFocusBox(); refreshSpecList(); refreshPkPanels(); layout();
+  }catch(e){ statusEl.classList.add('warn'); statusEl.textContent='Could not load JSON: '+e.message;
+    logErr('open .json "'+f.name+'"', e.message); } };
+  fr.onerror=()=>logErr('open .json','Could not read the file.');
+  fr.readAsText(f); ev.target.value='';
+});
+
+/* ================= init ================= */
+document.getElementById('zslider').dataset.enh='1';   // Z uses the ppm field, not an index box
+buildSubs('x'); buildSubs('y'); layout(); renderSeqBox(); enhanceAll(document);
+// reorder the fixed left-panel cards (skip the peak panels, which sort themselves below)
+makeSortable(document.querySelector('.panel'),'h2',null,'#pkpanels');
+// reorder the peak panels -> reorders the spectra
+makeSortable(document.getElementById('pkpanels'),'h2',cards=>{
+  const order=cards.map(c=>c.__sp).filter(Boolean);
+  if(!order.length)return;
+  const shown=new Set(order);
+  specs=order.concat(specs.filter(s=>!shown.has(s)));
+  refreshSpecList(); layout();
+});
+</script>
+</body>
+</html>
