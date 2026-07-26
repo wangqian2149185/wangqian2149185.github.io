@@ -86,6 +86,7 @@
     letter-spacing:1px;color:var(--ink);margin-top:3px}
   .seqgrid a{text-decoration:none;cursor:pointer}
   .seqgrid a:hover{text-decoration:underline}
+  .seqgrid .aahi{font-weight:700;font-style:italic;text-decoration:underline}
   .stage{flex:1;min-height:0;display:grid;gap:8px}
   .pane{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:10px;
     min-height:0;overflow:hidden;display:flex;flex-direction:column}
@@ -1709,8 +1710,8 @@ function refreshChips(){
 AA.forEach(res=>{
   const ch=document.createElement('div');ch.className='chip';ch.dataset.res=res;ch.title=res;
   ch.innerHTML=AA1[res]+'<span class="three">'+res+'</span>';
-  ch.addEventListener('mouseenter',()=>{hoverRes=res;overlayAll();});
-  ch.addEventListener('mouseleave',()=>{hoverRes=null;overlayAll();});
+  ch.addEventListener('mouseenter',()=>{hoverRes=res;overlayAll(); if(seq)highlightSeqResidue(AA1[res]);});
+  ch.addEventListener('mouseleave',()=>{hoverRes=null;overlayAll(); highlightSeqResidue(null);});
   ch.addEventListener('click',()=>{activeRes.has(res)?activeRes.delete(res):activeRes.add(res);
     refreshChips();overlayAll();});
   chipsEl.appendChild(ch);});
@@ -1752,18 +1753,27 @@ function renderSeqBox(){
   const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
   let body='';
   for(let i=0;i<seq.length;i++){
-    if(i>0){ if(i%20===0) body+='\n'; else if(i%10===0) body+=' '; }   // 20/line, groups of 10
-    const num=seqStart+i, L=esc(seq[i]), hit=ca.get(num);
-    if(hit){ const three=ONE2THREE[seq[i]], col=(three&&RES_COLORS[three])||'var(--accent)';
-      body+='<a href="#" data-res="'+num+'" title="'+seq[i]+num+' CA — jump to its plane" '+
+    const num=seqStart+i, one=seq[i], L=esc(one), hit=ca.get(num);
+    if(i>0){                                    // line/group breaks keyed to residue number
+      if(num===1) body+='\n';                   // residue #1 starts a fresh line, split from any 0/negative
+      else if(num>1){ if((num-1)%20===0) body+='\n'; else if((num-1)%10===0) body+=' '; }
+    }
+    if(hit){ const three=ONE2THREE[one], col=(three&&RES_COLORS[three])||'var(--accent)';
+      body+='<a href="#" data-aa="'+one+'" data-res="'+num+'" title="'+one+num+' CA — jump to its plane" '+
         'style="color:'+col+';font-weight:700">'+L+'</a>';
-    } else body+=L;
+    } else body+='<span data-aa="'+one+'">'+L+'</span>';
   }
   seqbox.innerHTML='<div>'+seq.length+' residues, numbered '+seqStart+'–'+(seqStart+seq.length-1)+'</div>'+
     '<div class="seqgrid">'+body+'</div>';
   seqbox.querySelectorAll('a[data-res]').forEach(a=>a.addEventListener('click',ev=>{
     ev.preventDefault(); const hit=residueCAmap().get(+a.getAttribute('data-res')); if(hit)jumpToPeak(hit.sp,hit.pk);
   }));
+}
+// while hovering a residue chip, emphasise every matching residue in the sequence
+function highlightSeqResidue(one){
+  const g=seqbox.querySelector('.seqgrid'); if(!g)return;
+  g.querySelectorAll('.aahi').forEach(el=>el.classList.remove('aahi'));
+  if(one) g.querySelectorAll('[data-aa="'+one+'"]').forEach(el=>el.classList.add('aahi'));
 }
 document.getElementById('fasta').addEventListener('change',ev=>{
   const f=ev.target.files[0]; if(!f)return;
@@ -1880,11 +1890,18 @@ function refreshPkPanels(){
       const res=document.createElement('select'); res.style.flex='1';
       res.innerHTML='<option value="">(residue type)</option>'+AA.map(r=>'<option>'+r+'</option>').join('');
       const atomRows=[];
+      // re-order every atom dropdown by BMRB likelihood for the current residue type + peak shift
+      const reorderAtoms=()=>{ const rt=res.value, first=sp.peaks.find(p=>sp.sel.has(p.id));
+        for(const row of atomRows){ const obs=first?dimVal(sp,first,row.dim):null, cur=row.sel.value;
+          const opts=atomOptionsByLikelihood(row.elem,rt,obs);
+          row.sel.innerHTML='<option value="">(atom)</option>'+opts.map(a=>'<option>'+a+'</option>').join('');
+          row.sel.value=cur; } };
       idx.addEventListener('input',()=>{const t=resAt(parseInt(idx.value,10)); if(t)res.value=t;
-        atomRows.forEach(a=>a.upd());});
+        atomRows.forEach(a=>a.upd()); reorderAtoms();});
+      res.addEventListener('change',()=>{atomRows.forEach(a=>a.upd()); reorderAtoms();});
       r1.appendChild(idx); r1.appendChild(res); box.appendChild(r1);
       // each atom row: [nuc atom] [atom select] [i offset ±1000] [→ derived residue tag]
-      const mkAtom=(lbl,elem)=>{const r=document.createElement('div');r.className='row';
+      const mkAtom=(lbl,elem,dim)=>{const r=document.createElement('div');r.className='row';
         const lb=document.createElement('label'); lb.textContent=lbl; lb.style.minWidth='92px';
         const s=document.createElement('select');s.style.flex='1';
         s.innerHTML='<option value="">(atom)</option>'+
@@ -1893,16 +1910,16 @@ function refreshPkPanels(){
         const off=document.createElement('input'); off.type='number'; off.value='0';
         off.min=-1000; off.max=1000; off.step=1; off.style.width='54px'; off.title='residue offset i (−1000…+1000)';
         const tg=document.createElement('span'); tg.className='val'; tg.style.minWidth='40px';
-        const row={sel:s,off,upd:()=>{const b=parseInt(idx.value,10),o=parseInt(off.value,10)||0;
+        const row={sel:s,off,elem,dim,upd:()=>{const b=parseInt(idx.value,10),o=parseInt(off.value,10)||0;
           if(isFinite(b)){const num=b+o; tg.textContent=(resTypeAt(num)||'?')+num;} else tg.textContent='—';}};
         off.addEventListener('input',row.upd);
         r.appendChild(lb); r.appendChild(s); r.appendChild(il); r.appendChild(off); r.appendChild(tg);
         box.appendChild(r); atomRows.push(row); return row;};
-      const a1=mkAtom((pl?pl.a0.nuc:'F1')+' (y) atom', elemOf(pl&&pl.a0.nuc)||'C');
-      const a2=mkAtom((pl?pl.a1.nuc:'F2')+' (x) atom', elemOf(pl&&pl.a1.nuc)||'C');
+      const a1=mkAtom((pl?pl.a0.nuc:'F1')+' (y) atom', elemOf(pl&&pl.a0.nuc)||'C', 'y');
+      const a2=mkAtom((pl?pl.a1.nuc:'F2')+' (x) atom', elemOf(pl&&pl.a1.nuc)||'C', 'x');
       let a3=null;
-      if(sp.ndim===3) a3=mkAtom(sp.axes[sp.zAxis].nuc+' (z) atom', elemOf(sp.axes[sp.zAxis].nuc)||'C');
-      atomRows.forEach(a=>a.upd());
+      if(sp.ndim===3) a3=mkAtom(sp.axes[sp.zAxis].nuc+' (z) atom', elemOf(sp.axes[sp.zAxis].nuc)||'C', 'z');
+      atomRows.forEach(a=>a.upd()); reorderAtoms();
       const r2=document.createElement('div'); r2.className='row';
       const apply=document.createElement('button'); apply.className='btn sm'; apply.textContent='Apply assignment';
       apply.addEventListener('click',()=>{
@@ -1937,6 +1954,20 @@ function colDefs(sp){
 }
 const defOrder=sp=>sp.ndim===3?['y','x','z']:['y','x'];
 function resTypeAt(num){ if(!isFinite(num))return ''; const t=resAt(num); return t?(AA1[t]||t):''; }
+// order an element's atoms by BMRB likelihood for a chosen residue: atoms the residue actually
+// has come first, ranked by the density of the observed shift under each atom's mean/std.
+function atomOptionsByLikelihood(elem,res,obs){
+  const atoms=(ATOMS_BY_ELEM[elem]||[]).slice();
+  const stR=res?BMRB_STATS[res]:null;
+  if(!stR) return atoms;                                  // no residue chosen → keep default order
+  const score=a=>{ const st=stR[a];
+    if(!st) return -Infinity;                             // atom absent in this residue → last
+    const s=st.s||1e-6;
+    if(obs==null||!isFinite(obs)) return 1/s;             // no observed shift → prefer better-defined
+    const z=(obs-st.m)/s; return Math.exp(-0.5*z*z)/s;    // likelihood density at the observed shift
+  };
+  return atoms.map(a=>[a,score(a)]).sort((p,q)=>q[1]-p[1]).map(o=>o[0]);
+}
 // Each atom carries its own residue offset i (asg.i1/i2/i3); the atom's residue number is
 // (base idx + i) and its type comes from the sequence, so one label can span residues,
 // e.g. L2N-T1CA-T1CB when 15N is +1 relative to the carbons.
