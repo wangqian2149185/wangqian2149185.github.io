@@ -82,12 +82,20 @@ a { color: var(--accent); }
 .section-title {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   margin: 0 0 18px;
   color: var(--ink);
   font: 800 1.22rem/1.2 var(--sans);
   letter-spacing: .11em;
   text-transform: uppercase;
+}
+.section-title::before {
+  content: "";
+  width: 4px;
+  height: 1.15em;
+  flex: 0 0 4px;
+  border-radius: 999px;
+  background: rgba(49, 89, 166, .72);
 }
 .section-title::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 .profile { margin: 0; color: #344057; font-family: var(--serif); font-size: .96rem; line-height: 1.68; }
