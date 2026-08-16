@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interactive Periodic Table · Element Properties</title>
+<style>
+  :root{
+    --surface-1:#fcfcfb; --page:#f9f9f7;
+    --text-primary:#0b0b0b; --text-secondary:#52514e; --muted:#898781;
+    --grid:#e1e0d9; --baseline:#c3c2b7; --border:rgba(11,11,11,0.10);
+    --seq:#2a78d6; --seq-lite:#cde2fb;
+    --pos:#e34948; --neg:#2a78d6;
+    --btn-bg:#ffffff; --btn-active:#0b0b0b; --btn-active-fg:#ffffff;
+    --cell:#f4f3ef; --chip:#f1f0ec;
+    /* categorical slots (validated palette) */
+    --k1:#2a78d6; --k2:#eb6834; --k3:#1baf7a; --k4:#eda100;
+    --k5:#e87ba4; --k6:#008300; --k7:#4a3aa7; --k8:#e34948;
+  }
+  html[data-theme="dark"]{
+    --surface-1:#1a1a19; --page:#0d0d0d;
+    --text-primary:#ffffff; --text-secondary:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --baseline:#383835; --border:rgba(255,255,255,0.12);
+    --seq:#3987e5; --seq-lite:#184f95;
+    --pos:#e66767; --neg:#3987e5;
+    --btn-bg:#242422; --btn-active:#ffffff; --btn-active-fg:#0b0b0b;
+    --cell:#242422; --chip:#2a2a28;
+    --k1:#3987e5; --k2:#d95926; --k3:#199e70; --k4:#c98500;
+    --k5:#d55181; --k6:#008300; --k7:#9085e9; --k8:#e66767;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--page); color:var(--text-primary);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif; padding:16px 16px 44px;}
+  .container{max-width:1220px; margin:0 auto;}
+  h1{font-size:20px; margin:0 0 2px; letter-spacing:.2px;}
+  .sub{color:var(--text-secondary); font-size:13px; margin:0;}
+  .toprow{display:flex; align-items:flex-start; gap:12px;}
+  .toprow .spacer{flex:1;}
+  .theme,.lang{border:1px solid var(--border); background:var(--btn-bg); color:var(--text-secondary);
+    padding:7px 12px; border-radius:9px; font-size:13px; cursor:pointer; white-space:nowrap;}
+  .lang{font-weight:600; color:var(--text-primary);}
+  /* button rows */
+  .rowlabel{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin:14px 0 6px;}
+  .btnrow{display:flex; flex-wrap:wrap; gap:7px; align-items:center;}
+  .btn{border:1px solid var(--border); background:var(--btn-bg); color:var(--text-primary);
+    padding:6px 11px; border-radius:9px; font-size:12.5px; cursor:pointer; line-height:1.15;
+    transition:.12s; white-space:nowrap;}
+  .btn small{display:block; color:var(--muted); font-size:10px; margin-top:1px;}
+  .btn:hover{border-color:var(--baseline);}
+  .btn.active{background:var(--btn-active); color:var(--btn-active-fg); border-color:var(--btn-active);}
+  .btn.active small{color:rgba(255,255,255,.72);}
+  html[data-theme="dark"] .btn.active small{color:rgba(0,0,0,.6);}
+  .grp.active{background:var(--btn-active); color:var(--btn-active-fg); border-color:var(--btn-active);}
+  /* sub-chip row */
+  #subrow{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; padding:8px; border:1px dashed var(--border);
+    border-radius:11px; background:var(--chip); min-height:0;}
+  #subrow:empty{display:none;}
+  .chip{border:1px solid var(--border); background:var(--btn-bg); color:var(--text-primary);
+    padding:5px 10px; border-radius:8px; font-size:12px; cursor:pointer; transition:.12s;}
+  .chip:hover{border-color:var(--baseline);}
+  .chip.active{background:var(--seq); color:#fff; border-color:var(--seq);}
+  /* explanation */
+  .explain{margin:12px 0 4px; padding:11px 14px; border-radius:11px; background:var(--surface-1);
+    border:1px solid var(--border); font-size:13.5px; line-height:1.55; color:var(--text-primary);}
+  .explain b{color:var(--seq);}
+  .explain .note{color:var(--muted); font-size:12px;}
+  /* legend */
+  .legend{min-height:26px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    font-size:12.5px; color:var(--text-secondary); margin:8px 2px 6px;}
+  .legend .gradbar{width:130px; height:12px; border-radius:6px; border:1px solid var(--border);}
+  .legend .sw{display:inline-block; width:13px; height:13px; border-radius:3px; vertical-align:-2px; margin-right:5px;}
+  .legend b{color:var(--text-primary); font-weight:600;}
+  /* grid */
+  .wrap{overflow-x:auto;}
+  .grid{display:grid; grid-template-columns:repeat(18,1fr); gap:3px; min-width:940px;}
+  .cell{position:relative; aspect-ratio:1/1; border-radius:6px; background:var(--cell);
+    border:1px solid var(--border); overflow:hidden;}
+  .cell .num{position:absolute; top:2px; left:4px; font-size:8.5px; color:var(--muted); z-index:3;}
+  .cell .sym{position:absolute; top:44%; left:0; right:0; transform:translateY(-50%); text-align:center;
+    font-size:15px; font-weight:700; z-index:3; text-shadow:0 1px 2px rgba(0,0,0,.14);}
+  html[data-theme="dark"] .cell .sym{text-shadow:0 1px 2px rgba(0,0,0,.55);}
+  .cell .val{position:absolute; bottom:1px; left:0; right:0; text-align:center; font-size:7.6px;
+    color:var(--text-secondary); z-index:3; font-variant-numeric:tabular-nums; padding:0 1px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .cell.center .sym{top:50%;}
+  .cell.nodata{opacity:.4;}
+  .mark{position:absolute; inset:0; z-index:1;}
+  .mark .bar{position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:42%;
+    border-radius:4px 4px 0 0; background:var(--seq);}
+  .mark .divpos{position:absolute; left:50%; transform:translateX(-50%); bottom:50%; width:42%;
+    border-radius:4px 4px 0 0; background:var(--pos);}
+  .mark .divneg{position:absolute; left:50%; transform:translateX(-50%); top:50%; width:42%;
+    border-radius:0 0 4px 4px; background:var(--neg);}
+  .mark .midline{position:absolute; left:8%; right:8%; top:50%; height:1px; background:var(--baseline);}
+  .mark .circle{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); border-radius:50%;
+    background:var(--seq); opacity:.85;}
+  .mark .square{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); border-radius:3px;
+    background:var(--seq); opacity:.85;}
+  .cell .cfgtxt{position:absolute; bottom:1px; left:1px; right:1px; text-align:center; font-size:6.4px;
+    line-height:1.05; color:var(--text-secondary); z-index:3;}
+  /* category tints */
+  .c-alkali{background:#f6d7b0;} .c-alkaline{background:#f3e6a8;} .c-trans{background:#f6c9c9;}
+  .c-post{background:#cfe3c6;} .c-metalloid{background:#c7e6e2;} .c-nonmetal{background:#bcd6f2;}
+  .c-halogen{background:#d7c8ee;} .c-noble{background:#eecbe0;}
+  html[data-theme="dark"] .c-alkali{background:#5a4326;} html[data-theme="dark"] .c-alkaline{background:#5a5326;}
+  html[data-theme="dark"] .c-trans{background:#5a2f2f;} html[data-theme="dark"] .c-post{background:#2f4a2a;}
+  html[data-theme="dark"] .c-metalloid{background:#245450;} html[data-theme="dark"] .c-nonmetal{background:#26466e;}
+  html[data-theme="dark"] .c-halogen{background:#3f2f5c;} html[data-theme="dark"] .c-noble{background:#5a2f49;}
+  /* tooltip */
+  #tip{position:fixed; z-index:50; pointer-events:none; opacity:0; transition:opacity .1s;
+    background:var(--surface-1); color:var(--text-primary); border:1px solid var(--border);
+    border-radius:9px; padding:9px 11px; font-size:12px; box-shadow:0 8px 26px rgba(0,0,0,.18);
+    max-width:250px; line-height:1.5;}
+  #tip h4{margin:0 0 4px; font-size:13px;}
+  #tip .r{display:flex; justify-content:space-between; gap:14px; color:var(--text-secondary);}
+  #tip .r b{color:var(--text-primary); font-weight:600; font-variant-numeric:tabular-nums;}
+  #tip .r.hl b{color:var(--seq);}
+  #tip .ionseq{margin-top:7px; padding-top:7px; border-top:1px solid var(--border);}
+  #tip .ionseq .cap{color:var(--muted); font-size:10.5px; margin-bottom:5px;}
+  #tip .ions{display:flex; align-items:flex-end; gap:9px;}
+  #tip .ionitem{display:flex; flex-direction:column; align-items:center; gap:2px;}
+  #tip .ionitem .dot{border-radius:50%; background:var(--seq);}
+  #tip .ionitem.atom .dot{background:var(--muted);}
+  #tip .ionitem .q{font-size:10px; font-weight:700; color:var(--text-primary);}
+  #tip .ionitem .rr{font-size:9.5px; color:var(--text-secondary); font-variant-numeric:tabular-nums;}
+  footer{margin:22px auto 0; color:var(--muted); font-size:11.5px; line-height:1.6;}
+  .catleg{display:flex; flex-wrap:wrap; gap:9px 15px; font-size:11.5px; color:var(--text-secondary); margin-top:4px;}
+  .catleg span i{display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:-2px; margin-right:5px;}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="toprow">
+    <div>
+      <h1 id="title">Interactive Periodic Table</h1>
+      <p class="sub" id="subtitle">Element properties visualized. Data: NYS Chemistry Reference Tables (2011) Periodic Table &amp; Table S, extended with standard chemical data.</p>
+    </div>
+    <div class="spacer"></div>
+    <button class="lang" id="langBtn">中文</button>
+    <button class="theme" id="themeBtn">🌓</button>
+  </div>
+
+  <div class="rowlabel" id="lbl-basic">Quick views</div>
+  <div class="btnrow" id="basicRow"></div>
+
+  <div class="rowlabel" id="lbl-groups">Property categories</div>
+  <div class="btnrow" id="groupRow"></div>
+  <div id="subrow"></div>
+
+  <div class="explain" id="explain"></div>
+  <div class="legend" id="legend"></div>
+
+  <div class="wrap"><div class="grid" id="grid"></div></div>
+
+  <div id="tip"></div>
+
+  <footer>
+    <div id="catleg" class="catleg"></div>
+    <p id="footnote" style="margin-top:10px"></p>
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   ELEMENT DATA
+   Base 6 columns from NYS Table S (2011). Extended fields use
+   standard, time-invariant chemical reference data.
+   Fields:
+    ie=1st ionization (kJ/mol), eneg=electronegativity,
+    mp/bp=melting/boiling (K), den=density g/cm3, ar=atomic radius pm,
+    ea=electron affinity kJ/mol (CRC), cfg=electron config (noble-gas core),
+    val=valence e-, unp=unpaired e- (ground state), ie2=2nd ionization kJ/mol,
+    ox=common oxidation states (display), oxmax/oxmin=max/min ox state,
+    ion=common ionic charge (signed, null if variable/none),
+    oxide=oxide acid-base ('basic'|'ampho'|'acidic'|'neutral'|null),
+    rw=reactivity w/ water, ro=reactivity w/ oxygen,
+    t3=metal|metalloid|nonmetal, econd=conductivity class,
+    tcond=thermal conductivity W/mK, hcap=molar heat cap J/molK,
+    hfus/hvap=enthalpy fusion/vaporization kJ/mol, S0=std entropy J/molK,
+    wf=work function eV, sc=superconducting Tc K (0=none at 1atm, null=unknown),
+    mag=magnetic ordering, iso=# stable isotopes, aiso=most abundant mass no.,
+    radio=radioactive(no stable isotope), half=half-life longest-lived (radio only),
+    bio=biological role, tox=toxicity class, body=fraction of human body mass (approx)
+   Missing numeric = null (shown as —).
+   ============================================================ */
+const D=[
+{n:1,s:"H",nEn:"Hydrogen",nZh:"氢",col:1,row:1,cat:"nonmetal",ie:1312,eneg:2.2,mp:14,bp:20,den:0.000082,ar:32,ea:72.8,cfg:"1s¹",val:1,unp:1,ie2:null,ox:"+1, −1",oxmax:1,oxmin:-1,ion:1,oxide:"acidic",rw:"none",ro:"high",t3:"nonmetal",econd:"poor",tcond:0.18,hcap:28.8,hfus:0.117,hvap:0.904,S0:130.7,wf:null,sc:0,mag:"dia",iso:2,aiso:1,radio:false,bio:"essential",tox:"none",body:0.10},
+{n:2,s:"He",nEn:"Helium",nZh:"氦",col:18,row:1,cat:"noble",ie:2372,eneg:null,mp:null,bp:4,den:0.000164,ar:37,ea:0,cfg:"1s²",val:2,unp:0,ie2:5250,ox:"0",oxmax:0,oxmin:0,ion:null,oxide:null,rw:"none",ro:"none",t3:"nonmetal",econd:"poor",tcond:0.15,hcap:20.8,hfus:0.02,hvap:0.083,S0:126.2,wf:null,sc:0,mag:"dia",iso:2,aiso:4,radio:false,bio:"none",tox:"none",body:0},
+{n:3,s:"Li",nEn:"Lithium",nZh:"锂",col:1,row:2,cat:"alkali",ie:520,eneg:1.0,mp:454,bp:1615,den:0.534,ar:130,ea:59.6,cfg:"[He]2s¹",val:1,unp:1,ie2:7298,ox:"+1",oxmax:1,oxmin:1,ion:1,oxide:"basic",rw:"moderate",ro:"high",t3:"metal",econd:"good",tcond:85,hcap:24.9,hfus:3.0,hvap:136,S0:29.1,wf:2.9,sc:0,mag:"para",iso:2,aiso:7,radio:false,bio:"trace",tox:"low",body:0},
+{n:4,s:"Be",nEn:"Beryllium",nZh:"铍",col:2,row:2,cat:"alkaline",ie:900,eneg:1.6,mp:1560,bp:2744,den:1.85,ar:99,ea:0,cfg:"[He]2s²",val:2,unp:0,ie2:1757,ox:"+2",oxmax:2,oxmin:2,ion:2,oxide:"ampho",rw:"none",ro:"moderate",t3:"metal",econd:"good",tcond:200,hcap:16.4,hfus:12.2,hvap:292,S0:9.5,wf:4.98,sc:0.026,mag:"dia",iso:1,aiso:9,radio:false,bio:"none",tox:"toxic",body:0},
+{n:5,s:"B",nEn:"Boron",nZh:"硼",col:13,row:2,cat:"metalloid",ie:801,eneg:2.0,mp:2348,bp:4273,den:2.34,ar:84,ea:26.7,cfg:"[He]2s²2p¹",val:3,unp:1,ie2:2427,ox:"+3",oxmax:3,oxmin:-3,ion:3,oxide:"acidic",rw:"none",ro:"moderate",t3:"metalloid",econd:"semi",tcond:27,hcap:11.1,hfus:50.2,hvap:508,S0:5.9,wf:4.45,sc:0,mag:"dia",iso:2,aiso:11,radio:false,bio:"possibly",tox:"low",body:0},
+{n:6,s:"C",nEn:"Carbon",nZh:"碳",col:14,row:2,cat:"nonmetal",ie:1086,eneg:2.6,mp:null,bp:null,den:null,ar:75,ea:121.8,cfg:"[He]2s²2p²",val:4,unp:2,ie2:2353,ox:"+4, +2, −4",oxmax:4,oxmin:-4,ion:null,oxide:"acidic",rw:"none",ro:"moderate",t3:"nonmetal",econd:"semi",tcond:140,hcap:8.5,hfus:117,hvap:715,S0:5.7,wf:5.0,sc:0,mag:"dia",iso:2,aiso:12,radio:false,bio:"essential",tox:"none",body:0.18},
+{n:7,s:"N",nEn:"Nitrogen",nZh:"氮",col:15,row:2,cat:"nonmetal",ie:1402,eneg:3.0,mp:63,bp:77,den:0.001145,ar:71,ea:0,cfg:"[He]2s²2p³",val:5,unp:3,ie2:2856,ox:"−3, +5, +3",oxmax:5,oxmin:-3,ion:-3,oxide:"acidic",rw:"none",ro:"low",t3:"nonmetal",econd:"poor",tcond:0.026,hcap:29.1,hfus:0.72,hvap:5.6,S0:191.6,wf:null,sc:0,mag:"dia",iso:2,aiso:14,radio:false,bio:"essential",tox:"none",body:0.03},
+{n:8,s:"O",nEn:"Oxygen",nZh:"氧",col:16,row:2,cat:"nonmetal",ie:1314,eneg:3.4,mp:54,bp:90,den:0.001308,ar:64,ea:141,cfg:"[He]2s²2p⁴",val:6,unp:2,ie2:3388,ox:"−2",oxmax:2,oxmin:-2,ion:-2,oxide:null,rw:"none",ro:"none",t3:"nonmetal",econd:"poor",tcond:0.027,hcap:29.4,hfus:0.44,hvap:6.8,S0:205.2,wf:null,sc:0,mag:"para",iso:3,aiso:16,radio:false,bio:"essential",tox:"none",body:0.65},
+{n:9,s:"F",nEn:"Fluorine",nZh:"氟",col:17,row:2,cat:"halogen",ie:1681,eneg:4.0,mp:53,bp:85,den:0.001553,ar:60,ea:328,cfg:"[He]2s²2p⁵",val:7,unp:1,ie2:3374,ox:"−1",oxmax:0,oxmin:-1,ion:-1,oxide:null,rw:"violent",ro:"high",t3:"nonmetal",econd:"poor",tcond:0.028,hcap:31.3,hfus:0.51,hvap:6.6,S0:202.8,wf:null,sc:0,mag:"dia",iso:1,aiso:19,radio:false,bio:"possibly",tox:"toxic",body:0},
+{n:10,s:"Ne",nEn:"Neon",nZh:"氖",col:18,row:2,cat:"noble",ie:2081,eneg:null,mp:24,bp:27,den:0.000825,ar:62,ea:0,cfg:"[He]2s²2p⁶",val:8,unp:0,ie2:3952,ox:"0",oxmax:0,oxmin:0,ion:null,oxide:null,rw:"none",ro:"none",t3:"nonmetal",econd:"poor",tcond:0.049,hcap:20.8,hfus:0.34,hvap:1.7,S0:146.3,wf:null,sc:0,mag:"dia",iso:3,aiso:20,radio:false,bio:"none",tox:"none",body:0},
+{n:11,s:"Na",nEn:"Sodium",nZh:"钠",col:1,row:3,cat:"alkali",ie:496,eneg:0.9,mp:371,bp:1156,den:0.97,ar:160,ea:52.8,cfg:"[Ne]3s¹",val:1,unp:1,ie2:4562,ox:"+1",oxmax:1,oxmin:1,ion:1,oxide:"basic",rw:"violent",ro:"high",t3:"metal",econd:"good",tcond:142,hcap:28.2,hfus:2.6,hvap:97.4,S0:51.3,wf:2.75,sc:0,mag:"para",iso:1,aiso:23,radio:false,bio:"essential",tox:"none",body:0.0015},
+{n:12,s:"Mg",nEn:"Magnesium",nZh:"镁",col:2,row:3,cat:"alkaline",ie:738,eneg:1.3,mp:923,bp:1363,den:1.74,ar:140,ea:0,cfg:"[Ne]3s²",val:2,unp:0,ie2:1451,ox:"+2",oxmax:2,oxmin:2,ion:2,oxide:"basic",rw:"slow",ro:"high",t3:"metal",econd:"good",tcond:156,hcap:24.9,hfus:8.48,hvap:128,S0:32.7,wf:3.66,sc:0,mag:"para",iso:3,aiso:24,radio:false,bio:"essential",tox:"none",body:0.0005},
+{n:13,s:"Al",nEn:"Aluminium",nZh:"铝",col:13,row:3,cat:"post",ie:578,eneg:1.6,mp:933,bp:2792,den:2.70,ar:124,ea:42.5,cfg:"[Ne]3s²3p¹",val:3,unp:1,ie2:1817,ox:"+3",oxmax:3,oxmin:3,ion:3,oxide:"ampho",rw:"none",ro:"high",t3:"metal",econd:"good",tcond:237,hcap:24.2,hfus:10.7,hvap:294,S0:28.3,wf:4.28,sc:1.18,mag:"para",iso:1,aiso:27,radio:false,bio:"none",tox:"low",body:0},
+{n:14,s:"Si",nEn:"Silicon",nZh:"硅",col:14,row:3,cat:"metalloid",ie:787,eneg:1.9,mp:1687,bp:3538,den:2.3296,ar:114,ea:134,cfg:"[Ne]3s²3p²",val:4,unp:2,ie2:1577,ox:"+4, −4",oxmax:4,oxmin:-4,ion:null,oxide:"acidic",rw:"none",ro:"moderate",t3:"metalloid",econd:"semi",tcond:149,hcap:19.8,hfus:50.2,hvap:359,S0:18.8,wf:4.85,sc:0,mag:"dia",iso:3,aiso:28,radio:false,bio:"possibly",tox:"none",body:0},
+{n:15,s:"P",nEn:"Phosphorus",nZh:"磷",col:15,row:3,cat:"nonmetal",ie:1012,eneg:2.2,mp:317,bp:554,den:1.823,ar:109,ea:72,cfg:"[Ne]3s²3p³",val:5,unp:3,ie2:1907,ox:"+5, +3, −3",oxmax:5,oxmin:-3,ion:-3,oxide:"acidic",rw:"none",ro:"high",t3:"nonmetal",econd:"poor",tcond:0.24,hcap:23.8,hfus:0.66,hvap:12.4,S0:41.1,wf:null,sc:0,mag:"dia",iso:1,aiso:31,radio:false,bio:"essential",tox:"low",body:0.011},
+{n:16,s:"S",nEn:"Sulfur",nZh:"硫",col:16,row:3,cat:"nonmetal",ie:1000,eneg:2.6,mp:388,bp:718,den:2.00,ar:104,ea:200,cfg:"[Ne]3s²3p⁴",val:6,unp:2,ie2:2252,ox:"−2, +6, +4",oxmax:6,oxmin:-2,ion:-2,oxide:"acidic",rw:"none",ro:"moderate",t3:"nonmetal",econd:"poor",tcond:0.27,hcap:22.6,hfus:1.72,hvap:45,S0:32.1,wf:null,sc:0,mag:"dia",iso:4,aiso:32,radio:false,bio:"essential",tox:"none",body:0.0025},
+{n:17,s:"Cl",nEn:"Chlorine",nZh:"氯",col:17,row:3,cat:"halogen",ie:1251,eneg:3.2,mp:172,bp:239,den:0.002898,ar:100,ea:349,cfg:"[Ne]3s²3p⁵",val:7,unp:1,ie2:2298,ox:"−1, +7, +5",oxmax:7,oxmin:-1,ion:-1,oxide:"acidic",rw:"moderate",ro:"low",t3:"nonmetal",econd:"poor",tcond:0.0089,hcap:33.9,hfus:3.2,hvap:10.2,S0:223.1,wf:null,sc:0,mag:"dia",iso:2,aiso:35,radio:false,bio:"essential",tox:"toxic",body:0.0015},
+{n:18,s:"Ar",nEn:"Argon",nZh:"氩",col:18,row:3,cat:"noble",ie:1521,eneg:null,mp:84,bp:87,den:0.001633,ar:101,ea:0,cfg:"[Ne]3s²3p⁶",val:8,unp:0,ie2:2666,ox:"0",oxmax:0,oxmin:0,ion:null,oxide:null,rw:"none",ro:"none",t3:"nonmetal",econd:"poor",tcond:0.018,hcap:20.8,hfus:1.18,hvap:6.4,S0:154.8,wf:null,sc:0,mag:"dia",iso:3,aiso:40,radio:false,bio:"none",tox:"none",body:0},
+{n:19,s:"K",nEn:"Potassium",nZh:"钾",col:1,row:4,cat:"alkali",ie:419,eneg:0.8,mp:337,bp:1032,den:0.89,ar:200,ea:48.4,cfg:"[Ar]4s¹",val:1,unp:1,ie2:3052,ox:"+1",oxmax:1,oxmin:1,ion:1,oxide:"basic",rw:"violent",ro:"high",t3:"metal",econd:"good",tcond:103,hcap:29.6,hfus:2.33,hvap:79.1,S0:64.7,wf:2.3,sc:0,mag:"para",iso:2,aiso:39,radio:false,bio:"essential",tox:"none",body:0.0025},
+{n:20,s:"Ca",nEn:"Calcium",nZh:"钙",col:2,row:4,cat:"alkaline",ie:590,eneg:1.0,mp:1115,bp:1757,den:1.54,ar:174,ea:2.37,cfg:"[Ar]4s²",val:2,unp:0,ie2:1145,ox:"+2",oxmax:2,oxmin:2,ion:2,oxide:"basic",rw:"moderate",ro:"high",t3:"metal",econd:"good",tcond:201,hcap:25.9,hfus:8.54,hvap:155,S0:41.6,wf:2.87,sc:0,mag:"para",iso:5,aiso:40,radio:false,bio:"essential",tox:"none",body:0.014},
+{n:21,s:"Sc",nEn:"Scandium",nZh:"钪",col:3,row:4,cat:"trans",ie:633,eneg:1.4,mp:1814,bp:3109,den:2.99,ar:159,ea:18,cfg:"[Ar]3d¹4s²",val:3,unp:1,ie2:1235,ox:"+3",oxmax:3,oxmin:3,ion:3,oxide:"ampho",rw:"slow",ro:"moderate",t3:"metal",econd:"good",tcond:16,hcap:25.5,hfus:14.1,hvap:333,S0:34.6,wf:3.5,sc:0.05,mag:"para",iso:1,aiso:45,radio:false,bio:"none",tox:"low",body:0},
+{n:22,s:"Ti",nEn:"Titanium",nZh:"钛",col:4,row:4,cat:"trans",ie:659,eneg:1.5,mp:1941,bp:3560,den:4.506,ar:148,ea:7.6,cfg:"[Ar]3d²4s²",val:4,unp:2,ie2:1310,ox:"+4, +3",oxmax:4,oxmin:2,ion:4,oxide:"ampho",rw:"none",ro:"moderate",t3:"metal",econd:"good",tcond:22,hcap:25.1,hfus:14.1,hvap:425,S0:30.7,wf:4.33,sc:0.4,mag:"para",iso:5,aiso:48,radio:false,bio:"none",tox:"none",body:0},
+{n:23,s:"V",nEn:"Vanadium",nZh:"钒",col:5,row:4,cat:"trans",ie:651,eneg:1.6,mp:2183,bp:3690,den:6.0,ar:144,ea:50.6,cfg:"[Ar]3d³4s²",val:5,unp:3,ie2:1414,ox:"+5, +4, +3, +2",oxmax:5,oxmin:2,ion:null,oxide:"ampho",rw:"none",ro:"moderate",t3:"metal",econd:"good",tcond:31,hcap:24.9,hfus:21.5,hvap:444,S0:28.9,wf:4.3,sc:5.4,mag:"para",iso:1,aiso:51,radio:false,bio:"trace",tox:"low",body:0},
+{n:24,s:"Cr",nEn:"Chromium",nZh:"铬",col:6,row:4,cat:"trans",ie:653,eneg:1.7,mp:2180,bp:2944,den:7.15,ar:130,ea:64.3,cfg:"[Ar]3d⁵4s¹",val:6,unp:6,ie2:1591,ox:"+3, +6, +2",oxmax:6,oxmin:2,ion:3,oxide:"ampho",rw:"none",ro:"moderate",t3:"metal",econd:"good",tcond:94,hcap:23.4,hfus:21,hvap:339,S0:23.8,wf:4.5,sc:0,mag:"anti",iso:4,aiso:52,radio:false,bio:"trace",tox:"low",body:0},
+{n:25,s:"Mn",nEn:"Manganese",nZh:"锰",col:7,row:4,cat:"trans",ie:717,eneg:1.6,mp:1519,bp:2334,den:7.3,ar:129,ea:0,cfg:"[Ar]3d⁵4s²",val:7,unp:5,ie2:1509,ox:"+2, +7, +4",oxmax:7,oxmin:2,ion:2,oxide:"ampho",rw:"slow",ro:"moderate",t3:"metal",econd:"good",tcond:7.8,hcap:26.3,hfus:13.2,hvap:221,S0:32,wf:4.1,sc:0,mag:"anti",iso:1,aiso:55,radio:false,bio:"trace",tox:"low",body:0},
+{n:26,s:"Fe",nEn:"Iron",nZh:"铁",col:8,row:4,cat:"trans",ie:762,eneg:1.8,mp:1811,bp:3134,den:7.87,ar:124,ea:15.7,cfg:"[Ar]3d⁶4s²",val:8,unp:4,ie2:1562,ox:"+2, +3",oxmax:6,oxmin:2,ion:3,oxide:"ampho",rw:"slow",ro:"moderate",t3:"metal",econd:"good",tcond:80,hcap:25.1,hfus:13.8,hvap:340,S0:27.3,wf:4.5,sc:0,mag:"ferro",iso:4,aiso:56,radio:false,bio:"trace",tox:"low",body:0},
+{n:27,s:"Co",nEn:"Cobalt",nZh:"钴",col:9,row:4,cat:"trans",ie:760,eneg:1.9,mp:1768,bp:3200,den:8.86,ar:118,ea:63.7,cfg:"[Ar]3d⁷4s²",val:9,unp:3,ie2:1648,ox:"+2, +3",oxmax:5,oxmin:2,ion:2,oxide:"ampho",rw:"none",ro:"moderate",t3:"metal",econd:"good",tcond:100,hcap:24.8,hfus:16.2,hvap:377,S0:30,wf:5.0,sc:0,mag:"ferro",iso:1,aiso:59,radio:false,bio:"trace",tox:"low",body:0},
+{n:28,s:"Ni",nEn:"Nickel",nZh:"镍",col:10,row:4,cat:"trans",ie:737,eneg:1.9,mp:1728,bp:3186,den:8.90,ar:117,ea:112,cfg:"[Ar]3d⁸4s²",val:10,unp:2,ie2:1753,ox:"+2",oxmax:4,oxmin:2,ion:2,oxide:"basic",rw:"none",ro:"moderate",t3:"metal",econd:"good",tcond:91,hcap:26.1,hfus:17.5,hvap:378,S0:29.9,wf:5.15,sc:0,mag:"ferro",iso:5,aiso:58,radio:false,bio:"trace",tox:"low",body:0},
+{n:29,s:"Cu",nEn:"Copper",nZh:"铜",col:11,row:4,cat:"trans",ie:745,eneg:1.9,mp:1358,bp:2835,den:8.96,ar:122,ea:118.4,cfg:"[Ar]3d¹⁰4s¹",val:11,unp:1,ie2:1958,ox:"+2, +1",oxmax:4,oxmin:1,ion:2,oxide:"ampho",rw:"none",ro:"low",t3:"metal",econd:"good",tcond:401,hcap:24.4,hfus:13.3,hvap:300,S0:33.2,wf:4.7,sc:0,mag:"dia",iso:2,aiso:63,radio:false,bio:"trace",tox:"low",body:0},
+{n:30,s:"Zn",nEn:"Zinc",nZh:"锌",col:12,row:4,cat:"trans",ie:906,eneg:1.7,mp:693,bp:1180,den:7.134,ar:120,ea:0,cfg:"[Ar]3d¹⁰4s²",val:12,unp:0,ie2:1733,ox:"+2",oxmax:2,oxmin:2,ion:2,oxide:"ampho",rw:"none",ro:"moderate",t3:"metal",econd:"good",tcond:116,hcap:25.4,hfus:7.32,hvap:115,S0:41.6,wf:4.3,sc:0.85,mag:"dia",iso:5,aiso:64,radio:false,bio:"trace",tox:"low",body:0},
+{n:31,s:"Ga",nEn:"Gallium",nZh:"镓",col:13,row:4,cat:"post",ie:579,eneg:1.8,mp:303,bp:2477,den:5.91,ar:123,ea:28.9,cfg:"[Ar]3d¹⁰4s²4p¹",val:3,unp:1,ie2:1979,ox:"+3",oxmax:3,oxmin:3,ion:3,oxide:"ampho",rw:"none",ro:"low",t3:"metal",econd:"good",tcond:41,hcap:25.9,hfus:5.6,hvap:256,S0:40.9,wf:4.2,sc:1.08,mag:"dia",iso:2,aiso:69,radio:false,bio:"none",tox:"low",body:0},
+{n:32,s:"Ge",nEn:"Germanium",nZh:"锗",col:14,row:4,cat:"metalloid",ie:762,eneg:2.0,mp:1211,bp:3106,den:5.3234,ar:120,ea:119,cfg:"[Ar]3d¹⁰4s²4p²",val:4,unp:2,ie2:1537,ox:"+4, +2",oxmax:4,oxmin:-4,ion:null,oxide:"ampho",rw:"none",ro:"low",t3:"metalloid",econd:"semi",tcond:60,hcap:23.2,hfus:36.9,hvap:334,S0:31.1,wf:5.0,sc:0,mag:"dia",iso:5,aiso:74,radio:false,bio:"none",tox:"low",body:0},
+{n:33,s:"As",nEn:"Arsenic",nZh:"砷",col:15,row:4,cat:"metalloid",ie:944,eneg:2.2,mp:1090,bp:null,den:5.75,ar:120,ea:78,cfg:"[Ar]3d¹⁰4s²4p³",val:5,unp:3,ie2:1798,ox:"+3, +5, −3",oxmax:5,oxmin:-3,ion:-3,oxide:"ampho",rw:"none",ro:"low",t3:"metalloid",econd:"semi",tcond:50,hcap:24.6,hfus:24.4,hvap:32.4,S0:35.1,wf:3.75,sc:0,mag:"dia",iso:1,aiso:75,radio:false,bio:"possibly",tox:"toxic",body:0},
+{n:34,s:"Se",nEn:"Selenium",nZh:"硒",col:16,row:4,cat:"nonmetal",ie:941,eneg:2.6,mp:494,bp:958,den:4.809,ar:118,ea:195,cfg:"[Ar]3d¹⁰4s²4p⁴",val:6,unp:2,ie2:2045,ox:"−2, +6, +4",oxmax:6,oxmin:-2,ion:-2,oxide:"acidic",rw:"none",ro:"low",t3:"nonmetal",econd:"semi",tcond:0.52,hcap:25.4,hfus:6.7,hvap:95.5,S0:42.4,wf:5.9,sc:0,mag:"dia",iso:6,aiso:80,radio:false,bio:"trace",tox:"toxic",body:0},
+{n:35,s:"Br",nEn:"Bromine",nZh:"溴",col:17,row:4,cat:"halogen",ie:1140,eneg:3.0,mp:266,bp:332,den:3.1028,ar:117,ea:324.6,cfg:"[Ar]3d¹⁰4s²4p⁵",val:7,unp:1,ie2:2103,ox:"−1, +5, +1",oxmax:7,oxmin:-1,ion:-1,oxide:"acidic",rw:"slow",ro:"low",t3:"nonmetal",econd:"poor",tcond:0.12,hcap:36,hfus:5.8,hvap:15,S0:152.2,wf:null,sc:0,mag:"dia",iso:2,aiso:79,radio:false,bio:"trace",tox:"toxic",body:0},
+{n:36,s:"Kr",nEn:"Krypton",nZh:"氪",col:18,row:4,cat:"noble",ie:1351,eneg:null,mp:116,bp:120,den:0.003425,ar:116,ea:0,cfg:"[Ar]3d¹⁰4s²4p⁶",val:8,unp:0,ie2:2350,ox:"0, +2",oxmax:2,oxmin:0,ion:null,oxide:null,rw:"none",ro:"none",t3:"nonmetal",econd:"poor",tcond:0.0094,hcap:20.8,hfus:1.64,hvap:9.0,S0:164.1,wf:null,sc:0,mag:"dia",iso:6,aiso:84,radio:false,bio:"none",tox:"none",body:0},
+{n:37,s:"Rb",nEn:"Rubidium",nZh:"铷",col:1,row:5,cat:"alkali",ie:403,eneg:0.8,mp:312,bp:961,den:1.53,ar:215,ea:46.9,cfg:"[Kr]5s¹",val:1,unp:1,ie2:2633,ox:"+1",oxmax:1,oxmin:1,ion:1,oxide:"basic",rw:"violent",ro:"high",t3:"metal",econd:"good",tcond:58,hcap:31.1,hfus:2.19,hvap:69,S0:76.8,wf:2.16,sc:0,mag:"para",iso:1,aiso:85,radio:false,bio:"none",tox:"low",body:0},
+{n:38,s:"Sr",nEn:"Strontium",nZh:"锶",col:2,row:5,cat:"alkaline",ie:549,eneg:1.0,mp:1050,bp:1655,den:2.64,ar:190,ea:5.03,cfg:"[Kr]5s²",val:2,unp:0,ie2:1064,ox:"+2",oxmax:2,oxmin:2,ion:2,oxide:"basic",rw:"moderate",ro:"high",t3:"metal",econd:"good",tcond:35,hcap:26.4,hfus:7.43,hvap:137,S0:55,wf:2.59,sc:0,mag:"para",iso:4,aiso:88,radio:false,bio:"none",tox:"low",body:0},
+{n:39,s:"Y",nEn:"Yttrium",nZh:"钇",col:3,row:5,cat:"trans",ie:600,eneg:1.2,mp:1795,bp:3618,den:4.47,ar:176,ea:29.6,cfg:"[Kr]4d¹5s²",val:3,unp:1,ie2:1181,ox:"+3",oxmax:3,oxmin:3,ion:3,oxide:"basic",rw:"slow",ro:"moderate",t3:"metal",econd:"good",tcond:17,hcap:26.5,hfus:11.4,hvap:365,S0:44.4,wf:3.1,sc:0,mag:"para",iso:1,aiso:89,radio:false,bio:"none",tox:"low",body:0},
+{n:40,s:"Zr",nEn:"Zirconium",nZh:"锆",col:4,row:5,cat:"trans",ie:640,eneg:1.3,mp:2128,bp:4682,den:6.52,ar:164,ea:41.1,cfg:"[Kr]4d²5s²",val:4,unp:2,ie2:1270,ox:"+4",oxmax:4,oxmin:1,ion:4,oxide:"ampho",rw:"none",ro:"moderate",t3:"metal",econd:"good",tcond:23,hcap:25.4,hfus:14,hvap:573,S0:39,wf:4.05,sc:0.61,mag:"para",iso:5,aiso:90,radio:false,bio:"none",tox:"none",body:0},
+{n:41,s:"Nb",nEn:"Niobium",nZh:"铌",col:5,row:5,cat:"trans",ie:652,eneg:1.6,mp:2750,bp:5017,den:8.57,ar:156,ea:86.1,cfg:"[Kr]4d⁴5s¹",val:5,unp:5,ie2:1382,ox:"+5",oxmax:5,oxmin:-1,ion:5,oxide:"acidic",rw:"none",ro:"moderate",t3:"metal",econd:"good",tcond:54,hcap:24.6,hfus:30,hvap:690,S0:36.4,wf:4.3,sc:9.25,mag:"para",iso:1,aiso:93,radio:false,bio:"none",tox:"low",body:0},
+{n:42,s:"Mo",nEn:"Molybdenum",nZh:"钼",col:6,row:5,cat:"trans",ie:684,eneg:2.2,mp:2896,bp:4912,den:10.2,ar:146,ea:71.9,cfg:"[Kr]4d⁵5s¹",val:6,unp:6,ie2:1558,ox:"+6, +4",oxmax:6,oxmin:-2,ion:null,oxide:"acidic",rw:"none",ro:"moderate",t3:"metal",econd:"good",tcond:138,hcap:24.1,hfus:37.5,hvap:598,S0:28.7,wf:4.6,sc:0.92,mag:"para",iso:7,aiso:98,radio:false,bio:"trace",tox:"low",body:0},
+{n:43,s:"Tc",nEn:"Technetium",nZh:"锝",col:7,row:5,cat:"trans",ie:702,eneg:2.1,mp:2430,bp:4538,den:11,ar:138,ea:53,cfg:"[Kr]4d⁵5s²",val:7,unp:5,ie2:1472,ox:"+7",oxmax:7,oxmin:-1,ion:null,oxide:"acidic",rw:"none",ro:"moderate",t3:"metal",econd:"good",tcond:51,hcap:24,hfus:33.3,hvap:585,S0:null,wf:null,sc:7.8,mag:"para",iso:0,aiso:99,radio:true,half:"4.2 Myr (⁹⁸Tc)",bio:"none",tox:"low",body:0},
+{n:44,s:"Ru",nEn:"Ruthenium",nZh:"钌",col:8,row:5,cat:"trans",ie:710,eneg:2.2,mp:2606,bp:4423,den:12.1,ar:136,ea:101,cfg:"[Kr]4d⁷5s¹",val:8,unp:4,ie2:1617,ox:"+3, +4",oxmax:8,oxmin:-2,ion:null,oxide:"acidic",rw:"none",ro:"low",t3:"metal",econd:"good",tcond:117,hcap:24.1,hfus:38.6,hvap:591,S0:28.5,wf:4.7,sc:0.49,mag:"para",iso:7,aiso:102,radio:false,bio:"none",tox:"low",body:0},
+{n:45,s:"Rh",nEn:"Rhodium",nZh:"铑",col:9,row:5,cat:"trans",ie:720,eneg:2.3,mp:2237,bp:3968,den:12.4,ar:134,ea:109.7,cfg:"[Kr]4d⁸5s¹",val:9,unp:3,ie2:1744,ox:"+3",oxmax:6,oxmin:-1,ion:3,oxide:"ampho",rw:"none",ro:"low",t3:"metal",econd:"good",tcond:150,hcap:25,hfus:26.6,hvap:494,S0:31.5,wf:4.98,sc:0,mag:"para",iso:1,aiso:103,radio:false,bio:"none",tox:"low",body:0},
+{n:46,s:"Pd",nEn:"Palladium",nZh:"钯",col:10,row:5,cat:"trans",ie:804,eneg:2.2,mp:1828,bp:3236,den:12.0,ar:130,ea:54.2,cfg:"[Kr]4d¹⁰",val:10,unp:0,ie2:1875,ox:"+2, +4",oxmax:4,oxmin:0,ion:2,oxide:"basic",rw:"none",ro:"low",t3:"metal",econd:"good",tcond:72,hcap:25.9,hfus:16.7,hvap:358,S0:37.6,wf:5.22,sc:0,mag:"para",iso:6,aiso:106,radio:false,bio:"none",tox:"low",body:0},
+{n:47,s:"Ag",nEn:"Silver",nZh:"银",col:11,row:5,cat:"trans",ie:731,eneg:1.9,mp:1235,bp:2435,den:10.5,ar:136,ea:125.6,cfg:"[Kr]4d¹⁰5s¹",val:11,unp:1,ie2:2073,ox:"+1",oxmax:3,oxmin:1,ion:1,oxide:"basic",rw:"none",ro:"none",t3:"metal",econd:"good",tcond:429,hcap:25.4,hfus:11.3,hvap:254,S0:42.6,wf:4.7,sc:0,mag:"dia",iso:2,aiso:107,radio:false,bio:"none",tox:"low",body:0},
+{n:48,s:"Cd",nEn:"Cadmium",nZh:"镉",col:12,row:5,cat:"trans",ie:868,eneg:1.7,mp:594,bp:1040,den:8.69,ar:140,ea:0,cfg:"[Kr]4d¹⁰5s²",val:12,unp:0,ie2:1631,ox:"+2",oxmax:2,oxmin:2,ion:2,oxide:"basic",rw:"none",ro:"low",t3:"metal",econd:"good",tcond:97,hcap:26,hfus:6.2,hvap:100,S0:51.8,wf:4.08,sc:0.52,mag:"dia",iso:6,aiso:114,radio:false,bio:"none",tox:"toxic",body:0},
+{n:49,s:"In",nEn:"Indium",nZh:"铟",col:13,row:5,cat:"post",ie:558,eneg:1.8,mp:430,bp:2345,den:7.31,ar:142,ea:28.9,cfg:"[Kr]4d¹⁰5s²5p¹",val:3,unp:1,ie2:1821,ox:"+3",oxmax:3,oxmin:1,ion:3,oxide:"ampho",rw:"none",ro:"low",t3:"metal",econd:"good",tcond:82,hcap:26.7,hfus:3.28,hvap:232,S0:57.8,wf:4.09,sc:3.4,mag:"dia",iso:1,aiso:115,radio:false,bio:"none",tox:"low",body:0},
+{n:50,s:"Sn",nEn:"Tin",nZh:"锡",col:14,row:5,cat:"post",ie:709,eneg:2.0,mp:505,bp:2875,den:7.287,ar:140,ea:107.3,cfg:"[Kr]4d¹⁰5s²5p²",val:4,unp:2,ie2:1412,ox:"+2, +4",oxmax:4,oxmin:-4,ion:null,oxide:"ampho",rw:"none",ro:"low",t3:"metal",econd:"good",tcond:67,hcap:27,hfus:7.0,hvap:296,S0:51.2,wf:4.42,sc:3.72,mag:"dia",iso:10,aiso:120,radio:false,bio:"possibly",tox:"low",body:0},
+{n:51,s:"Sb",nEn:"Antimony",nZh:"锑",col:15,row:5,cat:"metalloid",ie:831,eneg:2.1,mp:904,bp:1860,den:6.68,ar:140,ea:101,cfg:"[Kr]4d¹⁰5s²5p³",val:5,unp:3,ie2:1595,ox:"+3, +5",oxmax:5,oxmin:-3,ion:3,oxide:"ampho",rw:"none",ro:"low",t3:"metalloid",econd:"semi",tcond:24,hcap:25.2,hfus:19.9,hvap:194,S0:45.5,wf:4.55,sc:0,mag:"dia",iso:2,aiso:121,radio:false,bio:"none",tox:"toxic",body:0},
+{n:52,s:"Te",nEn:"Tellurium",nZh:"碲",col:16,row:5,cat:"metalloid",ie:869,eneg:2.1,mp:723,bp:1261,den:6.232,ar:137,ea:190.2,cfg:"[Kr]4d¹⁰5s²5p⁴",val:6,unp:2,ie2:1795,ox:"−2, +4, +6",oxmax:6,oxmin:-2,ion:-2,oxide:"ampho",rw:"none",ro:"low",t3:"metalloid",econd:"semi",tcond:3,hcap:25.7,hfus:17.5,hvap:114,S0:49.7,wf:4.95,sc:0,mag:"dia",iso:8,aiso:130,radio:false,bio:"none",tox:"toxic",body:0},
+{n:53,s:"I",nEn:"Iodine",nZh:"碘",col:17,row:5,cat:"halogen",ie:1008,eneg:2.7,mp:387,bp:457,den:4.933,ar:136,ea:295.2,cfg:"[Kr]4d¹⁰5s²5p⁵",val:7,unp:1,ie2:1846,ox:"−1, +5, +7",oxmax:7,oxmin:-1,ion:-1,oxide:"acidic",rw:"slow",ro:"low",t3:"nonmetal",econd:"semi",tcond:0.45,hcap:36.9,hfus:7.76,hvap:20.9,S0:116.1,wf:null,sc:0,mag:"dia",iso:1,aiso:127,radio:false,bio:"trace",tox:"low",body:0},
+{n:54,s:"Xe",nEn:"Xenon",nZh:"氙",col:18,row:5,cat:"noble",ie:1170,eneg:2.6,mp:161,bp:165,den:0.005366,ar:136,ea:0,cfg:"[Kr]4d¹⁰5s²5p⁶",val:8,unp:0,ie2:2046,ox:"0, +2, +4, +6",oxmax:8,oxmin:0,ion:null,oxide:"acidic",rw:"none",ro:"none",t3:"nonmetal",econd:"poor",tcond:0.0057,hcap:20.8,hfus:2.27,hvap:12.6,S0:169.7,wf:null,sc:0,mag:"dia",iso:9,aiso:132,radio:false,bio:"none",tox:"none",body:0},
+{n:55,s:"Cs",nEn:"Cesium",nZh:"铯",col:1,row:6,cat:"alkali",ie:376,eneg:0.8,mp:302,bp:944,den:1.873,ar:238,ea:45.5,cfg:"[Xe]6s¹",val:1,unp:1,ie2:2234,ox:"+1",oxmax:1,oxmin:1,ion:1,oxide:"basic",rw:"violent",ro:"high",t3:"metal",econd:"good",tcond:36,hcap:32.2,hfus:2.09,hvap:65,S0:85.2,wf:2.14,sc:0,mag:"para",iso:1,aiso:133,radio:false,bio:"none",tox:"low",body:0},
+{n:56,s:"Ba",nEn:"Barium",nZh:"钡",col:2,row:6,cat:"alkaline",ie:503,eneg:0.9,mp:1000,bp:2170,den:3.62,ar:206,ea:13.95,cfg:"[Xe]6s²",val:2,unp:0,ie2:965,ox:"+2",oxmax:2,oxmin:2,ion:2,oxide:"basic",rw:"moderate",ro:"high",t3:"metal",econd:"good",tcond:18,hcap:28.1,hfus:7.12,hvap:140,S0:62.5,wf:2.7,sc:0,mag:"para",iso:7,aiso:138,radio:false,bio:"none",tox:"toxic",body:0},
+{n:57,s:"La",nEn:"Lanthanum",nZh:"镧",col:3,row:6,cat:"trans",ie:538,eneg:1.1,mp:1193,bp:3737,den:6.15,ar:194,ea:48,cfg:"[Xe]5d¹6s²",val:3,unp:1,ie2:1067,ox:"+3",oxmax:3,oxmin:3,ion:3,oxide:"basic",rw:"moderate",ro:"moderate",t3:"metal",econd:"good",tcond:13,hcap:27.1,hfus:6.2,hvap:400,S0:56.9,wf:3.5,sc:6.0,mag:"para",iso:1,aiso:139,radio:false,bio:"none",tox:"low",body:0},
+{n:72,s:"Hf",nEn:"Hafnium",nZh:"铪",col:4,row:6,cat:"trans",ie:659,eneg:1.3,mp:2506,bp:4876,den:13.3,ar:164,ea:0,cfg:"[Xe]4f¹⁴5d²6s²",val:4,unp:2,ie2:1438,ox:"+4",oxmax:4,oxmin:2,ion:4,oxide:"ampho",rw:"none",ro:"moderate",t3:"metal",econd:"good",tcond:23,hcap:25.7,hfus:27.2,hvap:648,S0:43.6,wf:3.9,sc:0.13,mag:"para",iso:6,aiso:180,radio:false,bio:"none",tox:"low",body:0},
+{n:73,s:"Ta",nEn:"Tantalum",nZh:"钽",col:5,row:6,cat:"trans",ie:728,eneg:1.5,mp:3290,bp:5731,den:16.4,ar:158,ea:31,cfg:"[Xe]4f¹⁴5d³6s²",val:5,unp:3,ie2:1500,ox:"+5",oxmax:5,oxmin:-1,ion:5,oxide:"acidic",rw:"none",ro:"moderate",t3:"metal",econd:"good",tcond:57,hcap:25.4,hfus:36,hvap:735,S0:41.5,wf:4.25,sc:4.47,mag:"para",iso:2,aiso:181,radio:false,bio:"none",tox:"none",body:0},
+{n:74,s:"W",nEn:"Tungsten",nZh:"钨",col:6,row:6,cat:"trans",ie:759,eneg:1.7,mp:3695,bp:5828,den:19.3,ar:150,ea:78.8,cfg:"[Xe]4f¹⁴5d⁴6s²",val:6,unp:4,ie2:1700,ox:"+6, +4",oxmax:6,oxmin:-2,ion:null,oxide:"acidic",rw:"none",ro:"low",t3:"metal",econd:"good",tcond:173,hcap:24.3,hfus:35.4,hvap:774,S0:32.6,wf:4.55,sc:0.015,mag:"para",iso:5,aiso:184,radio:false,bio:"trace",tox:"low",body:0},
+{n:75,s:"Re",nEn:"Rhenium",nZh:"铼",col:7,row:6,cat:"trans",ie:756,eneg:1.9,mp:3458,bp:5869,den:20.8,ar:141,ea:6,cfg:"[Xe]4f¹⁴5d⁵6s²",val:7,unp:5,ie2:1260,ox:"+7, +4",oxmax:7,oxmin:-1,ion:null,oxide:"acidic",rw:"none",ro:"low",t3:"metal",econd:"good",tcond:48,hcap:25.5,hfus:33.2,hvap:704,S0:36.9,wf:4.72,sc:1.7,mag:"para",iso:1,aiso:187,radio:false,bio:"none",tox:"low",body:0},
+{n:76,s:"Os",nEn:"Osmium",nZh:"锇",col:8,row:6,cat:"trans",ie:659,eneg:2.2,mp:3306,bp:5285,den:22.587,ar:136,ea:104,cfg:"[Xe]4f¹⁴5d⁶6s²",val:8,unp:4,ie2:1640,ox:"+4, +8",oxmax:8,oxmin:-2,ion:null,oxide:"acidic",rw:"none",ro:"low",t3:"metal",econd:"good",tcond:88,hcap:24.7,hfus:31,hvap:678,S0:32.6,wf:5.93,sc:0.66,mag:"para",iso:7,aiso:192,radio:false,bio:"none",tox:"toxic",body:0},
+{n:77,s:"Ir",nEn:"Iridium",nZh:"铱",col:9,row:6,cat:"trans",ie:728,eneg:2.2,mp:2719,bp:4701,den:22.562,ar:132,ea:150.9,cfg:"[Xe]4f¹⁴5d⁷6s²",val:9,unp:3,ie2:1640,ox:"+3, +4",oxmax:6,oxmin:-3,ion:null,oxide:"ampho",rw:"none",ro:"low",t3:"metal",econd:"good",tcond:147,hcap:25.1,hfus:26,hvap:564,S0:35.5,wf:5.27,sc:0.11,mag:"para",iso:2,aiso:193,radio:false,bio:"none",tox:"low",body:0},
+{n:78,s:"Pt",nEn:"Platinum",nZh:"铂",col:10,row:6,cat:"trans",ie:864,eneg:2.2,mp:2041,bp:4098,den:21.5,ar:130,ea:205.3,cfg:"[Xe]4f¹⁴5d⁹6s¹",val:10,unp:2,ie2:1791,ox:"+2, +4",oxmax:6,oxmin:-3,ion:2,oxide:"basic",rw:"none",ro:"none",t3:"metal",econd:"good",tcond:72,hcap:25.9,hfus:22,hvap:469,S0:41.6,wf:5.65,sc:0,mag:"para",iso:6,aiso:195,radio:false,bio:"none",tox:"low",body:0},
+{n:79,s:"Au",nEn:"Gold",nZh:"金",col:11,row:6,cat:"trans",ie:890,eneg:2.4,mp:1337,bp:3129,den:19.3,ar:130,ea:222.8,cfg:"[Xe]4f¹⁴5d¹⁰6s¹",val:11,unp:1,ie2:1980,ox:"+3, +1",oxmax:5,oxmin:-1,ion:3,oxide:"basic",rw:"none",ro:"none",t3:"metal",econd:"good",tcond:318,hcap:25.4,hfus:12.5,hvap:324,S0:47.4,wf:5.1,sc:0,mag:"dia",iso:1,aiso:197,radio:false,bio:"none",tox:"low",body:0},
+{n:80,s:"Hg",nEn:"Mercury",nZh:"汞",col:12,row:6,cat:"trans",ie:1007,eneg:1.9,mp:234,bp:630,den:13.5336,ar:132,ea:0,cfg:"[Xe]4f¹⁴5d¹⁰6s²",val:12,unp:0,ie2:1810,ox:"+2, +1",oxmax:2,oxmin:1,ion:2,oxide:"basic",rw:"none",ro:"low",t3:"metal",econd:"good",tcond:8.3,hcap:28.0,hfus:2.29,hvap:59.1,S0:75.9,wf:4.49,sc:4.15,mag:"dia",iso:7,aiso:202,radio:false,bio:"none",tox:"toxic",body:0},
+{n:81,s:"Tl",nEn:"Thallium",nZh:"铊",col:13,row:6,cat:"post",ie:589,eneg:1.8,mp:577,bp:1746,den:11.8,ar:144,ea:36.4,cfg:"[Xe]4f¹⁴5d¹⁰6s²6p¹",val:3,unp:1,ie2:1971,ox:"+1, +3",oxmax:3,oxmin:1,ion:1,oxide:"basic",rw:"none",ro:"low",t3:"metal",econd:"good",tcond:46,hcap:26.3,hfus:4.14,hvap:165,S0:64.2,wf:3.84,sc:2.38,mag:"dia",iso:2,aiso:205,radio:false,bio:"none",tox:"toxic",body:0},
+{n:82,s:"Pb",nEn:"Lead",nZh:"铅",col:14,row:6,cat:"post",ie:716,eneg:1.8,mp:600,bp:2022,den:11.3,ar:145,ea:34.4,cfg:"[Xe]4f¹⁴5d¹⁰6s²6p²",val:4,unp:2,ie2:1450,ox:"+2, +4",oxmax:4,oxmin:-4,ion:2,oxide:"ampho",rw:"none",ro:"low",t3:"metal",econd:"good",tcond:35,hcap:26.4,hfus:4.77,hvap:178,S0:64.8,wf:4.25,sc:7.2,mag:"dia",iso:4,aiso:208,radio:false,bio:"none",tox:"toxic",body:0},
+{n:83,s:"Bi",nEn:"Bismuth",nZh:"铋",col:15,row:6,cat:"post",ie:703,eneg:1.9,mp:544,bp:1837,den:9.79,ar:150,ea:90.9,cfg:"[Xe]4f¹⁴5d¹⁰6s²6p³",val:5,unp:3,ie2:1610,ox:"+3, +5",oxmax:5,oxmin:-3,ion:3,oxide:"ampho",rw:"none",ro:"low",t3:"metal",econd:"good",tcond:8,hcap:25.5,hfus:11.3,hvap:179,S0:56.7,wf:4.22,sc:0,mag:"dia",iso:0,aiso:209,radio:true,half:"2.0×10¹⁹ yr (²⁰⁹Bi)",bio:"none",tox:"low",body:0},
+{n:84,s:"Po",nEn:"Polonium",nZh:"钋",col:16,row:6,cat:"metalloid",ie:812,eneg:2.0,mp:527,bp:1235,den:9.20,ar:142,ea:136,cfg:"[Xe]4f¹⁴5d¹⁰6s²6p⁴",val:6,unp:2,ie2:null,ox:"+2, +4",oxmax:6,oxmin:-2,ion:null,oxide:"ampho",rw:"none",ro:"low",t3:"metalloid",econd:"semi",tcond:20,hcap:26.4,hfus:13,hvap:100,S0:null,wf:null,sc:0,mag:"para",iso:0,aiso:209,radio:true,half:"124 yr (²⁰⁹Po)",bio:"none",tox:"toxic",body:0},
+{n:85,s:"At",nEn:"Astatine",nZh:"砹",col:17,row:6,cat:"halogen",ie:null,eneg:2.2,mp:575,bp:null,den:null,ar:148,ea:233,cfg:"[Xe]4f¹⁴5d¹⁰6s²6p⁵",val:7,unp:1,ie2:null,ox:"−1, +1",oxmax:7,oxmin:-1,ion:-1,oxide:"acidic",rw:"none",ro:"low",t3:"metalloid",econd:"semi",tcond:2,hcap:null,hfus:6,hvap:40,S0:null,wf:null,sc:null,mag:"dia",iso:0,aiso:210,radio:true,half:"8.1 hr (²¹⁰At)",bio:"none",tox:"toxic",body:0},
+{n:86,s:"Rn",nEn:"Radon",nZh:"氡",col:18,row:6,cat:"noble",ie:1037,eneg:null,mp:202,bp:211,den:0.009074,ar:146,ea:0,cfg:"[Xe]4f¹⁴5d¹⁰6s²6p⁶",val:8,unp:0,ie2:null,ox:"0, +2",oxmax:2,oxmin:0,ion:null,oxide:null,rw:"none",ro:"none",t3:"nonmetal",econd:"poor",tcond:0.0036,hcap:20.8,hfus:3,hvap:17,S0:176.2,wf:null,sc:0,mag:"dia",iso:0,aiso:222,radio:true,half:"3.8 d (²²²Rn)",bio:"none",tox:"toxic",body:0},
+{n:87,s:"Fr",nEn:"Francium",nZh:"钫",col:1,row:7,cat:"alkali",ie:393,eneg:0.7,mp:300,bp:null,den:null,ar:242,ea:46.9,cfg:"[Rn]7s¹",val:1,unp:1,ie2:2170,ox:"+1",oxmax:1,oxmin:1,ion:1,oxide:"basic",rw:"violent",ro:"high",t3:"metal",econd:"good",tcond:null,hcap:null,hfus:2,hvap:65,S0:null,wf:null,sc:null,mag:"para",iso:0,aiso:223,radio:true,half:"22 min (²²³Fr)",bio:"none",tox:"low",body:0},
+{n:88,s:"Ra",nEn:"Radium",nZh:"镭",col:2,row:7,cat:"alkaline",ie:509,eneg:0.9,mp:969,bp:null,den:5,ar:211,ea:9.6,cfg:"[Rn]7s²",val:2,unp:0,ie2:979,ox:"+2",oxmax:2,oxmin:2,ion:2,oxide:"basic",rw:"moderate",ro:"high",t3:"metal",econd:"good",tcond:19,hcap:null,hfus:8,hvap:113,S0:null,wf:null,sc:0,mag:"para",iso:0,aiso:226,radio:true,half:"1600 yr (²²⁶Ra)",bio:"none",tox:"toxic",body:0},
+{n:89,s:"Ac",nEn:"Actinium",nZh:"锕",col:3,row:7,cat:"trans",ie:499,eneg:1.1,mp:1323,bp:3471,den:10,ar:201,ea:33.8,cfg:"[Rn]6d¹7s²",val:3,unp:1,ie2:1170,ox:"+3",oxmax:3,oxmin:3,ion:3,oxide:"basic",rw:"moderate",ro:"moderate",t3:"metal",econd:"good",tcond:12,hcap:27.2,hfus:14,hvap:400,S0:56.5,wf:null,sc:null,mag:"para",iso:0,aiso:227,radio:true,half:"21.8 yr (²²⁷Ac)",bio:"none",tox:"toxic",body:0}
+];
+
+/* ============================================================
+   IONIC RADII (Shannon effective ionic radii, 6-coordinate, pm;
+   high-spin used for transition metals). main = most common ion
+   charge. Elements absent here have no common monatomic ion
+   (C, noble gases, At) → ionic radius shown as blank.
+   ============================================================ */
+const IONS={
+ H:{main:1,ions:[{q:-1,r:140},{q:1,r:0}]},
+ Li:{main:1,ions:[{q:1,r:76}]}, Be:{main:2,ions:[{q:2,r:45}]}, B:{main:3,ions:[{q:3,r:27}]},
+ N:{main:-3,ions:[{q:-3,r:146}]}, O:{main:-2,ions:[{q:-2,r:140}]}, F:{main:-1,ions:[{q:-1,r:133}]},
+ Na:{main:1,ions:[{q:1,r:102}]}, Mg:{main:2,ions:[{q:2,r:72}]}, Al:{main:3,ions:[{q:3,r:53.5}]},
+ Si:{main:4,ions:[{q:4,r:40}]}, P:{main:-3,ions:[{q:-3,r:212},{q:5,r:38}]},
+ S:{main:-2,ions:[{q:-2,r:184},{q:6,r:29}]}, Cl:{main:-1,ions:[{q:-1,r:181},{q:7,r:27}]},
+ K:{main:1,ions:[{q:1,r:138}]}, Ca:{main:2,ions:[{q:2,r:100}]}, Sc:{main:3,ions:[{q:3,r:74.5}]},
+ Ti:{main:4,ions:[{q:2,r:86},{q:3,r:67},{q:4,r:60.5}]},
+ V:{main:3,ions:[{q:2,r:79},{q:3,r:64},{q:4,r:58},{q:5,r:54}]},
+ Cr:{main:3,ions:[{q:2,r:80},{q:3,r:61.5},{q:6,r:44}]},
+ Mn:{main:2,ions:[{q:2,r:83},{q:3,r:64.5},{q:4,r:53},{q:7,r:46}]},
+ Fe:{main:2,ions:[{q:2,r:78},{q:3,r:64.5}]}, Co:{main:2,ions:[{q:2,r:74.5},{q:3,r:61}]},
+ Ni:{main:2,ions:[{q:2,r:69}]}, Cu:{main:2,ions:[{q:1,r:77},{q:2,r:73}]}, Zn:{main:2,ions:[{q:2,r:74}]},
+ Ga:{main:3,ions:[{q:3,r:62}]}, Ge:{main:4,ions:[{q:2,r:73},{q:4,r:53}]},
+ As:{main:3,ions:[{q:-3,r:222},{q:3,r:58},{q:5,r:46}]}, Se:{main:-2,ions:[{q:-2,r:198},{q:6,r:42}]},
+ Br:{main:-1,ions:[{q:-1,r:196},{q:7,r:39}]},
+ Rb:{main:1,ions:[{q:1,r:152}]}, Sr:{main:2,ions:[{q:2,r:118}]}, Y:{main:3,ions:[{q:3,r:90}]},
+ Zr:{main:4,ions:[{q:4,r:72}]}, Nb:{main:5,ions:[{q:5,r:64}]}, Mo:{main:6,ions:[{q:4,r:65},{q:6,r:59}]},
+ Tc:{main:7,ions:[{q:4,r:64.5},{q:7,r:56}]}, Ru:{main:3,ions:[{q:3,r:68},{q:4,r:62}]},
+ Rh:{main:3,ions:[{q:3,r:66.5}]}, Pd:{main:2,ions:[{q:2,r:86}]}, Ag:{main:1,ions:[{q:1,r:115}]},
+ Cd:{main:2,ions:[{q:2,r:95}]}, In:{main:3,ions:[{q:3,r:80}]}, Sn:{main:4,ions:[{q:2,r:118},{q:4,r:69}]},
+ Sb:{main:3,ions:[{q:3,r:76},{q:5,r:60}]}, Te:{main:-2,ions:[{q:-2,r:221},{q:4,r:97},{q:6,r:56}]},
+ I:{main:-1,ions:[{q:-1,r:220},{q:7,r:53}]},
+ Cs:{main:1,ions:[{q:1,r:167}]}, Ba:{main:2,ions:[{q:2,r:135}]}, La:{main:3,ions:[{q:3,r:103}]},
+ Hf:{main:4,ions:[{q:4,r:71}]}, Ta:{main:5,ions:[{q:5,r:64}]}, W:{main:6,ions:[{q:4,r:66},{q:6,r:60}]},
+ Re:{main:7,ions:[{q:4,r:63},{q:7,r:53}]}, Os:{main:4,ions:[{q:4,r:63}]},
+ Ir:{main:4,ions:[{q:3,r:68},{q:4,r:62.5}]}, Pt:{main:2,ions:[{q:2,r:80},{q:4,r:62.5}]},
+ Au:{main:3,ions:[{q:1,r:137},{q:3,r:85}]}, Hg:{main:2,ions:[{q:2,r:102}]},
+ Tl:{main:1,ions:[{q:1,r:150},{q:3,r:88.5}]}, Pb:{main:2,ions:[{q:2,r:119},{q:4,r:77.5}]},
+ Bi:{main:3,ions:[{q:3,r:103},{q:5,r:76}]}, Po:{main:4,ions:[{q:4,r:94}]},
+ Fr:{main:1,ions:[{q:1,r:180}]}, Ra:{main:2,ions:[{q:2,r:148}]}, Ac:{main:3,ions:[{q:3,r:112}]}
+};
+function irMain(d){ const e=IONS[d.s]; if(!e) return null; const m=e.ions.find(x=>x.q===e.main); return m?m.r:null; }
+function ionSeq(d){ // returns list ordered negative→zero→positive incl. neutral atom
+  const e=IONS[d.s]; const arr=[];
+  if(e) e.ions.forEach(x=>arr.push({q:x.q,r:x.r}));
+  if(d.ar!=null) arr.push({q:0,r:d.ar});
+  arr.sort((a,b)=>a.q-b.q);
+  return arr;
+}
+function chargeLabel(q){ if(q===0) return "0"; return (q>0?"+":"")+q; }
+
+/* ================= i18n ================= */
+let LANG = "en";
+const T = {
+  title:{en:"Interactive Periodic Table", zh:"周期表 · 元素性质可视化"},
+  subtitle:{en:"Element properties visualized. Data: NYS Chemistry Reference Tables (2011) Periodic Table & Table S, extended with standard chemical data.",
+            zh:"元素性质可视化。数据：纽约州化学参考表（2011版）周期表 & Table S，并补充标准化学数据。"},
+  quick:{en:"Quick views", zh:"快速视图"},
+  cats:{en:"Property categories", zh:"性质分类"},
+  langBtn:{en:"中文", zh:"English"},
+  higher:{en:"taller bar = larger value", zh:"柱越高 = 值越大"},
+  circleBig:{en:"bigger circle = larger radius", zh:"圆越大 = 半径越大"},
+  squareBig:{en:"bigger square = higher density (area ∝ value)", zh:"方块越大 = 值越大（面积 ∝ 数值）"},
+  range:{en:"range", zh:"范围"},
+  above0:{en:"above 0 °C (red ↑)", zh:"高于 0 °C（红↑）"},
+  below0:{en:"below 0 °C (blue ↓)", zh:"低于 0 °C（蓝↓）"},
+  max:{en:"max", zh:"最高"}, min:{en:"min", zh:"最低"},
+  posbar:{en:"positive (red ↑) / negative (blue ↓)", zh:"正值（红↑）/ 负值（蓝↓）"},
+  noPerElem:{en:"Per-element values are not included for this property — see note.", zh:"此性质未逐元素列出数值 —— 见说明。"},
+};
+function t(k){ return (T[k]&&T[k][LANG]) || k; }
+
+/* category names */
+const CATS={
+  alkali:{en:"Alkali metal",zh:"碱金属"}, alkaline:{en:"Alkaline earth",zh:"碱土金属"},
+  trans:{en:"Transition metal",zh:"过渡金属"}, post:{en:"Post-transition metal",zh:"后过渡金属"},
+  metalloid:{en:"Metalloid",zh:"类金属"}, nonmetal:{en:"Nonmetal",zh:"非金属"},
+  halogen:{en:"Halogen",zh:"卤素"}, noble:{en:"Noble gas",zh:"稀有气体"}
+};
+
+/* categorical-value color maps (validated slots) */
+const CV={
+  oxide:{order:["basic","ampho","acidic","neutral"],
+    labels:{basic:{en:"Basic",zh:"碱性"},ampho:{en:"Amphoteric",zh:"两性"},acidic:{en:"Acidic",zh:"酸性"},neutral:{en:"Neutral",zh:"中性"}},
+    colors:{basic:"var(--k1)",ampho:"var(--k4)",acidic:"var(--k2)",neutral:"var(--k3)"}},
+  rw:{order:["violent","moderate","slow","none"],
+    labels:{violent:{en:"Violent",zh:"剧烈"},moderate:{en:"Moderate",zh:"中等"},slow:{en:"Slow",zh:"缓慢"},none:{en:"None",zh:"不反应"}},
+    colors:{violent:"var(--k8)",moderate:"var(--k2)",slow:"var(--k4)",none:"var(--k3)"}},
+  ro:{order:["high","moderate","low","none"],
+    labels:{high:{en:"High",zh:"高"},moderate:{en:"Moderate",zh:"中"},low:{en:"Low",zh:"低"},none:{en:"None",zh:"不反应"}},
+    colors:{high:"var(--k8)",moderate:"var(--k2)",low:"var(--k4)",none:"var(--k3)"}},
+  t3:{order:["metal","metalloid","nonmetal"],
+    labels:{metal:{en:"Metal",zh:"金属"},metalloid:{en:"Metalloid",zh:"类金属"},nonmetal:{en:"Nonmetal",zh:"非金属"}},
+    colors:{metal:"var(--k1)",metalloid:"var(--k4)",nonmetal:"var(--k2)"}},
+  econd:{order:["good","semi","poor"],
+    labels:{good:{en:"Good conductor",zh:"良导体"},semi:{en:"Semiconductor",zh:"半导体"},poor:{en:"Insulator",zh:"绝缘/不良"}},
+    colors:{good:"var(--k1)",semi:"var(--k4)",poor:"var(--k2)"}},
+  mag:{order:["ferro","para","anti","dia"],
+    labels:{ferro:{en:"Ferromagnetic",zh:"铁磁"},para:{en:"Paramagnetic",zh:"顺磁"},anti:{en:"Antiferromagnetic",zh:"反铁磁"},dia:{en:"Diamagnetic",zh:"抗磁"}},
+    colors:{ferro:"var(--k8)",para:"var(--k2)",anti:"var(--k7)",dia:"var(--k1)"}},
+  radio:{order:["stable","radio"],
+    labels:{stable:{en:"Stable",zh:"稳定"},radio:{en:"Radioactive",zh:"放射性"}},
+    colors:{stable:"var(--k1)",radio:"var(--k8)"}},
+  bio:{order:["essential","trace","possibly","none"],
+    labels:{essential:{en:"Essential (bulk)",zh:"必需（宏量）"},trace:{en:"Essential trace",zh:"必需微量"},possibly:{en:"Possibly essential",zh:"可能必需"},none:{en:"No known role",zh:"无已知作用"}},
+    colors:{essential:"var(--k6)",trace:"var(--k3)",possibly:"var(--k4)",none:"var(--muted)"}},
+  tox:{order:["none","low","toxic"],
+    labels:{none:{en:"Non-toxic",zh:"无毒"},low:{en:"Low toxicity",zh:"低毒"},toxic:{en:"Toxic",zh:"有毒"}},
+    colors:{none:"var(--k3)",low:"var(--k4)",toxic:"var(--k8)"}},
+  block:{order:["s","p","d","f"],
+    labels:{s:{en:"s-block",zh:"s 区"},p:{en:"p-block",zh:"p 区"},d:{en:"d-block",zh:"d 区"},f:{en:"f-block",zh:"f 区"}},
+    colors:{s:"var(--k2)",p:"var(--k1)",d:"var(--k7)",f:"var(--k5)"}},
+};
+
+/* ================= computed helpers ================= */
+function metChar(d){ // 0..1 metallic-character proxy from position
+  const g = d.col; const p = d.row;
+  return Math.max(0,Math.min(1, 0.45*(p-1)/6 + 0.55*(18-g)/17));
+}
+function npRatio(d){ return d.aiso? (d.aiso - d.n)/d.n : null; }
+
+/* ================= property registry ================= */
+/* type: bar | div | circle | square | cat | catv | text | note
+   get(d): numeric or string; cvkey for catv; block coloring for cfg  */
+const P = {
+  category:{group:"quick", en:"Categories", zh:"元素分类", type:"cat",
+    ex:{en:"Elements grouped by chemical family (metals, metalloids, nonmetals, noble gases…). Think of it as sorting elements by 'personality type' based on where they sit in the table.",
+        zh:"按化学族分类（金属、类金属、非金属、稀有气体……）。相当于根据元素在周期表中的位置，把它们按“性格类型”归类。"}},
+  ar:{group:"gR", en:"Atomic Radius", zh:"原子半径", type:"circle", unit:"pm", get:d=>d.ar, ionHover:true,
+    ex:{en:"Size of the neutral atom — nucleus to outer electrons (Table S). Hover any element to see its atomic and common ionic radii side by side, ordered negative → 0 → positive.",
+        zh:"中性原子的大小 —— 从原子核到外层电子（Table S）。将鼠标悬停在任意元素上，可并排查看其原子半径与常见离子半径，按 负 → 0 → 正 排序。"}},
+  ir:{group:"gR", en:"Ionic Radius", zh:"离子半径", type:"circle", unit:"pm", get:d=>irMain(d), ionHover:true,
+    ex:{en:"Radius of the element's MOST COMMON ion, so cells are directly comparable. Cations (lost electrons) shrink vs. the atom; anions (gained electrons) grow. Hover shows every common ion for that element, ordered negative → 0 → positive. Shannon effective radii (6-coordinate); elements with no common monatomic ion (C, noble gases, At) are blank.",
+        zh:"元素最常见离子的半径，便于各格直接比较。阳离子（失电子）比原子小；阴离子（得电子）比原子大。悬停可显示该元素所有常见离子，按 负 → 0 → 正 排序。采用 Shannon 有效离子半径（6 配位）；无常见单原子离子的元素（碳、稀有气体、砹）留空。"}},
+  ie:{group:"quick", en:"1st Ionization Energy", zh:"第一电离能", type:"bar", unit:"kJ/mol", get:d=>d.ie,
+    ex:{en:"Energy needed to pull off the first (outermost) electron. High = the atom holds its electrons tightly, like a strong grip.",
+        zh:"移走第一个（最外层）电子所需的能量。数值高 = 原子抓电子抓得牢，像手劲很大。"}},
+  eneg:{group:"quick", en:"Electronegativity", zh:"电负性", type:"bar", unit:"", get:d=>d.eneg,
+    ex:{en:"How strongly an atom pulls shared electrons toward itself in a bond. Fluorine is the greediest 'electron hog'.",
+        zh:"成键时原子把共用电子拉向自己的能力。氟是最贪婪的“抢电子高手”。"}},
+  ea:{group:"quick", en:"Electron Affinity", zh:"电子亲和能", type:"bar", unit:"kJ/mol", get:d=>d.ea,
+    ex:{en:"Energy released when an atom gains an electron. High = the atom 'wants' an extra electron. Not in the NYS table — standard CRC data.",
+        zh:"原子获得一个电子时释放的能量。数值高 = 原子“想要”额外的电子。不在 NYS 表中，取自标准 CRC 数据。"}},
+  mp:{group:"quick", en:"Melting Point", zh:"熔点", type:"div", unit:"°C", get:d=>d.mp==null?null:d.mp-273,
+    ex:{en:"Temperature where solid turns to liquid, shown relative to 0 °C. Red = above freezing, blue = below. Strong bonds → high melting point.",
+        zh:"固体变液体的温度，以 0 °C 为基准。红 = 高于冰点，蓝 = 低于。键越强 → 熔点越高。"}},
+  bp:{group:"quick", en:"Boiling Point", zh:"沸点", type:"div", unit:"°C", get:d=>d.bp==null?null:d.bp-273,
+    ex:{en:"Temperature where liquid turns to gas, relative to 0 °C. Red = above, blue = below. Metals with strong bonding boil very high.",
+        zh:"液体变气体的温度，以 0 °C 为基准。红 = 高于，蓝 = 低于。键强的金属沸点极高。"}},
+  den:{group:"quick", en:"Density", zh:"密度", type:"square", unit:"g/cm³", get:d=>d.den,
+    ex:{en:"Mass packed into a given volume. Osmium and iridium are the densest — a fist-sized lump would weigh over 20 kg.",
+        zh:"单位体积内装进的质量。锇和铱最致密 —— 一个拳头大的块就超过 20 公斤。"}},
+
+  /* ---- group 1: electronic structure ---- */
+  cfg:{group:"g1", en:"Electron configuration", zh:"电子排布", type:"text", get:d=>d.cfg,
+    ex:{en:"The 'address book' of where every electron lives — which shells and orbitals they occupy. It dictates almost all chemical behavior.",
+        zh:"每个电子“住在哪里”的地址簿 —— 占据哪些电子层和轨道。它几乎决定了全部化学行为。"}},
+  val:{group:"g1", en:"Valence electrons", zh:"价电子数", type:"bar", unit:"", get:d=>d.val,
+    ex:{en:"Electrons in the outermost shell — the ones that do the bonding. Like an atom's 'hands' available to hold onto other atoms.",
+        zh:"最外层的电子 —— 负责成键的那些。就像原子用来抓住其他原子的“手”。"}},
+  vshell:{group:"g1", en:"Valence shell (n)", zh:"价电子层 (n)", type:"text", get:d=>"n = "+d.row,
+    ex:{en:"The principal quantum number of the outermost occupied shell (= the period number). Higher n = valence electrons sit farther from the nucleus.",
+        zh:"最外层电子层的主量子数（= 周期数）。n 越大，价电子离核越远。"}},
+  unp:{group:"g1", en:"Unpaired electrons", zh:"未成对电子", type:"bar", unit:"", get:d=>d.unp,
+    ex:{en:"Ground-state electrons that sit alone in an orbital rather than in pairs. More unpaired electrons → stronger magnetic response.",
+        zh:"基态下单独占据轨道、未配对的电子。未成对电子越多 → 磁性响应越强。"}},
+  ie1:{group:"g1", en:"1st Ionization Energy", zh:"第一电离能", type:"bar", unit:"kJ/mol", get:d=>d.ie, exRef:"ie"},
+  ie2:{group:"g1", en:"2nd Ionization Energy", zh:"第二电离能", type:"bar", unit:"kJ/mol", get:d=>d.ie2,
+    ex:{en:"Energy to remove a second electron (from the +1 ion). Always higher than the first; a huge jump signals a stable noble-gas core underneath.",
+        zh:"移走第二个电子（从 +1 离子）所需能量。总比第一电离能大；若突然剧增，说明下面是稳定的稀有气体内核。"}},
+  ea1:{group:"g1", en:"Electron Affinity", zh:"电子亲和能", type:"bar", unit:"kJ/mol", get:d=>d.ea, exRef:"ea"},
+  eneg1:{group:"g1", en:"Electronegativity", zh:"电负性", type:"bar", unit:"", get:d=>d.eneg, exRef:"eneg"},
+
+  /* ---- group 2: chemical reactivity ---- */
+  ox:{group:"g2", en:"Common oxidation states", zh:"常见氧化态", type:"text", get:d=>d.ox,
+    ex:{en:"The charges an element commonly takes in compounds — how many electrons it tends to give up (+) or grab (−) when it reacts.",
+        zh:"元素在化合物中常见的电荷 —— 反应时倾向失去（+）或获得（−）多少电子。"}},
+  oxmax:{group:"g2", en:"Maximum oxidation state", zh:"最高氧化态", type:"bar", unit:"", get:d=>d.oxmax,
+    ex:{en:"The most positive charge an element reaches — roughly how many electrons it can lose at most. Peaks across each period (e.g. +7 for Mn, Cl).",
+        zh:"元素能达到的最正电荷 —— 大致是它最多能失去多少电子。每周期中达到峰值（如 Mn、Cl 的 +7）。"}},
+  oxmin:{group:"g2", en:"Minimum oxidation state", zh:"最低氧化态", type:"div", unit:"", get:d=>d.oxmin,
+    ex:{en:"The most negative charge — how many electrons a nonmetal can gain. Red = positive, blue = negative. Nonmetals go deep blue (e.g. −3, −2).",
+        zh:"最负电荷 —— 非金属能获得多少电子。红 = 正，蓝 = 负。非金属偏深蓝（如 −3、−2）。"}},
+  ion:{group:"g2", en:"Common ionic charge", zh:"常见离子电荷", type:"div", unit:"", get:d=>d.ion,
+    ex:{en:"The charge of the simple ion the element usually forms. Red = cation (+), blue = anion (−). Group 1 → +1, Group 17 → −1.",
+        zh:"元素通常形成的简单离子的电荷。红 = 阳离子（+），蓝 = 阴离子（−）。第 1 族 → +1，第 17 族 → −1。"}},
+  metchar:{group:"g2", en:"Metallic character", zh:"金属性", type:"trend", get:d=>metChar(d),
+    ex:{en:"How 'metal-like' an element behaves (loses electrons, conducts, shiny). Increases going down and to the left. Shown as a periodic-trend estimate, not a measured number.",
+        zh:"元素表现得多“像金属”（失电子、导电、有光泽）。越往下、往左越强。此处为周期趋势估计值，非实测数值。"}},
+  reduce:{group:"g2", en:"Reducing ability", zh:"还原能力", type:"trend",
+    get:d=>0.65*metChar(d)+0.35*(1-norm(d.ie,320,2400)),
+    ex:{en:"How readily an element donates electrons (acts as a reducing agent). Reactive metals like the alkalis are the strongest reducers. Trend estimate.",
+        zh:"元素给出电子（作还原剂）的难易。碱金属等活泼金属还原性最强。为趋势估计。"}},
+  oxidize:{group:"g2", en:"Oxidizing ability", zh:"氧化能力", type:"trend",
+    get:d=>0.6*(1-metChar(d))+0.4*norm(d.ea,0,349),
+    ex:{en:"How readily an element accepts electrons (acts as an oxidizing agent). Fluorine and oxygen are the strongest oxidizers. Trend estimate.",
+        zh:"元素接受电子（作氧化剂）的难易。氟和氧氧化性最强。为趋势估计。"}},
+  rw:{group:"g2", en:"Reactivity with water", zh:"与水反应", type:"catv", cv:"rw", get:d=>d.rw,
+    ex:{en:"How vigorously the element reacts with water. Alkali metals react violently (fizz, flame); most metals barely react; noble gases don't.",
+        zh:"元素与水反应的剧烈程度。碱金属剧烈反应（冒泡、起火）；多数金属几乎不反应；稀有气体不反应。"}},
+  ro:{group:"g2", en:"Reactivity with oxygen", zh:"与氧反应", type:"catv", cv:"ro", get:d=>d.ro,
+    ex:{en:"How readily the element combines with oxygen to form oxides (tarnish, burn, rust). Reactive metals oxidize fast; gold and platinum resist.",
+        zh:"元素与氧结合成氧化物的难易（变暗、燃烧、生锈）。活泼金属氧化快；金和铂几乎不氧化。"}},
+  oxide:{group:"g2", en:"Acid–base of oxide", zh:"氧化物酸碱性", type:"catv", cv:"oxide", get:d=>d.oxide,
+    ex:{en:"Whether the element's oxide acts as a base, acid, or both (amphoteric) in water. Metal oxides tend basic; nonmetal oxides tend acidic.",
+        zh:"元素的氧化物在水中呈碱性、酸性还是两性。金属氧化物偏碱性；非金属氧化物偏酸性。"}},
+
+  /* ---- group 3: metallic / nonmetallic ---- */
+  metchar3:{group:"g3", en:"Metallic character", zh:"金属性", type:"trend", get:d=>metChar(d), exRef:"metchar"},
+  nonmet:{group:"g3", en:"Nonmetallic character", zh:"非金属性", type:"trend", get:d=>1-metChar(d),
+    ex:{en:"The opposite of metallic character — tendency to gain electrons and form acidic oxides. Increases toward the top-right (F, O). Trend estimate.",
+        zh:"与金属性相反 —— 获得电子、形成酸性氧化物的倾向。越靠右上（F、O）越强。为趋势估计。"}},
+  t3:{group:"g3", en:"Metal / Metalloid / Nonmetal", zh:"金属/类金属/非金属", type:"catv", cv:"t3", get:d=>d.t3,
+    ex:{en:"The three-way split of the table. Metalloids (B, Si, Ge, As…) straddle the staircase line and behave in between.",
+        zh:"周期表的三分法。类金属（B、Si、Ge、As……）位于阶梯线附近，性质介于两者之间。"}},
+  econd:{group:"g3", en:"Electrical conductivity", zh:"导电性", type:"catv", cv:"econd", get:d=>d.econd,
+    ex:{en:"How well the element carries electric current. Metals = good conductors, metalloids = semiconductors, nonmetals = insulators.",
+        zh:"元素导电能力。金属 = 良导体，类金属 = 半导体，非金属 = 绝缘体。"}},
+  tcond:{group:"g3", en:"Thermal conductivity", zh:"导热性", type:"bar", unit:"W/(m·K)", get:d=>d.tcond,
+    ex:{en:"How fast heat flows through the element. Silver and copper top the list — why they're used in cookware and heat sinks.",
+        zh:"热量在元素中传导的快慢。银和铜居首 —— 因此用于炊具和散热片。"}},
+
+  /* ---- group 4: thermodynamic ---- */
+  hcap:{group:"g4", en:"Molar heat capacity", zh:"摩尔热容", type:"bar", unit:"J/(mol·K)", get:d=>d.hcap,
+    ex:{en:"Energy to warm one mole by 1 K. Most solid elements cluster near 25 J/mol·K (the Dulong–Petit rule).",
+        zh:"使一摩尔升温 1 K 所需能量。多数固态元素都接近 25 J/mol·K（杜隆–珀蒂定律）。"}},
+  hfus:{group:"g4", en:"Enthalpy of fusion", zh:"熔化焓", type:"bar", unit:"kJ/mol", get:d=>d.hfus,
+    ex:{en:"Heat absorbed to melt one mole of the solid. Larger for elements with strong bonds (tungsten, carbon).",
+        zh:"熔化一摩尔固体吸收的热量。键强的元素更大（钨、碳）。"}},
+  hvap:{group:"g4", en:"Enthalpy of vaporization", zh:"汽化焓", type:"bar", unit:"kJ/mol", get:d=>d.hvap,
+    ex:{en:"Heat to boil one mole of liquid into gas. Tungsten needs the most — a sign of very strong metallic bonding.",
+        zh:"把一摩尔液体沸腾成气体所需热量。钨最高 —— 金属键极强的标志。"}},
+  hatom:{group:"g4", en:"Enthalpy of atomization", zh:"原子化焓", type:"note",
+    ex:{en:"Energy to break one mole of the element into free gaseous atoms. Closely tracks bond strength; for most solids it's near the enthalpy of vaporization shown above.",
+        zh:"把一摩尔元素拆成自由气态原子所需能量。与键强密切相关；对多数固体，它接近上面的汽化焓。"}},
+  S0:{group:"g4", en:"Standard molar entropy", zh:"标准摩尔熵", type:"bar", unit:"J/(mol·K)", get:d=>d.S0,
+    ex:{en:"The 'disorder' of one mole at 298 K. Gases have high entropy; hard, ordered solids like diamond have very low entropy.",
+        zh:"298 K 下一摩尔的“混乱度”。气体熵高；金刚石这类致密有序的固体熵极低。"}},
+  coh:{group:"g4", en:"Cohesive energy", zh:"内聚能", type:"note",
+    ex:{en:"Energy holding the solid together per atom — essentially bond strength in the bulk. It parallels melting point and atomization energy; explicit per-element values aren't included here.",
+        zh:"每个原子把固体“黏”在一起的能量 —— 本质是块体中的键强。它与熔点、原子化能同趋势；此处未逐元素列出。"}},
+
+  /* ---- group 5: electrical / magnetic ---- */
+  econd5:{group:"g5", en:"Electrical conductivity", zh:"导电性", type:"catv", cv:"econd", get:d=>d.econd, exRef:"econd"},
+  res:{group:"g5", en:"Electrical resistivity", zh:"电阻率", type:"note",
+    ex:{en:"Resistance to current flow — the exact inverse of conductivity. Good conductors (Ag, Cu) have the lowest resistivity; insulators the highest. See the conductivity view.",
+        zh:"对电流的阻碍 —— 正好是导电性的倒数。良导体（银、铜）电阻率最低，绝缘体最高。参见导电性视图。"}},
+  wf:{group:"g5", en:"Work function", zh:"逸出功", type:"bar", unit:"eV", get:d=>d.wf,
+    ex:{en:"Minimum energy to knock an electron off a metal's surface (key to solar cells and photodetectors). Alkali metals release electrons most easily.",
+        zh:"从金属表面打出一个电子所需的最小能量（太阳能电池、光电探测的关键）。碱金属最易放出电子。"}},
+  sc:{group:"g5", en:"Superconducting Tc", zh:"超导转变温度", type:"bar", unit:"K", get:d=>d.sc||null,
+    ex:{en:"Temperature below which the element loses all electrical resistance. Only some elements superconduct at all; niobium has the highest (9.3 K). '—' = not superconducting at 1 atm.",
+        zh:"低于此温度元素完全失去电阻。只有部分元素超导；铌最高（9.3 K）。'—' = 常压下不超导。"}},
+  mag:{group:"g5", en:"Magnetic ordering", zh:"磁性类型", type:"catv", cv:"mag", get:d=>d.mag,
+    ex:{en:"How the element responds to magnets at room temperature. Only Fe, Co, Ni are ferromagnetic (stick to a magnet); most are weakly para- or diamagnetic.",
+        zh:"室温下元素对磁体的响应。只有铁、钴、镍是铁磁性（能被磁铁吸）；多数为弱顺磁或抗磁。"}},
+  suscept:{group:"g5", en:"Magnetic susceptibility", zh:"磁化率", type:"note",
+    ex:{en:"The numeric strength (and sign) of magnetic response — positive for para/ferromagnets, negative for diamagnets. Values span many orders of magnitude and depend on temperature and form, so per-element numbers aren't listed; see 'Magnetic ordering' for the qualitative picture.",
+        zh:"磁响应的数值大小（及符号）—— 顺磁/铁磁为正，抗磁为负。数值跨越多个数量级，且随温度和形态变化，故未逐元素列出；定性情况见“磁性类型”。"}},
+
+  /* ---- group 6: nuclear ---- */
+  iso:{group:"g6", en:"Number of stable isotopes", zh:"稳定同位素数", type:"bar", unit:"", get:d=>d.iso,
+    ex:{en:"How many non-radioactive versions of the element exist (same protons, different neutrons). Tin wins with 10; radioactive elements have zero.",
+        zh:"元素有多少种非放射性版本（质子相同、中子不同）。锡最多（10 种）；放射性元素为 0。"}},
+  aiso:{group:"g6", en:"Most abundant isotope", zh:"最丰同位素", type:"text", get:d=>d.s+"-"+d.aiso,
+    ex:{en:"The isotope that makes up most of the naturally-occurring element — the mass number you'd 'usually' meet.",
+        zh:"天然元素中占比最大的同位素 —— 你“通常”会遇到的质量数。"}},
+  np:{group:"g6", en:"Neutron / proton ratio", zh:"中子/质子比", type:"bar", unit:"", get:d=>npRatio(d), dec:2,
+    ex:{en:"Neutrons divided by protons in the most common isotope. It creeps up from ~1 for light elements toward ~1.5 for heavy ones — extra neutrons buffer proton repulsion.",
+        zh:"最常见同位素中中子数除以质子数。从轻元素的约 1 逐渐升到重元素的约 1.5 —— 多余中子缓冲质子间斥力。"}},
+  radio:{group:"g6", en:"Radioactive vs stable", zh:"放射性 / 稳定", type:"catv", cv:"radio", get:d=>d.radio?"radio":"stable",
+    ex:{en:"Whether the element has any stable isotope. Everything past bismuth (and technetium/promethium) is radioactive — the nucleus can't hold together forever.",
+        zh:"元素是否存在稳定同位素。铋之后（以及锝/钷）全为放射性 —— 原子核无法永久稳定。"}},
+  half:{group:"g6", en:"Half-life (longest-lived)", zh:"半衰期（最长寿）", type:"text", get:d=>d.radio?(d.half||"—"):"stable",
+    ex:{en:"For radioactive elements, how long the most stable isotope takes to decay by half — from seconds to billions of years. Stable elements show 'stable'.",
+        zh:"对放射性元素，其最稳定同位素衰变一半所需时间 —— 从几秒到数十亿年。稳定元素显示 'stable'。"}},
+  block:{group:"g6", en:"Valence orbital (s/p/d/f)", zh:"价层轨道 (s/p/d/f)", type:"catv", cv:"block", get:d=>blockOf(d),
+    ex:{en:"Which type of orbital the highest-energy (valence) electrons occupy — the element's 'block'. s-block = groups 1–2, p-block = groups 13–18, d-block = transition metals, f-block = lanthanides/actinides (omitted here). The block sets the shape of the periodic table and the family's chemistry.",
+        zh:"最高能量（价）电子所占据的轨道类型 —— 即元素所在的“区”。s 区 = 第 1–2 族，p 区 = 第 13–18 族，d 区 = 过渡金属，f 区 = 镧系/锕系（此处未含）。区决定了周期表的形状和该族的化学性质。"}},
+  ncap:{group:"g6", en:"Neutron capture cross section", zh:"中子俘获截面", type:"note",
+    ex:{en:"How likely a nucleus is to absorb a passing neutron — critical for nuclear reactors (boron and cadmium are strong absorbers used in control rods). Values vary enormously with neutron energy, so per-element numbers aren't listed.",
+        zh:"原子核俘获掠过中子的可能性 —— 对核反应堆至关重要（硼、镉吸收强，用于控制棒）。数值随中子能量剧烈变化，故未逐元素列出。"}},
+
+  /* ---- group 7: biological / environmental ---- */
+  bio:{group:"g7", en:"Biological role", zh:"生物学作用", type:"catv", cv:"bio", get:d=>d.bio,
+    ex:{en:"Whether life needs the element: bulk-essential (C, O, Ca…), essential trace (Fe, Zn, I…), possibly essential, or no known role. A rough consensus view.",
+        zh:"生命是否需要该元素：宏量必需（C、O、Ca……）、微量必需（Fe、Zn、I……）、可能必需，或无已知作用。为大致共识。"}},
+  body:{group:"g7", en:"Abundance in human body", zh:"人体丰度", type:"bar", unit:"mass %", get:d=>d.body?d.body*100:null, dec:2,
+    ex:{en:"Fraction of body mass. Oxygen (65%), carbon (18%) and hydrogen (10%) dominate; only major elements are charted here, the rest are trace.",
+        zh:"占体重的比例。氧（65%）、碳（18%）、氢（10%）为主；此处只标出主要元素，其余为微量。"}},
+  tox:{group:"g7", en:"Toxicity", zh:"毒性", type:"catv", cv:"tox", get:d=>d.tox,
+    ex:{en:"Broad hazard of the element/common compounds: non-toxic, low, or toxic (heavy metals like Pb, Hg, Cd, Tl, and radiotoxic elements). A simplified guide only.",
+        zh:"元素/常见化合物的大致危害：无毒、低毒或有毒（铅、汞、镉、铊等重金属及放射性元素）。仅为简化指引。"}},
+  ld50:{group:"g7", en:"LD50", zh:"半数致死量 LD50", type:"note",
+    ex:{en:"The dose lethal to half a test population. It is NOT a property of an element — it depends entirely on the chemical compound, its solubility, and the route of exposure (e.g. metallic mercury vs. methylmercury differ by orders of magnitude). For that reason no single per-element value is meaningful, so none is shown.",
+        zh:"使受试群体半数致死的剂量。它并非元素的属性 —— 完全取决于具体化合物、溶解度和接触途径（如金属汞与甲基汞相差多个数量级）。因此单一的逐元素数值没有意义，故不显示。"}},
+  enzyme:{group:"g7", en:"Enzyme cofactor frequency", zh:"酶辅因子频率", type:"note",
+    ex:{en:"How often the element appears as a cofactor in enzymes. Zinc, magnesium, and iron are the workhorses of metalloenzymes; a precise 'frequency' isn't a standardized, tabulated number, so it's described qualitatively rather than charted.",
+        zh:"元素作为酶辅因子出现的频率。锌、镁、铁是金属酶的主力；精确的“频率”并非标准化列表数值，故以定性描述而非图表呈现。"}},
+};
+function norm(v,mn,mx){ if(v==null) return 0; return Math.max(0,Math.min(1,(v-mn)/(mx-mn))); }
+
+/* group definitions */
+const GROUPS = [
+  {id:"gR", en:"Atomic / ionic radius", zh:"原子 / 离子半径", props:["ar","ir"], hidden:true},
+  {id:"g1", en:"Electronic structure", zh:"电子结构",
+   props:["cfg","val","vshell","unp","ie1","ie2","ea1","eneg1"]},
+  {id:"g2", en:"Chemical reactivity", zh:"化学反应性",
+   props:["ox","oxmax","oxmin","ion","metchar","reduce","oxidize","rw","ro","oxide"]},
+  {id:"g3", en:"Metallic / nonmetallic", zh:"金属性与非金属性",
+   props:["metchar3","nonmet","t3","econd","tcond"]},
+  {id:"g4", en:"Thermodynamic", zh:"热力学",
+   props:["hcap","hfus","hvap","hatom","S0","coh"]},
+  {id:"g5", en:"Electrical / magnetic", zh:"电学 / 磁学",
+   props:["econd5","res","wf","sc","mag","suscept"]},
+  {id:"g6", en:"Nuclear", zh:"核性质",
+   props:["iso","aiso","np","radio","half","block","ncap"]},
+  {id:"g7", en:"Biological / environmental", zh:"生物与环境",
+   props:["bio","body","tox","ld50","enzyme"]},
+];
+const BASIC = ["category","ar","ie","eneg","ea","mp","bp","den"];
+
+/* ================= state + rendering ================= */
+let active = "category";
+let openGroup = null;
+
+const basicRow=document.getElementById("basicRow");
+const groupRow=document.getElementById("groupRow");
+const subrow=document.getElementById("subrow");
+const grid=document.getElementById("grid");
+const legend=document.getElementById("legend");
+const explain=document.getElementById("explain");
+const tip=document.getElementById("tip");
+
+function lbl(p){ return P[p][LANG]; }
+function exOf(pid){ const p=P[pid]; const src=p.exRef?P[p.exRef]:p; return src.ex?src.ex[LANG]:""; }
+
+function buildButtons(){
+  basicRow.innerHTML="";
+  BASIC.forEach(pid=>{
+    const b=document.createElement("button");
+    if(pid==="ar"){ // atomic radius opens the radius group (atomic + ionic branches)
+      b.className="btn"+(openGroup==="gR"?" active":"");
+      b.innerHTML=`${P.ar[LANG]}`;
+      b.onclick=()=>{ openGroup="gR"; active="ar"; render(); };
+    } else {
+      b.className="btn"+((active===pid&&!openGroup)?" active":"");
+      b.innerHTML=`${P[pid][LANG]}`;
+      b.onclick=()=>{ active=pid; openGroup=null; render(); };
+    }
+    basicRow.appendChild(b);
+  });
+  groupRow.innerHTML="";
+  GROUPS.filter(g=>!g.hidden).forEach(g=>{
+    const b=document.createElement("button");
+    b.className="btn grp"+(openGroup===g.id?" active":"");
+    b.innerHTML=`${g[LANG]}`;
+    b.onclick=()=>{ openGroup=g.id; active=g.props[0]; render(); };
+    groupRow.appendChild(b);
+  });
+}
+function buildSubrow(){
+  subrow.innerHTML="";
+  if(!openGroup){ return; }
+  const g=GROUPS.find(x=>x.id===openGroup);
+  g.props.forEach(pid=>{
+    const c=document.createElement("button");
+    c.className="chip"+(active===pid?" active":"");
+    c.textContent=P[pid][LANG];
+    c.onclick=()=>{ active=pid; render(); };
+    subrow.appendChild(c);
+  });
+}
+
+function extent(getter){ let mn=Infinity,mx=-Infinity;
+  D.forEach(d=>{const v=getter(d); if(v!=null&&!isNaN(v)){mn=Math.min(mn,v);mx=Math.max(mx,v);}});
+  return [mn,mx];
+}
+function blockOf(d){ // s,p,d
+  if(d.col<=2 || d.n===2) return "s";
+  if(d.col>=13) return "p";
+  return "d";
+}
+const BLOCKCOL={s:"var(--k2)",p:"var(--k1)",d:"var(--k7)",f:"var(--k5)"};
+
+function render(){
+  buildButtons(); buildSubrow();
+  const p=P[active];
+  // explanation
+  explain.innerHTML = `<b>${p[LANG]}</b>${p.unit?` <span class="note">(${p.unit})</span>`:""} — ${exOf(active)}`;
+  grid.innerHTML="";
+  let ext=null, posMax=1, negMax=1;
+  if(["bar","circle","square","trend"].includes(p.type)) ext=extent(p.get);
+  if(p.type==="div"){ D.forEach(d=>{const v=p.get(d); if(v!=null){ if(v>=0)posMax=Math.max(posMax,v); else negMax=Math.max(negMax,-v);} }); }
+
+  D.forEach(d=>{
+    const cell=document.createElement("div");
+    cell.className="cell"; cell.style.gridColumn=d.col; cell.style.gridRow=d.row;
+    let valStr=null;
+    if(p.type==="cat"){ cell.classList.add("c-"+d.cat); cell.classList.add("center"); }
+    else if(p.type==="note"){ cell.classList.add("nodata"); cell.classList.add("center"); }
+    else {
+      const raw = p.get? p.get(d) : null;
+      if(p.type==="catv"){
+        const key=raw; const cv=CV[p.cv];
+        if(key!=null && cv.colors[key]){ const m=document.createElement("div"); m.className="mark";
+          m.style.background=cv.colors[key]; m.style.opacity=.85; cell.appendChild(m);
+          if(p.cv==="block"){ valStr=key; } else { cell.classList.add("center"); }
+        } else { cell.classList.add("nodata"); cell.classList.add("center"); }
+      } else if(p.type==="text"){
+        if(raw==null||raw===""){ cell.classList.add("nodata"); }
+        cell.classList.add("center");
+        if(active==="cfg" && raw){ // color by block, show config small
+          const bl=blockOf(d); const m=document.createElement("div"); m.className="mark";
+          m.style.background=BLOCKCOL[bl]; m.style.opacity=.16; cell.appendChild(m);
+        }
+        valStr = raw==null?"—":raw;
+      } else if(raw==null||isNaN(raw)){ cell.classList.add("nodata"); }
+      else {
+        const mark=document.createElement("div"); mark.className="mark";
+        if(p.type==="bar"||p.type==="trend"){
+          const t=(raw-ext[0])/((ext[1]-ext[0])||1); const h=12+t*76;
+          const b=document.createElement("div"); b.className="bar"; b.style.height=h+"%"; mark.appendChild(b);
+        } else if(p.type==="div"){
+          const ml=document.createElement("div"); ml.className="midline"; mark.appendChild(ml);
+          if(raw>=0){ const b=document.createElement("div"); b.className="divpos"; b.style.height=(6+(raw/posMax)*44)+"%"; mark.appendChild(b); }
+          else { const b=document.createElement("div"); b.className="divneg"; b.style.height=(6+(-raw/negMax)*44)+"%"; mark.appendChild(b); }
+        } else if(p.type==="circle"){
+          const t=(raw-ext[0])/((ext[1]-ext[0])||1); const dia=22+t*66;
+          const c=document.createElement("div"); c.className="circle"; c.style.width=dia+"%"; c.style.height=dia+"%"; mark.appendChild(c);
+        } else if(p.type==="square"){
+          const t=Math.sqrt(raw/(ext[1]||1)); const side=14+t*72;
+          const sq=document.createElement("div"); sq.className="square"; sq.style.width=side+"%"; sq.style.height=side+"%"; mark.appendChild(sq);
+        }
+        cell.appendChild(mark);
+        if(p.type!=="trend"){ const dec=p.dec??((Math.abs(raw)>=100)?0:1); valStr=(+raw).toFixed(dec).replace(/\.0$/,""); }
+      }
+    }
+    cell.innerHTML += `<span class="num">${d.n}</span><span class="sym">${d.s}</span>`;
+    if(active==="cfg"){ if(d.cfg) cell.innerHTML+=`<span class="cfgtxt">${d.cfg}</span>`; }
+    else if(valStr!=null && p.type!=="cat"){ cell.innerHTML+=`<span class="val">${valStr}</span>`; }
+    cell.addEventListener("mousemove",e=>showTip(e,d));
+    cell.addEventListener("mouseleave",hideTip);
+    grid.appendChild(cell);
+  });
+  drawLegend(p,ext,posMax,negMax);
+  drawCatLeg();
+  // texts
+  document.getElementById("title").textContent=t("title");
+  document.getElementById("subtitle").textContent=t("subtitle");
+  document.getElementById("lbl-basic").textContent=t("quick");
+  document.getElementById("lbl-groups").textContent=t("cats");
+  document.getElementById("langBtn").textContent=t("langBtn");
+  document.getElementById("footnote").innerHTML = LANG==="en"
+    ? "Melting/boiling converted to °C (°C = K − 273). Trend properties (metallic character, reducing/oxidizing ability, nonmetallic character) are periodic-position estimates, not measured values. Categorical calls (reactivity, oxide, toxicity, biological role, magnetic ordering) are simplified teaching classifications. Elements 58–71 and 90+ are omitted from Table S and left blank. Extended numeric data are standard reference approximations; a few properties (LD50, enzyme cofactor frequency, magnetic susceptibility, neutron cross-section, cohesive energy, atomization enthalpy) are described but not charted per element."
+    : "熔点/沸点换算为 °C（°C = K − 273）。趋势性质（金属性、还原/氧化能力、非金属性）为按周期位置的估计值，非实测。分类判定（反应性、氧化物酸碱、毒性、生物作用、磁性）为简化的教学分类。元素 58–71 及 90 以上在 Table S 中未列出，留空。补充的数值为标准参考近似值；少数性质（LD50、酶辅因子频率、磁化率、中子俘获截面、内聚能、原子化焓）仅作说明，未逐元素作图。";
+}
+
+function drawLegend(p,ext,posMax,negMax){
+  let html="";
+  if(p.type==="cat"||p.type==="note"){ legend.innerHTML=""; return; }
+  if(p.type==="catv"){
+    const cv=CV[p.cv];
+    html = cv.order.map(k=>`<span><span class="sw" style="background:${cv.colors[k]}"></span>${cv.labels[k][LANG]}</span>`).join("");
+    legend.innerHTML=html; return;
+  }
+  if(p.type==="text"){
+    if(active==="cfg"){ html=`<span>${LANG==="en"?"tint = block:":"底色 = 区："} <span class="sw" style="background:var(--k2)"></span>s <span class="sw" style="background:var(--k1)"></span>p <span class="sw" style="background:var(--k7)"></span>d</span>`; }
+    legend.innerHTML=html; return;
+  }
+  if(p.type==="trend"){
+    html=`<span><span class="gradbar" style="background:linear-gradient(90deg,var(--seq-lite),var(--seq))"></span> ${LANG==="en"?"taller = stronger (periodic-trend estimate)":"柱越高 = 越强（周期趋势估计）"}</span>`;
+    legend.innerHTML=html; return;
+  }
+  if(p.type==="bar"){ html=`<span><span class="gradbar" style="background:linear-gradient(90deg,var(--seq-lite),var(--seq))"></span> ${t("higher")}</span><span>${t("range")} <b>${fmt(ext[0])} → ${fmt(ext[1])}</b></span>`; }
+  else if(p.type==="circle"){ html=`<span>${t("circleBig")}</span><span>${t("range")} <b>${fmt(ext[0])} → ${fmt(ext[1])} pm</b></span>`; }
+  else if(p.type==="square"){ html=`<span>${t("squareBig")}</span><span>${t("range")} <b>${fmt(ext[0])} → ${fmt(ext[1])}</b></span>`; }
+  else if(p.type==="div"){ html=`<span><span class="sw" style="background:var(--pos)"></span>${t("above0")}　<span class="sw" style="background:var(--neg)"></span>${t("below0")}</span><span>${t("max")} <b>${Math.round(posMax)}</b>　${t("min")} <b>−${Math.round(negMax)}</b></span>`; }
+  legend.innerHTML=html;
+}
+function fmt(x){ if(x==null) return "—"; return Math.abs(x)>=100?Math.round(x):Math.round(x*100)/100; }
+
+function drawCatLeg(){
+  const el=document.getElementById("catleg");
+  if(active==="category"){ el.innerHTML=Object.entries(CATS).map(([k,v])=>`<span><i class="c-${k}"></i>${v[LANG]}</span>`).join(""); }
+  else el.innerHTML="";
+}
+
+/* tooltip */
+function trow(label,val,unit,hl){ return `<div class="r ${hl?'hl':''}"><span>${label}</span><b>${val==null?"—":val}${val==null?"":unit}</b></div>`; }
+function showTip(e,d){
+  const mpC=d.mp==null?null:d.mp-273, bpC=d.bp==null?null:d.bp-273;
+  const L=LANG;
+  tip.innerHTML=`<h4>${d.n} · ${d.s} · ${L==="en"?d.nEn:d.nZh+" "+d.nEn}</h4>`+
+    `<div style="color:var(--muted);margin-bottom:5px">${CATS[d.cat][L]} · ${d.cfg}</div>`+
+    trow(L==="en"?"Atomic radius":"原子半径",d.ar," pm",active==="ar")+
+    trow(L==="en"?"1st ionization":"第一电离能",d.ie," kJ/mol",active==="ie"||active==="ie1")+
+    trow(L==="en"?"Electronegativity":"电负性",d.eneg,"",active==="eneg"||active==="eneg1")+
+    trow(L==="en"?"Oxidation states":"氧化态",d.ox,"",active==="ox")+
+    trow(L==="en"?"Melting":"熔点",mpC==null?null:Math.round(mpC)," °C",active==="mp")+
+    trow(L==="en"?"Boiling":"沸点",bpC==null?null:Math.round(bpC)," °C",active==="bp")+
+    trow(L==="en"?"Density":"密度",d.den," g/cm³",active==="den")+
+    trow(L==="en"?"Stable isotopes":"稳定同位素",d.iso,"",active==="iso")+
+    trow(L==="en"?"Biological role":"生物作用",CV.bio.labels[d.bio]?CV.bio.labels[d.bio][L]:d.bio,"",active==="bio");
+  // ionic radius sequence when radius group active
+  if(P[active]&&P[active].ionHover){
+    const seq=ionSeq(d);
+    if(seq.length){
+      const maxr=Math.max(...seq.map(x=>x.r),1);
+      const items=seq.map(x=>{ const px=Math.max(8, Math.round((x.r/maxr)*34));
+        const isAtom=x.q===0;
+        const qlab=isAtom?(L==="en"?"atom":"原子"):(d.s+" "+chargeLabel(x.q));
+        return `<div class="ionitem ${isAtom?'atom':''}"><div class="dot" style="width:${px}px;height:${px}px"></div><div class="q">${isAtom?chargeLabel(0):chargeLabel(x.q)}</div><div class="rr">${x.r}</div></div>`;
+      }).join("");
+      tip.innerHTML += `<div class="ionseq"><div class="cap">${L==="en"?"Radii (pm): negative → 0 → positive":"半径 (pm)：负 → 0 → 正"}</div><div class="ions">${items}</div></div>`;
+    }
+  }
+  tip.style.opacity=1;
+  const pad=14,w=tip.offsetWidth,h=tip.offsetHeight; let x=e.clientX+pad,y=e.clientY+pad;
+  if(x+w>innerWidth)x=e.clientX-w-pad; if(y+h>innerHeight)y=e.clientY-h-pad;
+  tip.style.left=x+"px"; tip.style.top=y+"px";
+}
+function hideTip(){ tip.style.opacity=0; }
+
+document.getElementById("langBtn").onclick=()=>{ LANG=LANG==="en"?"zh":"en"; document.documentElement.lang=LANG; render(); };
+document.getElementById("themeBtn").onclick=()=>{ const h=document.documentElement; h.dataset.theme=h.dataset.theme==="dark"?"light":"dark"; render(); };
+
+render();
+</script>
+</body>
+</html>
