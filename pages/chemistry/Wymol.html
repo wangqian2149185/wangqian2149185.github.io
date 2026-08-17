@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Protein Interaction Atlas · 蛋白质相互作用图谱</title>
+<title>Wymol · Protein Interaction Atlas</title>
 <style>
 :root{
   color-scheme: light;
@@ -389,7 +389,7 @@ footer p{margin:6px 0}
    ============================================================ */
 const T = {
   zh:{
-    brandT:"蛋白质相互作用图谱", brandS:"原子级相互作用 · 按 5 大物理来源拆解",
+    brandT:"Wymol · 蛋白质相互作用图谱", brandS:"原子级相互作用 · 按 5 大物理来源拆解",
     theme:"深色",
     title:"蛋白质靠什么维持结构？",
     lede:"蛋白质不是靠某一种“键”锁死，而是靠成千上万个 0.2–5 kcal/mol 的弱相互作用协同，再叠加少数很强的共价键与金属配位。下面把结构、生化、光谱、热力学与计算反复验证过的原子级相互作用整理成一份可交互的“相互作用词典”。",
@@ -430,7 +430,7 @@ const T = {
     hcP:'疏水效应不是"Leu 与 Val 之间有一根疏水键"，而是<b>溶剂驱动的自由能效应</b>：两个非极性面各自暴露于水时，周围水被迫排成相对有序的水化壳；二者靠近、非极性面被埋藏（ΔSASA&lt;0），一部分有序水释放回本体、获得更多平动/转动/氢键构型，−TΔS&lt;0 使结合有利。更完整地说，它来自<b>创建非极性空腔的自由能成本 + 埋藏非极性面的收益</b>（小/大疏水基团机制不同，并非只是"水变自由"）。因此本工具对氢键/盐桥/金属用"线/箭头"，对疏水用<b>半透明埋藏表面 + SASA + ΔG≈γ·ΔA</b>。还要记住：两个疏水残基靠近时真正直接存在的是 <b>色散/vdW + 位阻堆积</b>，"疏水键"本身并不存在 —— ΔG_接触 = ΔG_溶剂化 + E_色散 + E_位阻 + …',
   },
   en:{
-    brandT:"Protein Interaction Atlas", brandS:"Atomic-level interactions · partitioned into 5 physical origins",
+    brandT:"Wymol", brandS:"Protein Interaction Atlas · atomic-level interactions",
     theme:"Dark",
     title:"What actually holds a protein together?",
     lede:"A protein isn't locked by one kind of \"bond\". It's held by thousands of weak 0.2–5 kcal/mol interactions acting together, plus a few very strong covalent bonds and metal-coordination sites. Below is an interactive \"interaction vocabulary\" — every entry repeatedly validated by structural, biochemical, spectroscopic, thermodynamic and computational work.",
