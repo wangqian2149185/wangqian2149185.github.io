@@ -187,6 +187,74 @@ section{margin-top:46px}
 footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--border);color:var(--muted);font-size:.82rem}
 footer p{margin:6px 0}
 .hl{color:var(--elec);font-weight:600}
+
+/* ---------- PDB module ---------- */
+.layers{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:6px 0 18px}
+@media(max-width:820px){.layers{grid-template-columns:1fr}}
+.layer{border:1px solid var(--border);border-radius:12px;padding:12px 14px;background:var(--surface);box-shadow:var(--shadow)}
+.layer .lt{font-weight:700;font-size:.92rem;display:flex;align-items:center;gap:8px}
+.layer .ln{font-size:.68rem;font-weight:800;color:#fff;border-radius:6px;padding:1px 7px}
+.layer.l1 .ln{background:var(--pol)} .layer.l2 .ln{background:var(--ct)} .layer.l3 .ln{background:var(--solv)}
+.layer p{margin:6px 0 0;font-size:.8rem;color:var(--ink-2);line-height:1.45}
+.pdbbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.drop{border:2px dashed var(--baseline);border-radius:12px;padding:13px 18px;text-align:center;cursor:pointer;
+  color:var(--ink-2);font-size:.86rem;transition:.15s;background:var(--surface-2);flex:1;min-width:230px;font-weight:600}
+.drop:hover,.drop.drag{border-color:var(--elec);color:var(--ink);background:color-mix(in srgb,var(--elec) 7%,var(--surface))}
+.pidwrap{display:flex;gap:6px;align-items:center}
+.pidwrap input{border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:8px;padding:7px 10px;font-size:.85rem;width:104px}
+.exwrap{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.pdb-layout{display:grid;grid-template-columns:1.35fr 1fr;gap:16px;align-items:start}
+@media(max-width:900px){.pdb-layout{grid-template-columns:1fr}}
+#molviewer{width:100%;height:470px;border:1px solid var(--border);border-radius:var(--r);position:relative;background:var(--surface);overflow:hidden;box-shadow:var(--shadow)}
+.viewer-msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:.9rem;padding:24px;z-index:2}
+.viewer-msg.err{color:var(--disp)}
+.itoggles{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.itog{display:flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:999px;padding:4px 10px;font-size:.75rem;cursor:pointer;font-weight:600;color:var(--ink-2);user-select:none;transition:.12s}
+.itog .dot{width:11px;height:11px;border-radius:3px;flex:none}
+.itog.off{opacity:.4}
+.itog .cnt{color:var(--muted);font-variant-numeric:tabular-nums}
+.pdbside{display:flex;flex-direction:column;gap:12px}
+.pstats{display:flex;gap:8px;flex-wrap:wrap}
+.pstat{border:1px solid var(--border);border-radius:10px;padding:8px 11px;background:var(--surface);box-shadow:var(--shadow);flex:1;min-width:64px;text-align:center}
+.pstat b{display:block;font-size:1.15rem;font-variant-numeric:tabular-nums;line-height:1.1}
+.pstat span{font-size:.66rem;color:var(--muted)}
+.resSearchBox{width:100%;border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:8px;padding:7px 10px;font-size:.8rem;margin-bottom:6px}
+.reschips{display:flex;gap:5px;flex-wrap:wrap;max-height:132px;overflow:auto;padding:2px}
+.rchip{border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:.72rem;cursor:pointer;font-variant-numeric:tabular-nums;background:var(--surface);color:var(--ink-2);white-space:nowrap}
+.rchip:hover{border-color:var(--muted);color:var(--ink)}
+.rchip.sel{background:var(--accent);color:#fff;border-color:var(--accent)}
+.edgebox{border:1px solid var(--border);border-radius:var(--r);background:var(--surface);padding:14px 16px;box-shadow:var(--shadow);min-height:80px;max-height:360px;overflow:auto}
+.edgebox h4{margin:0 0 2px;font-size:1.02rem}
+.edgebox .esub{font-size:.74rem;color:var(--muted);margin-bottom:4px}
+.edge{border-top:1px solid var(--border);padding:9px 0}
+.edge:first-of-type{border-top:none}
+.edge.disabled{opacity:.45}
+.edge .eh{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.edge .etype{font-size:.68rem;font-weight:700;color:#fff;border-radius:5px;padding:1px 7px;white-space:nowrap}
+.edge .epart{font-size:.86rem;font-weight:600}
+.edge .edir{font-family:"SFMono-Regular",Consolas,monospace;font-size:.76rem;color:var(--ink-2);margin-top:4px}
+.edge .emeta{display:flex;gap:12px;font-size:.72rem;color:var(--muted);margin-top:5px;flex-wrap:wrap;font-variant-numeric:tabular-nums;align-items:center}
+.occbar{height:6px;width:56px;border-radius:3px;background:var(--surface-2);overflow:hidden;display:inline-block;vertical-align:middle;box-shadow:inset 0 0 0 1px var(--border)}
+.occbar i{display:block;height:100%;background:var(--pol)}
+.esub{font-size:.72rem;color:var(--muted)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--elec);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.vctrls{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.vbtn{border:1px solid var(--border);background:var(--surface);color:var(--ink-2);border-radius:999px;padding:5px 12px;font-size:.78rem;cursor:pointer;font-weight:600;transition:.14s}
+.vbtn:hover{border-color:var(--muted);color:var(--ink)}
+.vbtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.vhint{font-size:.72rem;color:var(--muted);margin-left:auto}
+.surfnote{margin-top:8px;font-size:.75rem;color:var(--disp);background:color-mix(in srgb,var(--disp) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--disp) 24%,var(--border));border-radius:8px;padding:7px 10px}
+.hydro-callout{margin-top:16px;border:1px solid color-mix(in srgb,var(--solv) 26%,var(--border));border-radius:var(--r);background:color-mix(in srgb,var(--solv) 7%,var(--surface));padding:14px 18px;box-shadow:var(--shadow)}
+.hydro-callout .hc-t{font-weight:700;font-size:.96rem;margin-bottom:6px}
+.hydro-callout .hc-p{margin:0;font-size:.85rem;color:var(--ink-2);line-height:1.55}
+.resblock{border-top:2px solid var(--border);padding-top:10px;margin-top:10px}
+.resblock:first-child{border-top:none;padding-top:0;margin-top:0}
+.burial{border:1px solid color-mix(in srgb,var(--solv) 30%,var(--border));background:color-mix(in srgb,var(--solv) 8%,var(--surface));border-radius:10px;padding:9px 12px;margin:8px 0}
+.burial .bt{font-weight:700;font-size:.8rem;margin-bottom:6px;color:var(--ink)}
+.burial .brow{display:flex;justify-content:space-between;font-size:.78rem;color:var(--ink-2);padding:1px 0}
+.burial .brow b{font-variant-numeric:tabular-nums}
+.burial .bnote{font-size:.72rem;color:var(--muted);margin-top:6px;line-height:1.45}
 </style>
 </head>
 <body>
@@ -256,6 +324,52 @@ footer p{margin:6px 0}
     <div class="respanel" id="resPanel"><div class="placeholder" data-i="respick">👆 选择一个氨基酸</div></div>
   </section>
 
+  <!-- ===== Section 5: PDB upload & 3D interaction viewer ===== -->
+  <section id="pdb">
+    <div class="sec-h"><span class="num">05</span><h2 data-i="s5h">上传 PDB · 结构相互作用可视化</h2></div>
+    <p class="sec-sub" data-i="s5s"></p>
+    <div class="layers">
+      <div class="layer l1"><div class="lt"><span class="ln">L1</span><span data-i="l1t">几何识别（实时）</span></div><p data-i="l1d"></p></div>
+      <div class="layer l2"><div class="lt"><span class="ln">L2</span><span data-i="l2t">能量估算（粗略）</span></div><p data-i="l2d"></p></div>
+      <div class="layer l3"><div class="lt"><span class="ln">L3</span><span data-i="l3t">动态 / 占据率</span></div><p data-i="l3d"></p></div>
+    </div>
+    <div class="pdbbar">
+      <label class="drop" id="dropZone"><span data-i="pdbDrop">拖入或点击选择 .pdb 文件</span>
+        <input type="file" id="pdbFile" accept=".pdb,.ent,.txt" hidden></label>
+      <div class="pidwrap"><input id="pdbId" placeholder="PDB ID" maxlength="8">
+        <button class="chip" id="pidBtn" data-i="pdbFetch">获取</button></div>
+      <div class="exwrap"><span class="esub" data-i="pdbEx">示例:</span>
+        <button class="chip ex" data-id="1UBQ">1UBQ</button>
+        <button class="chip ex" data-id="4HHB">4HHB</button>
+        <button class="chip ex" data-id="1L2Y" data-i="exNMR">1L2Y · NMR</button>
+      </div>
+    </div>
+    <div class="pdb-layout">
+      <div>
+        <div class="vctrls">
+          <button class="vbtn" id="labelBtn">🏷 <span data-i="btnLabels">残基标签</span></button>
+          <button class="vbtn" id="waterBtn">💧 <span data-i="btnWater">水分子</span></button>
+          <span class="vhint" data-i="multiHint">Ctrl/⌘ + 点击可多选残基</span>
+        </div>
+        <div id="molviewer"><div class="viewer-msg" id="viewerMsg" data-i="viewerEmpty">上传一个 PDB 文件开始</div></div>
+        <div class="itoggles" id="itoggles"></div>
+        <div class="surfnote" id="surfNote" data-i="surfNote" style="display:none"></div>
+      </div>
+      <div class="pdbside">
+        <div class="pstats" id="pstats"></div>
+        <div>
+          <input id="resSearch" class="resSearchBox" placeholder="搜索残基…">
+          <div class="reschips" id="reschips"></div>
+        </div>
+        <div class="edgebox" id="edgebox"><div class="placeholder" data-i="pickRes">👆 点击一个残基查看其相互作用</div></div>
+      </div>
+    </div>
+    <div class="hydro-callout">
+      <div class="hc-t" data-i="hcT">为什么疏水作用画成“面”而不是“键”？</div>
+      <p class="hc-p" data-i="hcP"></p>
+    </div>
+  </section>
+
   <footer>
     <p data-i="f1"><b>重要提醒 · </b>表中能量给出的是蛋白环境中的典型量级，不是绝对常数。成对能与净 ΔG 贡献常相差很大：氢键与盐桥必须先打破与水的相互作用，净收益远小于裸相互作用能。</p>
     <p data-i="f2">金属配位的能量跨度极大（配位数、氧化态、配位场、螯合效应、去溶剂化都在起作用），即使先进计算也可能有数 kcal/mol 的模型误差——具体体系需单独处理。</p>
@@ -296,6 +410,24 @@ const T = {
     filStrength:"强度", filSystem:"体系", filSource:"主导来源", filAll:"全部",
     lvl:{covalent:"共价 / 强",strong:"中等",weak:"弱"},
     sysL:{fold:"折叠 / 稳定",ppi:"蛋白–蛋白",lig:"蛋白–配体",metal:"金属",water:"水介导"},
+    s5h:"上传 PDB · 结构相互作用可视化",
+    s5s:'上传一个 PDB（或输入 PDB ID）——浏览器<b>实时</b>从静态坐标识别每个残基/原子介入的相互作用，并在 3D 结构上用<b>带方向的箭头</b>画出（供体→受体、阳离子→π 面、金属→配体）。点击残基查看其原子级相互作用清单。',
+    l1t:"几何识别（实时）", l1d:"从 PDB 坐标按距离/角度规则识别 H 键、盐桥、cation–π、π–π、CH–π、S–π、二硫、金属配位、疏水/vdW、卤键、水桥、n→π*。成熟且快。",
+    l2t:"能量估算（粗略）", l2d:'对每条边给出 Coulomb + Lennard–Jones + 氢键项的粗略估计。称"估计相互作用能"，不是 ΔG（未含熵与溶剂重排）。',
+    l3t:"动态 / 占据率", l3d:"若文件含多个 MODEL（如 NMR 系综），逐帧重算并给出占据率 %。真正的 MD 轨迹需力场与最小化，超出浏览器范围。",
+    pdbDrop:"拖入或点击选择 .pdb 文件", pdbFetch:"获取", pdbEx:"示例:", exNMR:"1L2Y · NMR 系综",
+    viewerEmpty:"上传一个 PDB 文件开始 · 或点上方示例", pickRes:"👆 点击一个残基查看其相互作用",
+    stAtoms:"原子", stRes:"残基", stModels:"模型", stEdges:"相互作用",
+    resSearchPh:"搜索残基（如 ARG45 / A:72）…",
+    occLabel:"占据率", enLabel:"估计能量", distLabel:"距离", dirWord:"方向",
+    loadingMsg:"正在加载与分析…", fetchErr:"获取失败——请检查 PDB ID 或改用本地上传（可能无网络）。",
+    parseErr:"未能把该文件解析为 PDB。", truncNote:"（为性能仅绘制部分接触）",
+    noViewer:"3D 查看器未能加载（可能无网络）。相互作用检测仍可用——下方列表与残基点击均正常。",
+    covNote:"共价键（约 50–70 kcal/mol，断键能）",
+    btnLabels:"残基标签", btnWater:"水分子", multiHint:"Ctrl/⌘ + 点击可多选残基",
+    surfNote:"疏水残基较多——请先选中若干残基，仅对所选显示埋藏表面。",
+    hcT:"为什么疏水作用画成“面”而不是“键”？",
+    hcP:'疏水效应不是"Leu 与 Val 之间有一根疏水键"，而是<b>溶剂驱动的自由能效应</b>：两个非极性面各自暴露于水时，周围水被迫排成相对有序的水化壳；二者靠近、非极性面被埋藏（ΔSASA&lt;0），一部分有序水释放回本体、获得更多平动/转动/氢键构型，−TΔS&lt;0 使结合有利。更完整地说，它来自<b>创建非极性空腔的自由能成本 + 埋藏非极性面的收益</b>（小/大疏水基团机制不同，并非只是"水变自由"）。因此本工具对氢键/盐桥/金属用"线/箭头"，对疏水用<b>半透明埋藏表面 + SASA + ΔG≈γ·ΔA</b>。还要记住：两个疏水残基靠近时真正直接存在的是 <b>色散/vdW + 位阻堆积</b>，"疏水键"本身并不存在 —— ΔG_接触 = ΔG_溶剂化 + E_色散 + E_位阻 + …',
   },
   en:{
     brandT:"Protein Interaction Atlas", brandS:"Atomic-level interactions · partitioned into 5 physical origins",
@@ -319,6 +451,24 @@ const T = {
     filStrength:"Strength", filSystem:"System", filSource:"Dominant origin", filAll:"All",
     lvl:{covalent:"Covalent / strong",strong:"Moderate",weak:"Weak"},
     sysL:{fold:"Folding / stability",ppi:"Protein–protein",lig:"Protein–ligand",metal:"Metal",water:"Water-mediated"},
+    s5h:"Upload PDB · structural interaction viewer",
+    s5s:'Upload a PDB (or enter a PDB ID) — the browser detects, <b>live</b>, every interaction each residue/atom is engaged in from the static coordinates and draws them on the 3-D structure with <b>directional arrows</b> (donor→acceptor, cation→π face, metal→ligand). Click a residue for its atom-level interaction list.',
+    l1t:"Geometry (live)", l1d:"From PDB coordinates, distance/angle rules detect H-bonds, salt bridges, cation–π, π–π, CH–π, S–π, disulfides, metal coordination, hydrophobic/vdW, halogen bonds, water bridges, n→π*. Mature and fast.",
+    l2t:"Energy (coarse)", l2d:'Each edge gets a coarse Coulomb + Lennard–Jones + H-bond estimate. Call it "estimated interaction energy", not ΔG (no entropy or solvent reorganization).',
+    l3t:"Dynamics / occupancy", l3d:"If the file has multiple MODELs (e.g. an NMR ensemble), detection reruns per frame and reports occupancy %. A true MD trajectory needs a force field + minimization, beyond the browser.",
+    pdbDrop:"Drop or click to choose a .pdb file", pdbFetch:"Fetch", pdbEx:"Examples:", exNMR:"1L2Y · NMR ensemble",
+    viewerEmpty:"Upload a PDB file to start · or click an example above", pickRes:"👆 Click a residue to see its interactions",
+    stAtoms:"atoms", stRes:"residues", stModels:"models", stEdges:"interactions",
+    resSearchPh:"Search residue (e.g. ARG45 / A:72)…",
+    occLabel:"occupancy", enLabel:"est. energy", distLabel:"distance", dirWord:"direction",
+    loadingMsg:"Loading & analyzing…", fetchErr:"Fetch failed — check the PDB ID or use local upload (network may be unavailable).",
+    parseErr:"Could not parse this file as PDB.", truncNote:"(only part of the contacts drawn, for performance)",
+    noViewer:"3-D viewer failed to load (network may be unavailable). Interaction detection still works — the list and residue clicks below are fully functional.",
+    covNote:"covalent bond (~50–70 kcal/mol, bond energy)",
+    btnLabels:"Residue labels", btnWater:"Water", multiHint:"Ctrl/⌘ + click to multi-select residues",
+    surfNote:"Many hydrophobic residues — select a few residues first; the buried surface is shown only for the selection.",
+    hcT:'Why draw the hydrophobic effect as a "surface", not a "bond"?',
+    hcP:'The hydrophobic effect is not "a hydrophobic bond between Leu and Val" — it is a <b>solvent-driven free-energy effect</b>: when two nonpolar surfaces are each exposed to water, the surrounding water is forced into a relatively ordered hydration shell; as the residues approach and nonpolar surface is buried (ΔSASA&lt;0), some ordered water is released to the bulk, gaining translational / rotational / H-bond configurations, so −TΔS&lt;0 favors association. More completely it comes from <b>the free-energy cost of creating a nonpolar cavity + the gain from burying nonpolar surface</b> (small vs large hydrophobes differ — it is not simply "water becoming free"). So this tool draws H-bond / salt / metal as lines & arrows, but the hydrophobic effect as a <b>translucent buried surface + SASA + ΔG≈γ·ΔA</b>. And remember: what actually exists directly between two nearby hydrophobic residues is <b>dispersion/vdW + steric packing</b>; a "hydrophobic bond" as such does not exist — ΔG_contact = ΔG_solvation + E_dispersion + E_steric + …',
   }
 };
 
@@ -768,8 +918,746 @@ function renderAll(){
   renderCards();
   renderResGrid();
   renderResPanel();
+  if(window.onLangChange) window.onLangChange();
 }
 renderAll();
+</script>
+
+<!-- ============================================================
+     PDB MODULE  ·  geometry detection + 3Dmol viewer + occupancy
+     ============================================================ -->
+<script>
+(function(){
+"use strict";
+const $ = s=>document.querySelector(s);
+function tt(k){ return T[LANG][k]||k; }
+
+/* interaction types: color / names / directional */
+const ITYPES = {
+  hbond:      {c:"#1baf7a", zh:"氢键",     en:"H-bond",          dir:true },
+  saltbridge: {c:"#2a78d6", zh:"盐桥",     en:"Salt bridge",     dir:true },
+  cationpi:   {c:"#7a5cff", zh:"阳离子–π", en:"Cation–π",        dir:true },
+  pipi:       {c:"#eb6834", zh:"π–π",      en:"π–π",             dir:false},
+  chpi:       {c:"#eda100", zh:"CH–π",     en:"CH–π",            dir:true },
+  spi:        {c:"#008300", zh:"S–π",      en:"S–π",             dir:true },
+  disulfide:  {c:"#e34948", zh:"二硫键",   en:"Disulfide",       dir:false},
+  metal:      {c:"#e87ba4", zh:"金属配位", en:"Metal coord.",    dir:true },
+  hydrophobic:{c:"#9a9a93", zh:"疏水/vdW", en:"Hydrophobic/vdW", dir:false},
+  halogen:    {c:"#00b3c8", zh:"卤键",     en:"Halogen bond",    dir:true },
+  waterbridge:{c:"#86b6ef", zh:"水桥",     en:"Water bridge",    dir:false},
+  npistar:    {c:"#c98500", zh:"n→π*",     en:"n→π*",            dir:true },
+};
+const TYPE_ORDER = ["hbond","saltbridge","cationpi","pipi","disulfide","metal","chpi","spi","hydrophobic","halogen","waterbridge","npistar"];
+const DEFAULT_ON = new Set(["hbond","saltbridge","cationpi","pipi","disulfide","metal"]);
+const ityName = t => LANG==="zh"?ITYPES[t].zh:ITYPES[t].en;
+
+/* ---- vector helpers ---- */
+const sub=(a,b)=>({x:a.x-b.x,y:a.y-b.y,z:a.z-b.z});
+const dot=(a,b)=>a.x*b.x+a.y*b.y+a.z*b.z;
+const cross=(a,b)=>({x:a.y*b.z-a.z*b.y,y:a.z*b.x-a.x*b.z,z:a.x*b.y-a.y*b.x});
+const len=a=>Math.sqrt(dot(a,a));
+const unit=a=>{const l=len(a)||1;return{x:a.x/l,y:a.y/l,z:a.z/l};};
+const dist=(a,b)=>Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2+(a.z-b.z)**2);
+const deg=r=>r*180/Math.PI;
+function angleBetween(u,v){ let c=dot(u,v)/((len(u)*len(v))||1); c=Math.max(-1,Math.min(1,c)); return deg(Math.acos(c)); }
+
+/* ---- element / residue tables ---- */
+const METALS = new Set(["ZN","FE","MG","CA","MN","CU","NI","CO","NA","K","CD","HG","MO","W"]);
+const HALOGENS = new Set(["CL","BR","I"]);
+const AROM = {  // atoms listed in ring-traversal order (required for Newell's normal)
+  PHE:[["CG","CD1","CE1","CZ","CE2","CD2"]],
+  TYR:[["CG","CD1","CE1","CZ","CE2","CD2"]],
+  HIS:[["CG","ND1","CE1","NE2","CD2"]],
+  TRP:[["CG","CD1","NE1","CE2","CD2"],["CD2","CE2","CZ2","CH2","CZ3","CE3"]],
+};
+const HYDROPHOBIC_RES = new Set(["ALA","VAL","LEU","ILE","MET","PHE","TRP","PRO","CYS","TYR"]);
+function isRingAtom(a){ const d=AROM[a.resName]; return d? d.some(list=>list.includes(a.name)) : false; }
+function isDonor(a){
+  const r=a.resName, n=a.name;
+  if(n==="N" && r!=="PRO") return true;               // backbone amide
+  if(r==="ARG" && (n==="NE"||n==="NH1"||n==="NH2")) return true;
+  if(r==="LYS" && n==="NZ") return true;
+  if(r==="HIS" && (n==="ND1"||n==="NE2")) return true;
+  if(r==="TRP" && n==="NE1") return true;
+  if(r==="ASN" && n==="ND2") return true;
+  if(r==="GLN" && n==="NE2") return true;
+  if(r==="SER" && n==="OG") return true;
+  if(r==="THR" && n==="OG1") return true;
+  if(r==="TYR" && n==="OH") return true;
+  return false;
+}
+function isAcceptor(a){
+  const r=a.resName, n=a.name;
+  if(n==="O"||n==="OXT") return true;                 // backbone carbonyl
+  if(r==="ASP" && (n==="OD1"||n==="OD2")) return true;
+  if(r==="GLU" && (n==="OE1"||n==="OE2")) return true;
+  if(r==="ASN" && n==="OD1") return true;
+  if(r==="GLN" && n==="OE1") return true;
+  if(r==="SER" && n==="OG") return true;
+  if(r==="THR" && n==="OG1") return true;
+  if(r==="TYR" && n==="OH") return true;
+  if(r==="HIS" && (n==="ND1"||n==="NE2")) return true;
+  if(r==="MET" && n==="SD") return true;
+  return false;
+}
+const isCationN = a => (a.resName==="ARG"&&(a.name==="NE"||a.name==="NH1"||a.name==="NH2"))
+                     ||(a.resName==="LYS"&&a.name==="NZ")
+                     ||(a.resName==="HIS"&&(a.name==="ND1"||a.name==="NE2"));
+const isAnionO  = a => (a.resName==="ASP"&&(a.name==="OD1"||a.name==="OD2"))
+                     ||(a.resName==="GLU"&&(a.name==="OE1"||a.name==="OE2"))
+                     ||a.name==="OXT";
+
+/* ---- PDB parser (supports multi-MODEL) ---- */
+function parsePDB(text){
+  const models=[]; let cur=null;
+  const start=()=>{ cur={atoms:[]}; models.push(cur); };
+  const lines=text.split(/\r?\n/);
+  let sawModel=false;
+  for(const line of lines){
+    const rec=line.slice(0,6);
+    if(rec==="MODEL "){ sawModel=true; start(); continue; }
+    if(rec.startsWith("ENDMDL")){ cur=null; continue; }
+    if(rec==="ATOM  "||rec==="HETATM"){
+      if(!cur) start();
+      const alt=line[16];
+      if(alt!==" "&&alt!=="A"&&alt!=="") continue;
+      const x=parseFloat(line.slice(30,38)), y=parseFloat(line.slice(38,46)), z=parseFloat(line.slice(46,54));
+      if(isNaN(x)||isNaN(y)||isNaN(z)) continue;
+      const name=line.slice(12,16).trim();
+      const resName=line.slice(17,20).trim();
+      let chain=line.slice(21,22).trim(); if(!chain) chain="A";
+      const resSeq=line.slice(22,26).trim();
+      const isHet=rec==="HETATM";
+      let el=line.slice(76,78).trim().toUpperCase();
+      if(!el){
+        if(isHet && METALS.has(resName)) el=resName;
+        else { const m=name.replace(/[^A-Za-z]/g,""); el=(m.length>=2 && (METALS.has(m.slice(0,2))||HALOGENS.has(m.slice(0,2))))?m.slice(0,2).toUpperCase():m.charAt(0).toUpperCase(); }
+      }
+      cur.atoms.push({x,y,z,name,resName,chain,resSeq,el,isHet,
+        rk:chain+":"+resName+":"+resSeq});
+    }
+  }
+  if(models.length===0) return null;
+  // drop empty trailing models
+  return { models: models.filter(m=>m.atoms.length>0) };
+}
+
+/* ---- spatial grid ---- */
+function buildGrid(atoms,cell){
+  const g=new Map();
+  for(let i=0;i<atoms.length;i++){
+    const a=atoms[i];
+    a._c=[Math.floor(a.x/cell),Math.floor(a.y/cell),Math.floor(a.z/cell)];
+    const k=a._c[0]+","+a._c[1]+","+a._c[2];
+    let arr=g.get(k); if(!arr){arr=[];g.set(k,arr);} arr.push(i);
+  }
+  return g;
+}
+function neighbors(g,a){
+  const out=[]; const[cx,cy,cz]=a._c;
+  for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++){
+    const arr=g.get((cx+dx)+","+(cy+dy)+","+(cz+dz));
+    if(arr) for(const j of arr) out.push(j);
+  }
+  return out;
+}
+
+/* ---- aromatic ring geometry ---- */
+function ringGeom(atomsByName){
+  // Newell's method for normal
+  let cx=0,cy=0,cz=0,n=0;
+  const pts=[];
+  for(const a of atomsByName){ if(!a) return null; pts.push(a); cx+=a.x;cy+=a.y;cz+=a.z;n++; }
+  if(n<3) return null;
+  const centroid={x:cx/n,y:cy/n,z:cz/n};
+  let nx=0,ny=0,nz=0;
+  for(let i=0;i<pts.length;i++){
+    const c=pts[i], d=pts[(i+1)%pts.length];
+    nx+=(c.y-d.y)*(c.z+d.z); ny+=(c.z-d.z)*(c.x+d.x); nz+=(c.x-d.x)*(c.y+d.y);
+  }
+  return {centroid, normal:unit({x:nx,y:ny,z:nz})};
+}
+function collectRings(atoms){
+  const byRes=new Map();
+  for(const a of atoms){ let m=byRes.get(a.rk); if(!m){m=new Map();byRes.set(a.rk,m);} m.set(a.name,a); }
+  const rings=[];
+  for(const[rk,m] of byRes){
+    const resName=rk.split(":")[1];
+    const defs=AROM[resName]; if(!defs) continue;
+    defs.forEach((names,ri)=>{
+      const geom=ringGeom(names.map(nm=>m.get(nm)));
+      if(geom) rings.push({rk, resName, name:"π", ...geom.centroid, x:geom.centroid.x,y:geom.centroid.y,z:geom.centroid.z, normal:geom.normal, ringId:rk+"#"+ri});
+    });
+  }
+  return rings;
+}
+function guanidiniumCenter(m){ // m: Map name->atom for an ARG residue
+  const a=["CZ","NH1","NH2","NE"].map(n=>m.get(n)).filter(Boolean);
+  if(!a.length) return null;
+  let x=0,y=0,z=0; a.forEach(p=>{x+=p.x;y+=p.y;z+=p.z;});
+  return {x:x/a.length,y:y/a.length,z:z/a.length};
+}
+
+/* ---- detect all interactions in one model ---- */
+function detectModel(atoms, full){
+  const grid=buildGrid(atoms,6.7);
+  const edges=[]; const seen=new Set();
+  const add=(a1,a2,type,extra)=>{
+    const k=[a1.rk+"|"+a1.name, a2.rk+"|"+a2.name].sort().join("~")+"#"+type;
+    if(seen.has(k)) return; seen.add(k);
+    if(full) edges.push({type,a1,a2,dist:dist(a1,a2),dir:unit(sub(a2,a1)),key:k,extra:extra||{}});
+    else edges.push(k);
+  };
+  // per-residue atom maps (for guanidinium)
+  const byRes=new Map();
+  for(const a of atoms){ let m=byRes.get(a.rk); if(!m){m=new Map();byRes.set(a.rk,m);} m.set(a.name,a); }
+
+  // pairwise heavy-atom passes
+  for(let i=0;i<atoms.length;i++){
+    const a=atoms[i];
+    const nb=neighbors(grid,a);
+    for(const j of nb){
+      if(j<=i) continue;
+      const b=atoms[j];
+      if(a.rk===b.rk) continue;
+      const r=dist(a,b);
+      if(r>6.7||r<1.1) continue;
+      // H-bond (heavy-atom approximation)
+      if(r>=2.3 && r<=3.5){
+        if(isDonor(a)&&isAcceptor(b)) add(a,b,"hbond",{sub:(a.name==="N"&&b.name==="O")?"bb":"sc"});
+        else if(isDonor(b)&&isAcceptor(a)) add(b,a,"hbond",{sub:(b.name==="N"&&a.name==="O")?"bb":"sc"});
+      }
+      // salt bridge
+      if(r<=4.0){
+        if(isCationN(a)&&isAnionO(b)) add(a,b,"saltbridge");
+        else if(isCationN(b)&&isAnionO(a)) add(b,a,"saltbridge");
+      }
+      // disulfide
+      if(a.resName==="CYS"&&a.name==="SG"&&b.resName==="CYS"&&b.name==="SG"&&r<=2.6) add(a,b,"disulfide");
+      // metal coordination
+      if(r<=3.0){
+        if(METALS.has(a.el)&&(b.el==="N"||b.el==="O"||b.el==="S")) add(a,b,"metal");
+        else if(METALS.has(b.el)&&(a.el==="N"||a.el==="O"||a.el==="S")) add(b,a,"metal");
+      }
+      // halogen bond: X(on a or b) ... O/N/S, directional check
+      if(r>=2.8 && r<=3.7){
+        let X=null,A=null;
+        if(HALOGENS.has(a.el)&&(b.el==="O"||b.el==="N"||b.el==="S")){X=a;A=b;}
+        else if(HALOGENS.has(b.el)&&(a.el==="O"||a.el==="N"||a.el==="S")){X=b;A=a;}
+        if(X){
+          // find carbon bonded to X
+          let cAtom=null,best=2.1;
+          for(const kk of neighbors(grid,X)){ const c=atoms[kk]; if(c!==X&&c.el==="C"){const d=dist(c,X); if(d<best){best=d;cAtom=c;}} }
+          if(cAtom){ const ang=angleBetween(sub(cAtom,X),sub(A,X)); if(ang>150) add(X,A,"halogen"); }
+        }
+      }
+    }
+  }
+
+  // aromatic ring based
+  const rings=collectRings(atoms);
+  // pi-pi
+  for(let i=0;i<rings.length;i++)for(let j=i+1;j<rings.length;j++){
+    const ri=rings[i],rj=rings[j];
+    if(ri.rk===rj.rk) continue;
+    const r=dist(ri,rj);
+    if(r>=3.3 && r<=6.5){
+      const pang=Math.min(angleBetween(ri.normal,rj.normal),180-angleBetween(ri.normal,rj.normal));
+      let geom = pang<30?"face":(pang>55?"T":"offset");
+      add(ri,rj,"pipi",{geom,angle:Math.round(pang)});
+    }
+  }
+  // cation centers
+  const cations=[];
+  for(const[rk,m] of byRes){
+    const rn=rk.split(":")[1];
+    if(rn==="ARG"){ const c=guanidiniumCenter(m); if(c) cations.push({...c,rk,name:"gua"}); }
+    else if(rn==="LYS"&&m.get("NZ")){ const a=m.get("NZ"); cations.push({x:a.x,y:a.y,z:a.z,rk,name:"NZ"}); }
+  }
+  for(const cat of cations){
+    for(const ring of rings){
+      if(ring.rk===cat.rk) continue;
+      const r=dist(cat,ring);
+      if(r>=3.2 && r<=6.5){
+        const off=angleBetween(ring.normal,sub(cat,ring));
+        const offset=Math.min(off,180-off);
+        if(offset<50) add(cat,ring,"cationpi",{offset:Math.round(offset)});
+      }
+    }
+  }
+  // CH-pi and S-pi
+  for(const ring of rings){
+    for(const a of atoms){
+      if(a.rk===ring.rk) continue;
+      const r=dist(a,ring);
+      if(a.el==="S" && r<=6.0 && (a.resName==="MET"||a.resName==="CYS")){
+        const off=angleBetween(ring.normal,sub(a,ring)); if(Math.min(off,180-off)<55) add(a,ring,"spi");
+      } else if(a.el==="C" && r<=4.6 && HYDROPHOBIC_RES.has(a.resName) && a.name!=="C" && a.name!=="CA" && !isRingAtom(a)){
+        // skip aromatic ring carbons of the same aromatic set handled elsewhere; still fine cross-residue
+        const off=angleBetween(ring.normal,sub(a,ring)); if(Math.min(off,180-off)<45) add(a,ring,"chpi");
+      }
+    }
+  }
+
+  // hydrophobic / vdW (aggregate per residue pair, cap)
+  const hpMap=new Map();
+  for(let i=0;i<atoms.length;i++){
+    const a=atoms[i];
+    if(a.el!=="C"||!HYDROPHOBIC_RES.has(a.resName)||a.name==="C"||isRingAtom(a)) continue;
+    for(const j of neighbors(grid,a)){
+      if(j<=i) continue;
+      const b=atoms[j];
+      if(b.el!=="C"||!HYDROPHOBIC_RES.has(b.resName)||b.name==="C"||isRingAtom(b)) continue;
+      if(a.rk===b.rk) continue;
+      const r=dist(a,b);
+      if(r<=4.3){
+        const pk=[a.rk,b.rk].sort().join("~");
+        let e=hpMap.get(pk);
+        if(!e){ e={a,b,r,count:0}; hpMap.set(pk,e); }
+        e.count++; if(r<e.r){e.r=r;e.a=a;e.b=b;}
+      }
+    }
+  }
+  for(const[pk,e] of hpMap){
+    if(full) { const k="hp:"+pk; if(!seen.has(k)){seen.add(k); edges.push({type:"hydrophobic",a1:e.a,a2:e.b,dist:e.r,dir:unit(sub(e.b,e.a)),key:k,extra:{count:e.count}}); } }
+    else edges.push("hp:"+pk);
+  }
+
+  // water bridge
+  const waters=atoms.filter(a=>a.resName==="HOH"&&a.el==="O");
+  for(const w of waters){
+    const contacts=[];
+    for(const j of neighbors(grid,w)){
+      const b=atoms[j]; if(b.resName==="HOH") continue;
+      const r=dist(w,b);
+      if(r<=3.4 && (isDonor(b)||isAcceptor(b))) contacts.push({b,r});
+    }
+    const resSet=new Set(contacts.map(c=>c.b.rk));
+    if(resSet.size>=2){
+      contacts.sort((x,y)=>x.r-y.r);
+      const used=new Set();
+      for(const c of contacts){ if(used.has(c.b.rk))continue; used.add(c.b.rk); add(w,c.b,"waterbridge"); if(used.size>=3)break; }
+    }
+  }
+
+  // n->pi*
+  const byChain=new Map();
+  for(const a of atoms){ if(a.isHet)continue; let arr=byChain.get(a.chain); if(!arr){arr=new Map();byChain.set(a.chain,arr);} arr.set(a.resSeq,a.rk); }
+  // build residue->carbonyl atoms
+  const carb=new Map(); // rk -> {O,C}
+  for(const a of atoms){ if(a.name==="O"||a.name==="C"){ let o=carb.get(a.rk); if(!o){o={};carb.set(a.rk,o);} o[a.name]=a; } }
+  for(const a of atoms){
+    if(a.name!=="O"||a.isHet) continue;
+    const seqi=parseInt(a.resSeq);
+    const nextRk=a.chain+":"; // find residue with resSeq+1 same chain
+    // locate next carbonyl C
+    for(const[rk,o] of carb){
+      if(!o.C) continue;
+      const parts=rk.split(":");
+      if(parts[0]!==a.chain) continue;
+      if(parseInt(parts[2])!==seqi+1) continue;
+      const r=dist(a,o.C);
+      if(r>=2.7 && r<=3.3){
+        if(o.O){ const ang=angleBetween(sub(a,o.C),sub(o.O,o.C)); if(ang>=95&&ang<=140) add(a,o.C,"npistar",{angle:Math.round(ang)}); }
+      }
+    }
+  }
+
+  return edges;
+}
+
+/* ---- SASA (Shrake-Rupley) + hydrophobic burial ---- */
+const VDW={C:1.70,N:1.55,O:1.52,S:1.80,P:1.80,H:1.10,ZN:1.39,FE:1.40,MG:1.50,MN:1.40,CU:1.40,NI:1.40,CO:1.40,CA:1.90,NA:1.50,K:2.00,CL:1.75,BR:1.85,I:1.98,SE:1.90,CD:1.60,HG:1.55};
+const PROBE=1.4;
+function fibSphere(n){ const p=[],ga=Math.PI*(3-Math.sqrt(5)); for(let i=0;i<n;i++){ const y=1-(i/(n-1))*2, r=Math.sqrt(Math.max(0,1-y*y)), th=ga*i; p.push({x:Math.cos(th)*r,y,z:Math.sin(th)*r}); } return p; }
+const SPHERE=fibSphere(92);
+function sasaPerAtom(atoms){
+  atoms.forEach(a=>a._R=(VDW[a.el]||1.70)+PROBE);
+  const cell=2*(1.90+PROBE)+0.1;
+  const grid=buildGrid(atoms,cell);
+  const out=new Float64Array(atoms.length);
+  for(let i=0;i<atoms.length;i++){
+    const a=atoms[i], Ri=a._R;
+    const nb=neighbors(grid,a).filter(j=>j!==i);
+    let acc=0;
+    for(const pt of SPHERE){
+      const px=a.x+Ri*pt.x, py=a.y+Ri*pt.y, pz=a.z+Ri*pt.z;
+      let free=true;
+      for(const j of nb){ const b=atoms[j], dx=px-b.x,dy=py-b.y,dz=pz-b.z; if(dx*dx+dy*dy+dz*dz < b._R*b._R){ free=false; break; } }
+      if(free) acc++;
+    }
+    out[i]=4*Math.PI*Ri*Ri*acc/SPHERE.length;
+  }
+  return out;
+}
+const NONPOLAR=a=>a.el==="C"||a.el==="S";
+const GAMMA=0.025; // kcal/mol per Å² buried nonpolar surface (~25 cal)
+function computeHydro(atoms){
+  if(atoms.length>13000) return null; // guard: too big for in-browser SASA
+  const full=sasaPerAtom(atoms);
+  const byRes=new Map();
+  atoms.forEach((a,i)=>{ a._sasa=full[i]; let arr=byRes.get(a.rk); if(!arr){arr=[];byRes.set(a.rk,arr);} arr.push({a,i}); });
+  const res={};
+  for(const[rk,arr] of byRes){
+    const rn=rk.split(":")[1];
+    if(!HYDROPHOBIC_RES.has(rn)) continue;
+    const npAtoms=arr.filter(o=>NONPOLAR(o.a));
+    if(!npAtoms.length) continue;
+    const sasaNP=npAtoms.reduce((s,o)=>s+full[o.i],0);
+    // isolated reference (residue alone) -> max exposed nonpolar SASA
+    const iso=sasaPerAtom(arr.map(o=>({x:o.a.x,y:o.a.y,z:o.a.z,el:o.a.el})));
+    let isoNP=0; arr.forEach((o,k)=>{ if(NONPOLAR(o.a)) isoNP+=iso[k]; });
+    const buried=Math.max(0, isoNP - sasaNP);
+    res[rk]={sasaNP:Math.round(sasaNP), buried:Math.round(buried), frac: isoNP>0?buried/isoNP:0, dG:-GAMMA*buried};
+  }
+  return res;
+}
+
+/* ---- analyze with occupancy across models ---- */
+function analyze(parsed){
+  const models=parsed.models;
+  const edges=detectModel(models[0].atoms,true);
+  if(models.length>1){
+    const sets=models.map((m,idx)=> idx===0 ? new Set(edges.map(e=>e.key)) : new Set(detectModel(m.atoms,false)));
+    edges.forEach(e=>{ let c=0; sets.forEach(s=>{ if(s.has(e.key)) c++; }); e.occ=c/models.length; });
+  } else edges.forEach(e=>e.occ=1);
+  const atoms=models[0].atoms;
+  const caByRk={};
+  atoms.forEach(a=>{ if(a.name==="CA"&&a.el==="C"){ caByRk[a.rk]=a; } });
+  atoms.forEach(a=>{ if(!caByRk[a.rk]) caByRk[a.rk]=a; }); // fallback: any atom
+  return {edges, nModels:models.length,
+    nAtoms:atoms.length,
+    nRes:new Set(atoms.filter(a=>!a.isHet||METALS.has(a.el)).map(a=>a.rk)).size,
+    atoms, caByRk, hydro:computeHydro(atoms), text:parsed.model0text};
+}
+
+/* ---- energy estimate (coarse) ---- */
+const METALQ={ZN:2,FE:3,MG:2,CA:2,MN:2,CU:2,NI:2,CO:2,NA:1,K:1,CD:2,HG:2};
+function gauss(Emin,rm,w,r){ return Emin*Math.exp(-((r-rm)**2)/(2*w*w)); }
+function estEnergy(e){
+  const r=e.dist;
+  switch(e.type){
+    case "saltbridge": return {v:332*(-1)/(4*r*r), note:null};
+    case "hbond": { const r0=2.85,eps=2.5; let E=eps*(5*Math.pow(r0/r,12)-6*Math.pow(r0/r,10)); if(E>2)E=2; return {v:E}; }
+    case "cationpi": return {v:gauss(-3.3,4.0,1.3,r)};
+    case "pipi":     return {v:gauss(-2.0,4.9,1.4,r)};
+    case "chpi":     return {v:gauss(-1.0,3.9,1.0,r)};
+    case "spi":      return {v:gauss(-1.5,5.0,1.4,r)};
+    case "halogen":  return {v:gauss(-2.5,3.3,0.7,r)};
+    case "npistar":  return {v:gauss(-0.6,2.9,0.35,r)};
+    case "waterbridge": { const r0=2.85,eps=1.8; let E=eps*(5*Math.pow(r0/r,12)-6*Math.pow(r0/r,10)); if(E>2)E=2; return {v:E}; }
+    case "metal": { const qm=METALQ[e.a1.el]||2; return {v:332*qm*(-0.5)/(4*r*r), note:null}; }
+    case "hydrophobic": { const n=e.extra.count||1; return {v:-0.10*n, note:(LANG==="zh"?(n+" 个接触 · 色散/vdW"):(n+" contacts · dispersion/vdW"))}; }
+    case "disulfide": return {v:null, note:tt("covNote")};
+  }
+  return {v:null};
+}
+
+/* ---- state ---- */
+let DATA=null, viewer=null, viewerReady=false, enabled=new Set(DEFAULT_ON);
+let selResSet=new Set(), showLabels=false, showWater=false, surfActive=false;
+
+/* ---- 3Dmol loader ---- */
+function load3Dmol(){
+  return new Promise(res=>{
+    if(window.$3Dmol) return res(true);
+    const urls=[
+      "https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.4.0/3Dmol-min.js",
+      "https://cdn.jsdelivr.net/npm/3dmol@2.4.0/build/3Dmol-min.js",
+      "https://3Dmol.org/build/3Dmol-min.js"
+    ];
+    let i=0;
+    const next=()=>{
+      if(i>=urls.length) return res(false);
+      const s=document.createElement("script"); s.src=urls[i++]; s.async=true;
+      s.onload=()=>res(!!window.$3Dmol); s.onerror=next;
+      document.head.appendChild(s);
+    };
+    next();
+  });
+}
+
+/* ---- viewer helpers ---- */
+function bg(){ return document.documentElement.getAttribute("data-theme")==="dark"?"0x1a1a19":"0xffffff"; }
+function ensureViewer(){
+  if(viewer||!window.$3Dmol) return;
+  const el=$("#molviewer");
+  viewer=$3Dmol.createViewer(el,{backgroundColor:bg()});
+  viewerReady=true;
+}
+function clearSurfaces(){ if(!viewer)return; try{ viewer.removeAllSurfaces(); }catch(_){} surfActive=false; }
+function selResi(rk){ const p=rk.split(":"); return {chain:p[0],resi:parseInt(p[2])}; }
+function edgeTouchesSel(e){ return selResSet.has(e.a1.rk)||selResSet.has(e.a2.rk); }
+function drawViewer(){
+  if(!viewer||!DATA) return;
+  viewer.removeAllShapes(); viewer.removeAllLabels(); clearSurfaces();
+  const hasSel=selResSet.size>0;
+  const dimBase=hasSel?0.12:0.9;
+  viewer.setStyle({}, {cartoon:{color:"spectrum",opacity:dimBase}});
+  // ligands / metals (all hetero first)
+  viewer.setStyle({hetflag:true},{stick:{radius:0.16,opacity:hasSel?0.3:1},sphere:{scale:0.28,opacity:hasSel?0.3:1}});
+  // waters LAST so this overrides the hetero styling above
+  if(showWater) viewer.setStyle({resn:"HOH"},{sphere:{radius:0.32,color:"0xc00000",opacity:hasSel?0.25:0.8}});
+  else viewer.setStyle({resn:"HOH"},{});
+  // interacting residues -> sticks
+  const active=DATA.edges.filter(e=>enabled.has(e.type));
+  const resAdd=new Set();
+  active.forEach(e=>{ if(e.a1.resName!=="HOH")resAdd.add(e.a1.rk); if(e.a2.resName!=="HOH")resAdd.add(e.a2.rk); });
+  resAdd.forEach(rk=>{ if(rk.split(":")[1]==="HOH")return; const dim=hasSel&&!selResSet.has(rk); viewer.addStyle(selResi(rk),{stick:{radius:0.13,opacity:dim?0.18:1}}); });
+  // selected residues emphasized (full opacity, thicker)
+  selResSet.forEach(rk=>{ viewer.addStyle(selResi(rk),{cartoon:{opacity:1},stick:{radius:0.28,opacity:1}}); });
+  // labels
+  if(showLabels){
+    const labelSet = hasSel ? [...selResSet] : [...resAdd].filter(rk=>rk.split(":")[1]!=="HOH").slice(0,45);
+    labelSet.forEach(rk=>{ const ca=DATA.caByRk[rk]; if(!ca)return; const p=rk.split(":");
+      viewer.addLabel(p[1]+p[2], {position:{x:ca.x,y:ca.y,z:ca.z}, fontSize:11, fontColor:"white",
+        backgroundColor: selResSet.has(rk)?"0x4a3aa7":"0x333333", backgroundOpacity:0.75, borderThickness:0.0}); });
+  }
+  // directional/line edges (hydrophobic handled as surface, NOT a line)
+  let drawn=0; const cap=650;
+  for(const e of active){
+    if(e.type==="hydrophobic") continue;
+    if(drawn>cap) break;
+    const col=ITYPES[e.type].c;
+    const faded = hasSel && !edgeTouchesSel(e);
+    const op = faded?0.15:1;
+    const s={x:e.a1.x,y:e.a1.y,z:e.a1.z}, t={x:e.a2.x,y:e.a2.y,z:e.a2.z};
+    if(ITYPES[e.type].dir) viewer.addArrow({start:s,end:t,radius:0.08,radiusRatio:2.4,mid:0.72,color:col,opacity:op});
+    else viewer.addCylinder({start:s,end:t,radius:0.06,dashed:true,fromCap:1,toCap:1,color:col,opacity:op});
+    drawn++;
+  }
+  // hydrophobic effect -> translucent buried nonpolar surface (a surface, not a bond)
+  if(enabled.has("hydrophobic") && DATA.hydro) drawHydroSurface(hasSel);
+  viewer.render();
+}
+function drawHydroSurface(hasSel){
+  const contacted=new Set();
+  DATA.edges.filter(e=>e.type==="hydrophobic").forEach(e=>{ contacted.add(e.a1.rk); contacted.add(e.a2.rk); });
+  let list=[...contacted].filter(rk=>DATA.hydro[rk]);
+  if(hasSel) list=list.filter(rk=>selResSet.has(rk));
+  if(!list.length) return;
+  if(list.length>90 && !hasSel){ setSurfNote(true); return; } // too many -> ask to select
+  setSurfNote(false);
+  // group by chain for selection
+  const byChain={};
+  list.forEach(rk=>{ const p=rk.split(":"); (byChain[p[0]]=byChain[p[0]]||[]).push(parseInt(p[2])); });
+  try{
+    for(const ch in byChain){
+      viewer.addSurface($3Dmol.SurfaceType.SAS, {opacity:0.55, color:ITYPES.hydrophobic.c},
+        {chain:ch, resi:byChain[ch], elem:["C","S"]});
+    }
+    surfActive=true;
+  }catch(_){}
+}
+function setSurfNote(show){ const n=$("#surfNote"); if(n) n.style.display=show?"block":"none"; }
+function focusSel(){
+  if(!viewer||!selResSet.size) return;
+  const first=[...selResSet][0];
+  try{ viewer.zoomTo(selResi(first),600); viewer.render(); }catch(_){}
+}
+
+/* ---- render toggles ---- */
+function renderToggles(){
+  const box=$("#itoggles"); if(!box) return; box.innerHTML="";
+  const counts={}; if(DATA) DATA.edges.forEach(e=>counts[e.type]=(counts[e.type]||0)+1);
+  TYPE_ORDER.forEach(t=>{
+    if(DATA && !counts[t]) return; // hide types with 0 when data loaded
+    const on=enabled.has(t);
+    const el=document.createElement("div");
+    el.className="itog"+(on?"":" off");
+    el.innerHTML=`<span class="dot" style="background:${ITYPES[t].c}"></span>${ityName(t)}${DATA?` <span class="cnt">${counts[t]||0}</span>`:""}`;
+    el.onclick=()=>{ if(enabled.has(t))enabled.delete(t);else enabled.add(t); renderToggles(); drawViewer(); if(selResSet.size)renderEdges(); };
+    box.appendChild(el);
+  });
+}
+
+/* ---- stats ---- */
+function renderStats(){
+  const box=$("#pstats"); if(!box)return;
+  if(!DATA){ box.innerHTML=""; return; }
+  const cells=[[DATA.nAtoms,"stAtoms"],[DATA.nRes,"stRes"],[DATA.nModels,"stModels"],[DATA.edges.length,"stEdges"]];
+  box.innerHTML=cells.map(c=>`<div class="pstat"><b>${c[0]}</b><span>${tt(c[1])}</span></div>`).join("");
+}
+
+/* ---- residue chips ---- */
+function residuesWithEdges(){
+  const m=new Map();
+  DATA.edges.forEach(e=>{ [e.a1,e.a2].forEach(a=>{ if(a.name==="gua"||a.resName==="HOH"){} m.set(a.rk,(m.get(a.rk)||0)+1); }); });
+  return [...m.keys()].sort((x,y)=>{
+    const px=x.split(":"),py=y.split(":");
+    if(px[0]!==py[0]) return px[0]<py[0]?-1:1;
+    return parseInt(px[2])-parseInt(py[2]);
+  });
+}
+function resLabel(rk){ const p=rk.split(":"); return p[1]+p[2]; }
+function renderChips(filter){
+  const box=$("#reschips"); if(!box)return;
+  if(!DATA){ box.innerHTML=""; return; }
+  filter=(filter||"").trim().toUpperCase();
+  const list=residuesWithEdges().filter(rk=> !filter || rk.toUpperCase().includes(filter) || resLabel(rk).toUpperCase().includes(filter));
+  box.innerHTML=list.slice(0,400).map(rk=>`<span class="rchip${selResSet.has(rk)?' sel':''}" data-rk="${rk}">${rk.split(":")[0]}·${resLabel(rk)}</span>`).join("")||`<span class="esub">—</span>`;
+  box.querySelectorAll(".rchip").forEach(c=>c.onclick=(ev)=>selectRes(c.getAttribute("data-rk"), ev&&(ev.ctrlKey||ev.metaKey)));
+}
+
+/* ---- edges panel ---- */
+function atomLabel(a){
+  if(a.name==="π") return a.resName+a.rk.split(":")[2]+" π";
+  if(a.name==="gua") return a.resName+a.rk.split(":")[2]+" (胍基)";
+  if(a.resName==="HOH") return "HOH"+a.rk.split(":")[2];
+  return a.resName+a.rk.split(":")[2]+(a.name?" "+a.name:"");
+}
+function selectRes(rk, additive){
+  if(additive){ if(selResSet.has(rk))selResSet.delete(rk); else selResSet.add(rk); }
+  else {
+    if(selResSet.size===1 && selResSet.has(rk)) selResSet.clear();
+    else { selResSet.clear(); selResSet.add(rk); }
+  }
+  renderChips($("#resSearch")?$("#resSearch").value:""); renderEdges(); drawViewer();
+  if(selResSet.size) focusSel();
+}
+function burialCard(rk){
+  const h=DATA.hydro&&DATA.hydro[rk]; if(!h) return "";
+  const pct=Math.round(h.frac*100);
+  const dgStr = h.dG.toFixed(1);
+  return `<div class="burial">
+    <div class="bt">${LANG==="zh"?"疏水 / 埋藏（表面，而非键）":"Hydrophobic / burial (a surface, not a bond)"}</div>
+    <div class="brow"><span>${LANG==="zh"?"非极性 SASA":"nonpolar SASA"}</span><b>${h.sasaNP} Å²</b></div>
+    <div class="brow"><span>${LANG==="zh"?"埋藏非极性面积 ΔA":"buried nonpolar ΔA"}</span><b>${h.buried} Å² (${pct}%)</b></div>
+    <div class="brow"><span>${LANG==="zh"?"≈ 疏水贡献 γ·ΔA":"≈ hydrophobic ΔG (γ·ΔA)"}</span><b>${dgStr} kcal/mol</b></div>
+    <div class="bnote">${LANG==="zh"
+      ? "γ≈25 cal·mol⁻¹·Å⁻²。这是溶剂驱动的自由能效应（埋藏非极性面 → 释放有序水），叠加残基间的色散/vdW；不是一根固定的“疏水键”。"
+      : "γ≈25 cal·mol⁻¹·Å⁻². A solvent-driven free-energy effect (burying nonpolar surface → releasing ordered water), on top of inter-residue dispersion/vdW — not a fixed \"hydrophobic bond\"."}</div>
+  </div>`;
+}
+function renderEdges(){
+  const box=$("#edgebox"); if(!box)return;
+  if(!selResSet.size){ box.innerHTML=`<div class="placeholder">${tt("pickRes")}</div>`; return; }
+  let html="";
+  const sels=[...selResSet];
+  for(const selRes of sels){
+    const mine=DATA.edges.filter(e=>e.a1.rk===selRes||e.a2.rk===selRes)
+      .sort((a,b)=> (enabled.has(b.type)-enabled.has(a.type)) || (a.dist-b.dist));
+    const p=selRes.split(":");
+    html+=`<div class="resblock"><h4>${p[0]} · ${p[1]}${p[2]}</h4><div class="esub">${mine.length} ${tt("stEdges")}</div>`;
+    html+=burialCard(selRes);
+    if(!mine.length) html+=`<div class="esub" style="margin-top:8px">—</div>`;
+    for(const e of mine){
+      const iAmA1=e.a1.rk===selRes;
+      const other=iAmA1?e.a2:e.a1;
+      const isHydro=e.type==="hydrophobic";
+      const arrow=ITYPES[e.type].dir?"→":"—";
+      const dirStr = isHydro ? `${atomLabel(e.a1)} ⋯ ${atomLabel(e.a2)}` : `${atomLabel(e.a1)} ${arrow} ${atomLabel(e.a2)}`;
+      const en=estEnergy(e);
+      let enStr = en.v!=null ? `≈ ${en.v.toFixed(1)} kcal/mol` : (en.note||"");
+      if(en.v!=null && en.note) enStr+=` · ${en.note}`;
+      else if(en.v==null && en.note) enStr=en.note;
+      const occ=Math.round((e.occ||1)*100);
+      const geom=e.extra&&e.extra.geom?` · ${e.extra.geom}`:(e.extra&&e.extra.angle!=null?` · ${e.extra.angle}°`:"");
+      const label=isHydro?(LANG==="zh"?"packing":"packing"):ityName(e.type);
+      html+=`<div class="edge${enabled.has(e.type)?'':' disabled'}">
+        <div class="eh"><span class="epart">${atomLabel(other)}</span>
+          <span class="etype" style="background:${ITYPES[e.type].c}">${isHydro?ityName(e.type):ityName(e.type)}${geom}</span></div>
+        <div class="edir">${dirStr}</div>
+        <div class="emeta">
+          <span>${tt("distLabel")}: <b style="color:var(--ink-2)">${e.dist.toFixed(2)} Å</b></span>
+          <span>${tt("enLabel")}: ${enStr}</span>
+          ${DATA.nModels>1?`<span>${tt("occLabel")}: <span class="occbar"><i style="width:${occ}%"></i></span> ${occ}%</span>`:""}
+        </div></div>`;
+    }
+    html+=`</div>`;
+  }
+  box.innerHTML=html;
+}
+
+/* ---- main load pipeline ---- */
+function setMsg(txt,isErr){ const m=$("#viewerMsg"); if(!m)return; m.style.display=txt?"flex":"none"; m.className="viewer-msg"+(isErr?" err":""); m.innerHTML=txt||""; }
+function firstModelText(text){
+  // return only first MODEL...ENDMDL block if multi-model, else full
+  const mi=text.indexOf("\nMODEL ");
+  if(mi<0 && !text.startsWith("MODEL ")) return text;
+  const start=text.indexOf("MODEL ");
+  const end=text.indexOf("ENDMDL");
+  if(start>=0&&end>start) return text.slice(0,start)+text.slice(start,end+6);
+  return text;
+}
+async function loadPDB(text,label){
+  setMsg(`<span class="spin"></span>${tt("loadingMsg")}`,false);
+  await new Promise(r=>setTimeout(r,10));
+  const parsed=parsePDB(text);
+  if(!parsed||!parsed.models.length){ setMsg(tt("parseErr"),true); return; }
+  const m0text=firstModelText(text);
+  DATA=analyze(parsed); DATA.m0text=m0text;
+  // reset selection
+  selResSet.clear();
+  renderStats(); renderToggles(); renderChips(""); renderEdges();
+  // viewer
+  const ok=await load3Dmol();
+  if(ok){
+    ensureViewer();
+    if(viewer){
+      viewer.clear();
+      viewer.addModel(m0text,"pdb");
+      viewer.setBackgroundColor(bg());
+      drawViewer();
+      try{
+        viewer.setClickable({}, true, function(atom,vw,evt){
+          if(!atom) return;
+          const add = evt && (evt.ctrlKey||evt.metaKey||evt.shiftKey);
+          selectRes((atom.chain||"A")+":"+atom.resn+":"+atom.resi, add);
+        });
+      }catch(_){}
+      viewer.zoomTo(); viewer.render();
+      setMsg("",false);
+    }
+  } else {
+    setMsg(tt("noViewer"),true);
+  }
+}
+function readFile(file){
+  const rd=new FileReader();
+  rd.onload=()=>loadPDB(rd.result,file.name);
+  rd.readAsText(file);
+}
+async function fetchPDB(id){
+  id=id.trim().toUpperCase(); if(!id) return;
+  setMsg(`<span class="spin"></span>${tt("loadingMsg")}`,false);
+  const urls=[`https://files.rcsb.org/download/${id}.pdb`,`https://files.rcsb.org/view/${id}.pdb`];
+  for(const u of urls){
+    try{ const r=await fetch(u); if(r.ok){ const t=await r.text(); if(t&&t.indexOf("ATOM")>=0){ loadPDB(t,id); return; } } }catch(_){}
+  }
+  setMsg(tt("fetchErr"),true);
+}
+
+/* ---- wire up UI ---- */
+function wire(){
+  const drop=$("#dropZone"), fileInput=$("#pdbFile");
+  if(!drop) return;
+  fileInput.addEventListener("change",e=>{ if(e.target.files[0]) readFile(e.target.files[0]); });
+  drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("drag");});
+  drop.addEventListener("dragleave",()=>drop.classList.remove("drag"));
+  drop.addEventListener("drop",e=>{ e.preventDefault(); drop.classList.remove("drag"); if(e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0]); });
+  $("#pidBtn").addEventListener("click",()=>fetchPDB($("#pdbId").value));
+  $("#pdbId").addEventListener("keydown",e=>{ if(e.key==="Enter")fetchPDB($("#pdbId").value); });
+  document.querySelectorAll(".ex").forEach(b=>b.addEventListener("click",()=>fetchPDB(b.getAttribute("data-id"))));
+  $("#resSearch").addEventListener("input",e=>renderChips(e.target.value));
+  $("#resSearch").setAttribute("placeholder", tt("resSearchPh"));
+  const lb=$("#labelBtn"), wb=$("#waterBtn");
+  if(lb) lb.addEventListener("click",()=>{ showLabels=!showLabels; lb.classList.toggle("on",showLabels); drawViewer(); });
+  if(wb) wb.addEventListener("click",()=>{ showWater=!showWater; wb.classList.toggle("on",showWater); drawViewer(); });
+}
+
+/* ---- react to language + theme changes ---- */
+window.onLangChange=function(){
+  const rs=$("#resSearch"); if(rs) rs.setAttribute("placeholder", tt("resSearchPh"));
+  renderStats(); renderToggles(); renderChips($("#resSearch")?$("#resSearch").value:""); renderEdges();
+};
+// theme toggle already exists; also refresh viewer bg
+const _themeBtn=$("#themeBtn");
+if(_themeBtn) _themeBtn.addEventListener("click",()=>{ if(viewer){ viewer.setBackgroundColor(bg()); viewer.render(); } });
+
+wire();
+window.__pdb={parsePDB, detectModel, analyze, estEnergy, loadPDB, get data(){return DATA;}};
+})();
 </script>
 </body>
 </html>
