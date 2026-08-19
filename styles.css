@@ -185,18 +185,6 @@ h3 {
   transform-origin: 50% 34%;
 }
 
-.theme-headshot-dark {
-  display: none !important;
-}
-
-:root[data-theme="dark"] .theme-headshot-light {
-  display: none !important;
-}
-
-:root[data-theme="dark"] .theme-headshot-dark {
-  display: block !important;
-}
-
 .top-nav {
   display: flex;
   justify-content: center;
@@ -387,7 +375,7 @@ h3 {
   height: 100%;
   object-fit: cover;
   object-position: 50% 38%;
-  transform: scale(1.12);
+  transform: translateY(6%) scale(1.12);
   transform-origin: 50% 38%;
 }
 

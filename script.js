@@ -291,12 +291,16 @@ const visitLoggerConfig = {
 
 function setTheme(theme) {
   const nextTheme = theme === "dark" ? "dark" : "light";
+  const isDark = nextTheme === "dark";
   document.documentElement.dataset.theme = nextTheme;
   localStorage.setItem("portfolio-theme", nextTheme);
 
+  document.querySelectorAll("[data-theme-headshot]").forEach((headshot) => {
+    headshot.src = isDark ? headshot.dataset.darkSrc : headshot.dataset.lightSrc;
+  });
+
   const button = document.querySelector("[data-theme-toggle]");
   if (button) {
-    const isDark = nextTheme === "dark";
     button.textContent = isDark ? "☀" : "☾";
     button.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
     button.setAttribute("title", isDark ? "Switch to light mode" : "Switch to dark mode");
