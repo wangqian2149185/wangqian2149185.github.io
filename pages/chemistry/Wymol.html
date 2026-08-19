@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wymol · Protein Interaction Atlas</title>
+<title>Wymol 1.3 · Protein Interaction Atlas</title>
 <style>
 :root{
   color-scheme: light;
@@ -50,6 +50,7 @@ header{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--plane
   border-radius:999px;padding:6px 12px;font-size:.82rem;cursor:pointer;font-weight:600;
   transition:.15s}
 .tg:hover{color:var(--ink);border-color:var(--muted)}
+.tg{text-decoration:none}
 .tg .on{color:var(--ink)}
 .tg .off{color:var(--muted);opacity:.55}
 
@@ -251,6 +252,25 @@ footer p{margin:6px 0}
 .modelpick{display:none;align-items:center;gap:6px;font-size:.76rem;color:var(--ink-2)}
 .modelpick.show{display:flex}
 .modelpick select{border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:8px;padding:5px 8px}
+.ssebox{border:1px solid var(--border);border-radius:var(--r);background:var(--surface);padding:12px 13px;box-shadow:var(--shadow)}
+.sseh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.sseh b{font-size:.86rem}.sseh span{font-size:.67rem;color:var(--muted)}
+.ssechips{display:flex;gap:5px;flex-wrap:wrap;max-height:116px;overflow:auto}
+.ssechip{border:1px solid var(--border);border-radius:7px;padding:4px 7px;background:var(--surface-2);color:var(--ink-2);font-size:.7rem;font-weight:700;cursor:pointer}
+.ssechip.helix{border-left:4px solid var(--ct)}.ssechip.strand{border-left:4px solid var(--elec)}
+.ssechip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.sseactions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.sseactions .vbtn{font-size:.7rem;padding:4px 9px}
+.loadpanel{display:none;margin-top:9px;border-top:1px solid var(--border);padding-top:9px}.loadpanel.show{display:block}
+.loadtitle{font-size:.8rem;font-weight:800;margin-bottom:6px}.loadgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.loadmetric{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:6px 8px}
+.loadmetric b{display:block;font-size:.94rem}.loadmetric span{font-size:.64rem;color:var(--muted)}
+.predictive-tag{display:inline-block;margin-left:3px;border:1px solid color-mix(in srgb,var(--solv) 45%,var(--border));border-radius:999px;padding:0 4px;color:var(--solv);font-size:.58rem;font-weight:800;text-transform:uppercase}
+.loadnote{font-size:.67rem;color:var(--muted);line-height:1.4;margin-top:7px}
+.info-btn{border:0;background:transparent;color:var(--accent);font-weight:900;cursor:pointer;padding:0 2px;font-size:.78em;vertical-align:1px}
+.method-overlay{position:fixed;inset:0;background:rgba(0,0,0,.34);z-index:180;display:none}.method-overlay.show{display:block}
+.method-drawer{position:absolute;right:0;top:0;height:100%;width:min(460px,92vw);background:var(--surface);border-left:1px solid var(--border);box-shadow:-12px 0 40px rgba(0,0,0,.22);padding:24px;overflow:auto}
+.method-drawer h3{margin:0 38px 3px 0}.method-level{font-size:.7rem;color:var(--accent);font-weight:800;text-transform:uppercase;letter-spacing:.06em}.method-formula{font-family:"SFMono-Regular",Consolas,monospace;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:10px;margin:14px 0;overflow:auto}.method-drawer p{font-size:.88rem;color:var(--ink-2)}.method-refs a{display:block;font-size:.78rem;margin:6px 0;color:var(--accent)}
 .surfnote{margin-top:8px;font-size:.75rem;color:var(--disp);background:color-mix(in srgb,var(--disp) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--disp) 24%,var(--border));border-radius:8px;padding:7px 10px}
 .hydro-callout{margin-top:16px;border:1px solid color-mix(in srgb,var(--solv) 26%,var(--border));border-radius:var(--r);background:color-mix(in srgb,var(--solv) 7%,var(--surface));padding:14px 18px;box-shadow:var(--shadow)}
 .hydro-callout .hc-t{font-weight:700;font-size:.96rem;margin-bottom:6px}
@@ -268,10 +288,11 @@ footer p{margin:6px 0}
 <header>
   <div class="hbar">
     <div class="brand">
-      <b data-i="brandT">Wymol 1.2</b>
+      <b data-i="brandT">Wymol 1.3</b>
       <span data-i="brandS">原子级相互作用 · 按 5 大物理来源拆解</span>
     </div>
     <div class="toggles">
+      <a class="tg" href="Wymol-methods.html" target="_blank" data-i="methodsLink">Methods</a>
       <button class="tg" id="langBtn" title="语言 / Language">
         <span class="off">中文</span> / <span class="on">EN</span>
       </button>
@@ -362,6 +383,7 @@ footer p{margin:6px 0}
           <button class="vbtn" id="distanceBtn">↔ <span data-i="btnDistance">距离</span></button>
           <label class="modelpick" id="modelPick"><span data-i="modelLabel">Model</span><select id="modelSelect"></select></label>
           <span class="vhint" data-i="multiHint">Ctrl/⌘ + 点击可多选残基</span>
+          <button class="info-btn" data-method="depth-slope" title="Depth blur method">ⓘ</button>
         </div>
         <div id="molviewer"><div class="viewer-msg" id="viewerMsg" data-i="viewerEmpty">上传一个 PDB 文件开始</div><div class="depth-hud" id="depthHud">Depth blur 0%</div></div>
         <div class="itoggles" id="itoggles"></div>
@@ -369,6 +391,12 @@ footer p{margin:6px 0}
       </div>
       <div class="pdbside">
         <div class="pstats" id="pstats"></div>
+        <div class="ssebox" id="ssebox">
+          <div class="sseh"><b><span data-i="sseTitle">Secondary-structure units</span> <button class="info-btn" data-method="secondary-structure">ⓘ</button></b><span data-i="sseHint">Select to show external interactions only</span></div>
+          <div class="ssechips" id="ssechips"><span class="esub" data-i="sseEmpty">Load a PDB to identify helices and strands</span></div>
+          <div class="sseactions"><button class="vbtn" id="sseClear" data-i="sseClear">All interactions</button><button class="vbtn" id="mergeSheet" data-i="mergeSheet" style="display:none">Merge β-sheet</button></div>
+          <div class="loadpanel" id="loadpanel"></div>
+        </div>
         <div>
           <input id="resSearch" class="resSearchBox" placeholder="搜索残基…">
           <div class="reschips" id="reschips"></div>
@@ -383,6 +411,7 @@ footer p{margin:6px 0}
   </section>
 
   <footer>
+    <p><b>Wymol interaction model: v1.3</b> · <a href="Wymol-methods.html" target="_blank" style="color:var(--accent)" data-i="methodsLink">Methods</a></p>
     <p data-i="f1"><b>重要提醒 · </b>表中能量给出的是蛋白环境中的典型量级，不是绝对常数。成对能与净 ΔG 贡献常相差很大：氢键与盐桥必须先打破与水的相互作用，净收益远小于裸相互作用能。</p>
     <p data-i="f2">金属配位的能量跨度极大（配位数、氧化态、配位场、螯合效应、去溶剂化都在起作用），即使先进计算也可能有数 kcal/mol 的模型误差——具体体系需单独处理。</p>
     <p data-i="f3">拆解比例为教学示意，用于建立直觉；精确分解需 SAPT 等量子化学方法对具体几何计算。</p>
@@ -393,6 +422,7 @@ footer p{margin:6px 0}
 <div class="overlay" id="overlay">
   <div class="modal" id="modal"></div>
 </div>
+<div class="method-overlay" id="methodOverlay"><aside class="method-drawer" id="methodDrawer"></aside></div>
 
 <script>
 /* ============================================================
@@ -401,8 +431,8 @@ footer p{margin:6px 0}
    ============================================================ */
 const T = {
   zh:{
-    brandT:"Wymol 1.2", brandS:"蛋白质相互作用图谱 · 原子级相互作用",
-    theme:"深色",
+    brandT:"Wymol 1.3", brandS:"蛋白质相互作用图谱 · 原子级相互作用",
+    theme:"深色", methodsLink:"方法说明",
     title:"蛋白质靠什么维持结构？",
     lede:"蛋白质不是靠某一种“键”锁死，而是靠成千上万个 0.2–5 kcal/mol 的弱相互作用协同，再叠加少数很强的共价键与金属配位。下面把结构、生化、光谱、热力学与计算反复验证过的原子级相互作用整理成一份可交互的“相互作用词典”。",
     keyK:"核心判断 · Key idea",
@@ -429,6 +459,7 @@ const T = {
     l3t:"动态 / 占据率", l3d:"若文件含多个 MODEL（如 NMR 系综），逐帧重算并给出占据率 %。真正的 MD 轨迹需力场与最小化，超出浏览器范围。",
     pdbDrop:"拖入或点击选择 .pdb 文件", pdbFetch:"获取", pdbEx:"示例:", exNMR:"2M9G · NMR 系综",
     exportCsv:"导出全部相互作用", exportPymol:"导出 PyMOL", modelLabel:"模型", btnDistance:"距离",
+    sseTitle:"二级结构单元", sseHint:"选择后仅显示跨边界作用", sseEmpty:"加载 PDB 后识别 helix 与 strand", sseClear:"全部相互作用", mergeSheet:"合并 β-sheet",
     viewerEmpty:"上传一个 PDB 文件开始 · 或点上方示例", pickRes:"👆 点击一个残基查看其相互作用",
     stAtoms:"原子", stRes:"残基", stModels:"模型", stEdges:"相互作用",
     resSearchPh:"搜索残基（如 ARG45 / A:72）…",
@@ -443,8 +474,8 @@ const T = {
     hcP:'疏水效应不是"Leu 与 Val 之间有一根疏水键"，而是<b>溶剂驱动的自由能效应</b>：两个非极性面各自暴露于水时，周围水被迫排成相对有序的水化壳；二者靠近、非极性面被埋藏（ΔSASA&lt;0），一部分有序水释放回本体、获得更多平动/转动/氢键构型，−TΔS&lt;0 使结合有利。更完整地说，它来自<b>创建非极性空腔的自由能成本 + 埋藏非极性面的收益</b>（小/大疏水基团机制不同，并非只是"水变自由"）。因此本工具对氢键/盐桥/金属用"线/箭头"，对疏水用<b>半透明埋藏表面 + SASA + ΔG≈γ·ΔA</b>。还要记住：两个疏水残基靠近时真正直接存在的是 <b>色散/vdW + 位阻堆积</b>，"疏水键"本身并不存在 —— ΔG_接触 = ΔG_溶剂化 + E_色散 + E_位阻 + …',
   },
   en:{
-    brandT:"Wymol 1.2", brandS:"Protein Interaction Atlas · atomic-level interactions",
-    theme:"Dark",
+    brandT:"Wymol 1.3", brandS:"Protein Interaction Atlas · atomic-level interactions",
+    theme:"Dark", methodsLink:"Methods",
     title:"What actually holds a protein together?",
     lede:"A protein isn't locked by one kind of \"bond\". It's held by thousands of weak 0.2–5 kcal/mol interactions acting together, plus a few very strong covalent bonds and metal-coordination sites. Below is an interactive \"interaction vocabulary\" — every entry repeatedly validated by structural, biochemical, spectroscopic, thermodynamic and computational work.",
     keyK:"Key idea · 核心判断",
@@ -471,6 +502,7 @@ const T = {
     l3t:"Dynamics / occupancy", l3d:"If the file has multiple MODELs (e.g. an NMR ensemble), detection reruns per frame and reports occupancy %. A true MD trajectory needs a force field + minimization, beyond the browser.",
     pdbDrop:"Drop or click to choose a .pdb file", pdbFetch:"Fetch", pdbEx:"Examples:", exNMR:"2M9G · NMR ensemble",
     exportCsv:"Export all interactions", exportPymol:"Export PyMOL", modelLabel:"Model", btnDistance:"Distances",
+    sseTitle:"Secondary-structure units", sseHint:"Select to show boundary interactions only", sseEmpty:"Load a PDB to identify helices and strands", sseClear:"All interactions", mergeSheet:"Merge β-sheet",
     viewerEmpty:"Upload a PDB file to start · or click an example above", pickRes:"👆 Click a residue to see its interactions",
     stAtoms:"atoms", stRes:"residues", stModels:"models", stEdges:"interactions",
     resSearchPh:"Search residue (e.g. ARG45 / A:72)…",
@@ -937,6 +969,8 @@ function renderAll(){
 renderAll();
 </script>
 
+<script src="wymol-methods-data.js"></script>
+
 <!-- ============================================================
      PDB MODULE  ·  geometry detection + 3Dmol viewer + occupancy
      ============================================================ -->
@@ -1024,12 +1058,25 @@ const isAnionO  = a => (a.resName==="ASP"&&(a.name==="OD1"||a.name==="OD2"))
 
 /* ---- PDB parser (supports multi-MODEL) ---- */
 function parsePDB(text){
-  const models=[]; let cur=null;
+  const models=[], sseRecords=[]; let cur=null;
   const start=()=>{ cur={atoms:[]}; models.push(cur); };
   const lines=text.split(/\r?\n/);
   let sawModel=false;
   for(const line of lines){
     const rec=line.slice(0,6);
+    if(rec==="HELIX "){
+      const chain=(line.slice(19,20).trim()||"A"), endChain=(line.slice(31,32).trim()||chain);
+      const startSeq=parseInt(line.slice(21,25)), endSeq=parseInt(line.slice(33,37));
+      if(chain===endChain&&!isNaN(startSeq)&&!isNaN(endSeq)) sseRecords.push({type:"helix",chain,start:startSeq,end:endSeq,id:(line.slice(11,14).trim()||"H"+(sseRecords.length+1)),source:"PDB"});
+      continue;
+    }
+    if(rec==="SHEET "){
+      const chain=(line.slice(21,22).trim()||"A"), endChain=(line.slice(32,33).trim()||chain);
+      const startSeq=parseInt(line.slice(22,26)), endSeq=parseInt(line.slice(33,37));
+      const sheetId=line.slice(11,14).trim()||"S";
+      if(chain===endChain&&!isNaN(startSeq)&&!isNaN(endSeq)) sseRecords.push({type:"strand",chain,start:startSeq,end:endSeq,id:sheetId+":"+(line.slice(7,10).trim()||sseRecords.length+1),sheetId,source:"PDB"});
+      continue;
+    }
     if(rec==="MODEL "){ sawModel=true; start(); continue; }
     if(rec.startsWith("ENDMDL")){ cur=null; continue; }
     if(rec==="ATOM  "||rec==="HETATM"){
@@ -1054,7 +1101,41 @@ function parsePDB(text){
   }
   if(models.length===0) return null;
   // drop empty trailing models
-  return { models: models.filter(m=>m.atoms.length>0) };
+  return { models: models.filter(m=>m.atoms.length>0), sseRecords };
+}
+
+/* ---- secondary-structure units (PDB HELIX/SHEET, geometry fallback) ---- */
+function torsion(a,b,c,d){
+  const b1=sub(b,a), b2=sub(c,b), b3=sub(d,c), n1=cross(b1,b2), n2=cross(b2,b3);
+  const x=dot(n1,n2), y=dot(cross(n1,unit(b2)),n2); return deg(Math.atan2(y,x));
+}
+function fallbackSSE(atoms){
+  const byChain=new Map();
+  for(const a of atoms){ if(a.isHet)continue; let rm=byChain.get(a.chain); if(!rm){rm=new Map();byChain.set(a.chain,rm);} let m=rm.get(+a.resSeq); if(!m){m=new Map();rm.set(+a.resSeq,m);} m.set(a.name,a); }
+  const out=[];
+  for(const[chain,rm] of byChain){
+    const seq=[...rm.keys()].sort((a,b)=>a-b), cls=new Map();
+    for(let i=1;i<seq.length-1;i++){
+      const p=rm.get(seq[i-1]), m=rm.get(seq[i]), n=rm.get(seq[i+1]);
+      if(!p.get("C")||!m.get("N")||!m.get("CA")||!m.get("C")||!n.get("N"))continue;
+      const phi=torsion(p.get("C"),m.get("N"),m.get("CA"),m.get("C"));
+      const psi=torsion(m.get("N"),m.get("CA"),m.get("C"),n.get("N"));
+      if(phi>=-100&&phi<=-30&&psi>=-85&&psi<=5) cls.set(seq[i],"helix");
+      else if(phi>=-180&&phi<=-75&&(psi>=75||psi<=-120)) cls.set(seq[i],"strand");
+    }
+    for(const type of ["helix","strand"]){
+      let run=[]; const flush=()=>{ const min=type==="helix"?4:3; if(run.length>=min) out.push({type,chain,start:run[0],end:run[run.length-1],id:(type==="helix"?"H":"E")+(out.length+1),source:"geometry"}); run=[]; };
+      for(const s of seq){ if(cls.get(s)===type&&(run.length===0||s===run[run.length-1]+1))run.push(s); else {flush(); if(cls.get(s)===type)run=[s];} } flush();
+    }
+  }
+  return out;
+}
+function secondaryUnits(parsed,modelIndex){
+  const atoms=parsed.models[modelIndex].atoms, records=parsed.sseRecords&&parsed.sseRecords.length?parsed.sseRecords:fallbackSSE(atoms);
+  return records.map((r,i)=>{
+    const residues=new Set(atoms.filter(a=>!a.isHet&&a.chain===r.chain&&+a.resSeq>=r.start&&+a.resSeq<=r.end).map(a=>a.rk));
+    return {...r,uid:r.type+":"+r.chain+":"+r.start+"-"+r.end+":"+i,residues};
+  }).filter(u=>u.residues.size>0);
 }
 
 /* ---- spatial grid ---- */
@@ -1352,7 +1433,7 @@ function gauss(Emin,rm,w,r){ return Emin*Math.exp(-((r-rm)**2)/(2*w*w)); }
 function estEnergy(e){
   const r=e.dist;
   switch(e.type){
-    case "saltbridge": return {v:332*(-1)/(4*r*r), note:null};
+    case "saltbridge": return {v:332*(-1)/(20*r), note:(LANG==="zh"?"εeff=20 的库仑成对能":"Coulomb pair energy, εeff=20")};
     case "hbond": { const r0=2.85,eps=2.5; let E=eps*(5*Math.pow(r0/r,12)-6*Math.pow(r0/r,10)); if(E>2)E=2; return {v:E}; }
     case "cationpi": return {v:gauss(-3.3,4.0,1.3,r)};
     case "pipi":     return {v:gauss(-2.0,4.9,1.4,r)};
@@ -1361,7 +1442,7 @@ function estEnergy(e){
     case "halogen":  return {v:gauss(-2.5,3.3,0.7,r)};
     case "npistar":  return {v:gauss(-0.6,2.9,0.35,r)};
     case "waterbridge": { const r0=2.85,eps=1.8; let E=eps*(5*Math.pow(r0/r,12)-6*Math.pow(r0/r,10)); if(E>2)E=2; return {v:E}; }
-    case "metal": { const qm=METALQ[e.a1.el]||2; return {v:332*qm*(-0.5)/(4*r*r), note:null}; }
+    case "metal": { const qm=METALQ[e.a1.el]||2; return {v:332*qm*(-0.5)/(10*r), note:(LANG==="zh"?"有效配体电荷 −0.5、εeff=10 的启发式值":"heuristic qlig=−0.5, εeff=10")}; }
     case "hydrophobic": { const n=e.extra.count||1; return {v:-0.10*n, note:(LANG==="zh"?(n+" 个接触 · 色散/vdW"):(n+" contacts · dispersion/vdW"))}; }
     case "disulfide": return {v:null, note:tt("covNote")};
   }
@@ -1372,6 +1453,26 @@ function estEnergy(e){
 let DATA=null, PARSED=null, RAW_PDB="", SOURCE_LABEL="structure", MODEL_CACHE=[], viewer=null, viewerReady=false, enabled=new Set(DEFAULT_ON);
 let selResSet=new Set(), showLabels=false, showWater=false, showDistances=false, surfActive=false;
 let depthBlur=0, depthHudTimer=null, focusFullHalf=50;
+let SSE_UNITS=[], ACTIVE_SSE=null;
+
+function visibleEdges(){
+  if(!DATA)return [];
+  if(!ACTIVE_SSE)return DATA.edges;
+  const r=ACTIVE_SSE.residues;
+  return DATA.edges.filter(e=>r.has(e.a1.rk)!==r.has(e.a2.rk));
+}
+function sseLabel(u){ return (u.type==="helix"?"α":"β")+" "+u.chain+":"+u.start+"–"+u.end+(u.merged?" (sheet)":""); }
+function ib(id){ return `<button class="info-btn" data-method="${id}" title="Method details">ⓘ</button>`; }
+function methodForType(t){ return ({hbond:"hydrogen-bond",waterbridge:"hydrogen-bond",saltbridge:"salt-bridge",metal:"metal",cationpi:"cation-pi",pipi:"gaussian-contact-models",chpi:"gaussian-contact-models",spi:"gaussian-contact-models",halogen:"gaussian-contact-models",npistar:"gaussian-contact-models",hydrophobic:"hydrophobic-contact",disulfide:"disulfide"})[t]||"estimated-energy"; }
+function openMethod(id){
+  const db=window.WYMOL_METHODS, m=db&&db.entries[id]; if(!m)return;
+  const z=LANG==="zh"?"zh":"en", refs=(m.refs||[]).map(r=>`<a href="${r.url}" target="_blank" rel="noopener">${r.label}</a>`).join("")||"—";
+  $("#methodDrawer").innerHTML=`<button class="close" id="methodClose">×</button><div class="method-level">${m.level}</div><h3>${m.title[z]}</h3><p>${m.summary[z]}</p><div class="method-formula">${m.formula}<br><small>${m.unit}</small></div><p><b>${z==="zh"?"限制":"Limitation"}:</b> ${m.limits[z]}</p><div class="method-refs">${refs}</div><p><a href="Wymol-methods.html#${id}" target="_blank">${z==="zh"?"打开完整方法说明 →":"Open full methodology →"}</a></p>`;
+  $("#methodOverlay").classList.add("show");
+  $("#methodClose").onclick=()=>$("#methodOverlay").classList.remove("show");
+}
+document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("[data-method]"); if(b){e.preventDefault();e.stopPropagation();openMethod(b.getAttribute("data-method"));} });
+$("#methodOverlay").addEventListener("click",e=>{if(e.target.id==="methodOverlay")e.currentTarget.classList.remove("show");});
 
 /* ---- 3Dmol loader ---- */
 function load3Dmol(){
@@ -1427,7 +1528,8 @@ function edgeTouchesSel(e){ return selResSet.has(e.a1.rk)||selResSet.has(e.a2.rk
 function drawViewer(){
   if(!viewer||!DATA) return;
   viewer.removeAllShapes(); viewer.removeAllLabels(); clearSurfaces();
-  const hasSel=selResSet.size>0;
+  const hasSel=selResSet.size>0||!!ACTIVE_SSE;
+  const emphasized=ACTIVE_SSE?ACTIVE_SSE.residues:selResSet;
   const dimBase=hasSel?0.12:0.9;
   viewer.setStyle({}, {cartoon:{color:"spectrum",opacity:dimBase}});
   // ligands / metals (all hetero first)
@@ -1436,12 +1538,13 @@ function drawViewer(){
   if(showWater) viewer.setStyle({resn:"HOH"},{sphere:{radius:0.32,color:"0xc00000",opacity:hasSel?0.25:0.8}});
   else viewer.setStyle({resn:"HOH"},{});
   // interacting residues -> sticks
-  const active=DATA.edges.filter(e=>enabled.has(e.type));
+  const active=visibleEdges().filter(e=>enabled.has(e.type));
   const resAdd=new Set();
   active.forEach(e=>{ if(e.a1.resName!=="HOH")resAdd.add(e.a1.rk); if(e.a2.resName!=="HOH")resAdd.add(e.a2.rk); });
-  resAdd.forEach(rk=>{ if(rk.split(":")[1]==="HOH")return; const dim=hasSel&&!selResSet.has(rk); viewer.addStyle(selResi(rk),{stick:{radius:0.13,opacity:dim?0.18:1}}); });
+  resAdd.forEach(rk=>{ if(rk.split(":")[1]==="HOH")return; const dim=hasSel&&!emphasized.has(rk); viewer.addStyle(selResi(rk),{stick:{radius:0.13,opacity:dim?0.18:1}}); });
   // selected residues emphasized (full opacity, thicker)
   selResSet.forEach(rk=>{ viewer.addStyle(selResi(rk),{cartoon:{opacity:1},stick:{radius:0.28,opacity:1}}); });
+  if(ACTIVE_SSE) ACTIVE_SSE.residues.forEach(rk=>viewer.addStyle(selResi(rk),{cartoon:{color:ACTIVE_SSE.type==="helix"?"0xeda100":"0x2a78d6",opacity:1},stick:{radius:0.22,opacity:1}}));
   // labels
   if(showLabels){
     // Labels apply to every currently displayed chain; do not let early Chain A
@@ -1457,7 +1560,7 @@ function drawViewer(){
     if(e.type==="hydrophobic") continue;
     if(drawn>cap) break;
     const col=ITYPES[e.type].c;
-    const faded = hasSel && !edgeTouchesSel(e);
+    const faded = !ACTIVE_SSE && hasSel && !edgeTouchesSel(e);
     const op = faded?0.15:1;
     const s={x:e.a1.x,y:e.a1.y,z:e.a1.z}, t={x:e.a2.x,y:e.a2.y,z:e.a2.z};
     if(ITYPES[e.type].dir) viewer.addArrow({start:s,end:t,radius:0.08,radiusRatio:2.4,mid:0.72,color:col,opacity:op});
@@ -1468,15 +1571,27 @@ function drawViewer(){
     }
     drawn++;
   }
+  // L2 interaction-load direction proxy: energy-weighted resultant of all
+  // unit-to-environment edges. This is deliberately not labeled as force.
+  if(ACTIVE_SSE){
+    const cas=[...ACTIVE_SSE.residues].map(rk=>DATA.caByRk[rk]).filter(Boolean);
+    if(cas.length){
+      const center=cas.reduce((q,a)=>({x:q.x+a.x,y:q.y+a.y,z:q.z+a.z}),{x:0,y:0,z:0}); center.x/=cas.length;center.y/=cas.length;center.z/=cas.length;
+      const rv={x:0,y:0,z:0}; let total=0;
+      visibleEdges().forEach(e=>{ const in1=ACTIVE_SSE.residues.has(e.a1.rk), a=in1?e.a1:e.a2, b=in1?e.a2:e.a1, en=estEnergy(e), w=en.v==null?0:Math.abs(en.v); const d=unit(sub(b,a));rv.x+=d.x*w;rv.y+=d.y*w;rv.z+=d.z*w;total+=w; });
+      const mag=len(rv), imbalance=total?mag/total:0;
+      if(mag>0){ const d=unit(rv), L=3+6*imbalance, end={x:center.x+d.x*L,y:center.y+d.y*L,z:center.z+d.z*L}; viewer.addArrow({start:center,end,radius:.16,radiusRatio:2.6,mid:.72,color:"#4a3aa7",opacity:1}); viewer.addLabel((LANG==="zh"?"负载方向 ":"load direction ")+Math.round(imbalance*100)+"%",{position:end,fontSize:11,fontColor:"white",backgroundColor:"0x4a3aa7",backgroundOpacity:.82,borderThickness:0}); }
+    }
+  }
   // hydrophobic effect -> translucent buried nonpolar surface (a surface, not a bond)
   if(enabled.has("hydrophobic") && DATA.hydro) drawHydroSurface(hasSel);
   viewer.render();
 }
 function drawHydroSurface(hasSel){
   const contacted=new Set();
-  DATA.edges.filter(e=>e.type==="hydrophobic").forEach(e=>{ contacted.add(e.a1.rk); contacted.add(e.a2.rk); });
+  visibleEdges().filter(e=>e.type==="hydrophobic").forEach(e=>{ contacted.add(e.a1.rk); contacted.add(e.a2.rk); });
   let list=[...contacted].filter(rk=>DATA.hydro[rk]);
-  if(hasSel) list=list.filter(rk=>selResSet.has(rk));
+  if(hasSel) list=list.filter(rk=>(ACTIVE_SSE?ACTIVE_SSE.residues:selResSet).has(rk));
   if(!list.length) return;
   if(list.length>90 && !hasSel){ setSurfNote(true); return; } // too many -> ask to select
   setSurfNote(false);
@@ -1501,7 +1616,7 @@ function focusSel(){
 /* ---- render toggles ---- */
 function renderToggles(){
   const box=$("#itoggles"); if(!box) return; box.innerHTML="";
-  const counts={}; if(DATA) DATA.edges.forEach(e=>counts[e.type]=(counts[e.type]||0)+1);
+  const counts={}; if(DATA) visibleEdges().forEach(e=>counts[e.type]=(counts[e.type]||0)+1);
   TYPE_ORDER.forEach(t=>{
     if(DATA && !counts[t]) return; // hide types with 0 when data loaded
     const on=enabled.has(t);
@@ -1519,6 +1634,62 @@ function renderStats(){
   if(!DATA){ box.innerHTML=""; return; }
   const cells=[[DATA.nAtoms,"stAtoms"],[DATA.nRes,"stRes"],[DATA.nModels,"stModels"],[DATA.edges.length,"stEdges"]];
   box.innerHTML=cells.map(c=>`<div class="pstat"><b>${c[0]}</b><span>${tt(c[1])}</span></div>`).join("");
+}
+
+/* ---- secondary-structure boundary mode + L2 interaction load ---- */
+function renderSSE(){
+  const box=$("#ssechips"), merge=$("#mergeSheet"); if(!box)return;
+  if(!DATA||!SSE_UNITS.length){ box.innerHTML=`<span class="esub">${tt("sseEmpty")}</span>`; merge.style.display="none"; renderLoadPanel(); return; }
+  box.innerHTML=SSE_UNITS.map(u=>`<button class="ssechip ${u.type}${ACTIVE_SSE&&ACTIVE_SSE.uid===u.uid?' active':''}" data-sse="${u.uid}">${sseLabel(u)}</button>`).join("");
+  box.querySelectorAll(".ssechip").forEach(c=>c.onclick=()=>selectSSE(c.getAttribute("data-sse")));
+  const canMerge=ACTIVE_SSE&&ACTIVE_SSE.type==="strand"&&ACTIVE_SSE.sheetId&&SSE_UNITS.filter(u=>u.type==="strand"&&u.sheetId===ACTIVE_SSE.sheetId).length>1;
+  merge.style.display=canMerge?"inline-flex":"none";
+  if(canMerge) merge.textContent=(LANG==="zh"?"合并 β-sheet ":"Merge β-sheet ")+ACTIVE_SSE.sheetId;
+  renderLoadPanel();
+}
+function selectSSE(uid){
+  const u=SSE_UNITS.find(x=>x.uid===uid);
+  ACTIVE_SSE=ACTIVE_SSE&&ACTIVE_SSE.uid===uid?null:u;
+  selResSet.clear(); renderSSE(); renderChips($("#resSearch").value); renderToggles(); renderEdges(); drawViewer();
+}
+function mergeActiveSheet(){
+  if(!ACTIVE_SSE||ACTIVE_SSE.type!=="strand"||!ACTIVE_SSE.sheetId)return;
+  const members=SSE_UNITS.filter(u=>u.type==="strand"&&u.sheetId===ACTIVE_SSE.sheetId), residues=new Set();
+  members.forEach(u=>u.residues.forEach(r=>residues.add(r)));
+  ACTIVE_SSE={type:"strand",merged:true,sheetId:ACTIVE_SSE.sheetId,uid:"sheet:"+ACTIVE_SSE.sheetId,residues,members,start:Math.min(...members.map(x=>x.start)),end:Math.max(...members.map(x=>x.end)),chain:[...new Set(members.map(x=>x.chain))].join("/")};
+  selResSet.clear(); renderSSE(); renderToggles(); renderEdges(); drawViewer();
+}
+function renderLoadPanel(){
+  const p=$("#loadpanel"); if(!p)return;
+  if(!ACTIVE_SSE){ p.className="loadpanel"; p.innerHTML=""; return; }
+  const edges=visibleEdges(), nres=ACTIVE_SSE.residues.size, partners=new Set(), byType={}, v={x:0,y:0,z:0};
+  const seq=[...ACTIVE_SSE.residues].sort((a,b)=>parseInt(a.split(":")[2])-parseInt(b.split(":")[2]));
+  const terminalN=Math.max(1,Math.min(Math.ceil(seq.length*.25),Math.floor(seq.length/2))), startSet=new Set(seq.slice(0,terminalN)), endSet=new Set(seq.slice(-terminalN));
+  let load=0, occ=0, occN=0, startLoad=0, endLoad=0;
+  for(const e of edges){
+    const inside1=ACTIVE_SSE.residues.has(e.a1.rk), outside=inside1?e.a2:e.a1, inside=inside1?e.a1:e.a2;
+    partners.add(outside.rk); byType[e.type]=(byType[e.type]||0)+1;
+    const en=estEnergy(e), w=en.v==null?0:Math.abs(en.v); load+=w;
+    if(startSet.has(inside.rk))startLoad+=w;
+    if(endSet.has(inside.rk))endLoad+=w;
+    const d=unit(sub(outside,inside)); v.x+=d.x*w;v.y+=d.y*w;v.z+=d.z*w;
+    if(e.occ!=null){occ+=e.occ;occN++;}
+  }
+  const anis=load?Math.min(1,len(v)/load):0, density=nres?load/nres:0, terminalLoad=startLoad+endLoad;
+  const anchorAvailable=!ACTIVE_SSE.merged&&terminalLoad>0, anchor=anchorAvailable?Math.abs(startLoad-endLoad)/terminalLoad:0;
+  const anchorSide=!anchorAvailable?"":(Math.abs(startLoad-endLoad)<1e-9?(LANG==="zh"?"均衡":"balanced"):(startLoad>endLoad?"N/start":"C/end"));
+  const top=Object.entries(byType).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>ityName(x[0])+" "+x[1]).join(" · ")||"—";
+  p.className="loadpanel show";
+  p.innerHTML=`<div class="loadtitle">${sseLabel(ACTIVE_SSE)} · ${LANG==="zh"?"外部相互作用负载":"External interaction load"} ${ib("sse-load")}</div>
+    <div class="loadgrid">
+      <div class="loadmetric"><b>${edges.length}</b><span>${LANG==="zh"?"跨边界作用":"boundary interactions"} ${ib("boundary-interactions")}</span></div>
+      <div class="loadmetric"><b>${load.toFixed(1)}</b><span>|ΣE| kcal/mol ${ib("sse-load")}</span></div>
+      <div class="loadmetric"><b>${density.toFixed(2)}</b><span>${LANG==="zh"?"每残基负载":"load / residue"} ${ib("load-density")}</span></div>
+      <div class="loadmetric"><b>${Math.round(anis*100)}%</b><span>${LANG==="zh"?"方向不平衡":"directional imbalance"} ${ib("directional-imbalance")}</span></div>
+      <div class="loadmetric"><b>${anchorAvailable?Math.round(anchor*100)+"% · "+anchorSide:"N/A"}</b><span>${LANG==="zh"?"锚定不对称性":"anchoring asymmetry"}<i class="predictive-tag">${LANG==="zh"?"预测性":"predictive"}</i> ${ib("anchoring-asymmetry")}</span></div>
+      <div class="loadmetric"><b>${partners.size}</b><span>${LANG==="zh"?"外部伙伴残基":"partner residues"} ${ib("partner-residues")}</span></div>
+      <div class="loadmetric"><b>${occN?Math.round(occ/occN*100):100}%</b><span>${LANG==="zh"?"平均作用占据率":"mean edge occupancy"} ${ib("occupancy")}</span></div>
+    </div><div class="loadnote">${top}<br>${LANG==="zh"?"这是静态 interaction-load 指标，不是真实机械应力或局部 ΔG。锚定不对称性只是预测性结构启发指标；单元内部作用已从显示和计算中排除。":"Static interaction-load metrics, not true mechanical stress or local ΔG. Anchoring asymmetry is a predictive structural heuristic only; intra-unit interactions are excluded from display and calculation."} ${ib("local-stability")}</div>`;
 }
 
 /* ---- residue chips ---- */
@@ -1549,6 +1720,7 @@ function atomLabel(a){
   return a.resName+a.rk.split(":")[2]+(a.name?" "+a.name:"");
 }
 function selectRes(rk, additive){
+  ACTIVE_SSE=null; renderSSE(); renderToggles();
   if(additive){ if(selResSet.has(rk))selResSet.delete(rk); else selResSet.add(rk); }
   else {
     if(selResSet.size===1 && selResSet.has(rk)) selResSet.clear();
@@ -1573,6 +1745,16 @@ function burialCard(rk){
 }
 function renderEdges(){
   const box=$("#edgebox"); if(!box)return;
+  if(ACTIVE_SSE){
+    const mine=visibleEdges().sort((a,b)=> (enabled.has(b.type)-enabled.has(a.type)) || (a.dist-b.dist));
+    let html=`<h4>${sseLabel(ACTIVE_SSE)}</h4><div class="esub">${mine.length} ${LANG==="zh"?"个跨边界作用；单元内部已忽略":"boundary interactions; intra-unit edges hidden"}</div>`;
+    for(const e of mine.slice(0,160)){
+      const in1=ACTIVE_SSE.residues.has(e.a1.rk), inside=in1?e.a1:e.a2, other=in1?e.a2:e.a1, en=estEnergy(e), occ=Math.round((e.occ||1)*100);
+      html+=`<div class="edge${enabled.has(e.type)?'':' disabled'}"><div class="eh"><span class="epart">${atomLabel(inside)} → ${atomLabel(other)}</span><span><span class="etype" style="background:${ITYPES[e.type].c}">${ityName(e.type)}</span> ${ib(methodForType(e.type))}</span></div><div class="emeta"><span>${e.dist.toFixed(2)} Å ${ib("distance")}</span><span>${en.v==null?(en.note||"—"):"≈ "+en.v.toFixed(1)+" kcal/mol"} ${ib("estimated-energy")}</span>${DATA.nModels>1?`<span>${tt("occLabel")}: ${occ}% ${ib("occupancy")}</span>`:""}</div></div>`;
+    }
+    if(mine.length>160) html+=`<div class="esub">+ ${mine.length-160} ${LANG==="zh"?"条未在列表展开（3D 仍显示）":"more not expanded here (still shown in 3D)"}</div>`;
+    box.innerHTML=html; return;
+  }
   if(!selResSet.size){ box.innerHTML=`<div class="placeholder">${tt("pickRes")}</div>`; return; }
   let html="";
   const sels=[...selResSet];
@@ -1598,12 +1780,12 @@ function renderEdges(){
       const label=isHydro?(LANG==="zh"?"packing":"packing"):ityName(e.type);
       html+=`<div class="edge${enabled.has(e.type)?'':' disabled'}">
         <div class="eh"><span class="epart">${atomLabel(other)}</span>
-          <span class="etype" style="background:${ITYPES[e.type].c}">${isHydro?ityName(e.type):ityName(e.type)}${geom}</span></div>
+          <span><span class="etype" style="background:${ITYPES[e.type].c}">${isHydro?ityName(e.type):ityName(e.type)}${geom}</span> ${ib(methodForType(e.type))}</span></div>
         <div class="edir">${dirStr}</div>
         <div class="emeta">
-          <span>${tt("distLabel")}: <b style="color:var(--ink-2)">${e.dist.toFixed(2)} Å</b></span>
-          <span>${tt("enLabel")}: ${enStr}</span>
-          ${DATA.nModels>1?`<span>${tt("occLabel")}: <span class="occbar"><i style="width:${occ}%"></i></span> ${occ}%</span>`:""}
+          <span>${tt("distLabel")}: <b style="color:var(--ink-2)">${e.dist.toFixed(2)} Å</b> ${ib("distance")}</span>
+          <span>${tt("enLabel")}: ${enStr} ${ib("estimated-energy")}</span>
+          ${DATA.nModels>1?`<span>${tt("occLabel")}: <span class="occbar"><i style="width:${occ}%"></i></span> ${occ}% ${ib("occupancy")}</span>`:""}
         </div></div>`;
     }
     html+=`</div>`;
@@ -1634,8 +1816,14 @@ async function selectModel(index){
   if(!MODEL_CACHE[index]) MODEL_CACHE[index]=analyze(PARSED,index);
   else if(MODEL_CACHE[index].hydro===undefined) MODEL_CACHE[index].hydro=computeHydro(MODEL_CACHE[index].atoms);
   DATA=MODEL_CACHE[index];
+  const prevSSE=ACTIVE_SSE;
+  SSE_UNITS=secondaryUnits(PARSED,index);
+  if(prevSSE){
+    if(prevSSE.merged&&prevSSE.sheetId){ ACTIVE_SSE={type:"strand",sheetId:prevSSE.sheetId}; mergeActiveSheet(); }
+    else ACTIVE_SSE=SSE_UNITS.find(u=>u.type===prevSSE.type&&u.chain===prevSSE.chain&&u.start===prevSSE.start&&u.end===prevSSE.end)||null;
+  }
   selResSet=new Set([...selResSet].filter(rk=>DATA.caByRk[rk]));
-  renderModelPicker(); renderStats(); renderToggles(); renderChips(""); renderEdges();
+  renderModelPicker(); renderStats(); renderSSE(); renderToggles(); renderChips(""); renderEdges();
   if(viewer){
     if(PARSED.models.length>1 && viewer.setFrame) await viewer.setFrame(index);
     drawViewer(); viewer.render();
@@ -1650,8 +1838,8 @@ async function loadPDB(text,label){
   PARSED=parsed; RAW_PDB=text; SOURCE_LABEL=(label||"structure").replace(/\.[^.]+$/,""); MODEL_CACHE=[];
   DATA=analyze(parsed,0); MODEL_CACHE[0]=DATA;
   // reset selection
-  selResSet.clear();
-  renderModelPicker(); renderStats(); renderToggles(); renderChips(""); renderEdges();
+  selResSet.clear(); ACTIVE_SSE=null; SSE_UNITS=secondaryUnits(parsed,0);
+  renderModelPicker(); renderStats(); renderSSE(); renderToggles(); renderChips(""); renderEdges();
   // viewer
   const ok=await load3Dmol();
   if(ok){
@@ -1670,7 +1858,7 @@ async function loadPDB(text,label){
         });
       }catch(_){}
       viewer.zoomTo(); viewer.render();
-      if(viewer.getSlab){ const s=viewer.getSlab(); focusFullHalf=Math.max(2.5,Math.abs(s.near||0),Math.abs(s.far||0)); }
+      if(viewer.getSlab){ const s=viewer.getSlab(); focusFullHalf=Math.min(50,Math.max(2.5,Math.abs(s.near||0),Math.abs(s.far||0))); }
       setMsg("",false);
     }
   } else {
@@ -1713,7 +1901,7 @@ function exportPymol(){
   const states=allModelData().map((d,mi)=>({state:mi+1,edges:d.edges.map(e=>{const en=estEnergy(e);return{t:e.type,a:[e.a1.x,e.a1.y,e.a1.z],b:[e.a2.x,e.a2.y,e.a2.z],d:+e.dist.toFixed(3),en:en.v==null?null:+en.v.toFixed(3),note:en.note||"",r1:e.a1.rk,r2:e.a2.rk};})}));
   const colors={}; Object.keys(ITYPES).forEach(k=>colors[k]=ITYPES[k].c);
   const script=`# Wymol 1.2 PyMOL export: ${SOURCE_LABEL}\npython\nfrom pymol import cmd\nfrom pymol.cgo import CYLINDER, CONE\nPDB=${JSON.stringify(RAW_PDB)}\nSTATES=${JSON.stringify(states)}\nCOLORS=${JSON.stringify(colors)}\ncmd.read_pdbstr(PDB, 'wymol')\ncmd.hide('everything','wymol')\ncmd.show('cartoon','wymol')\ndef rgb(h): return tuple(int(h[i:i+2],16)/255.0 for i in (1,3,5))\ndef arrow(name,a,b,color,state,directional=True):\n    c=rgb(color); dx=[b[i]-a[i] for i in range(3)]; q=[a[i]+dx[i]*0.76 for i in range(3)]\n    obj=[CYLINDER,*a,*q,0.075,*c,*c]\n    if directional: obj += [CONE,*q,*b,0.18,0.0,*c,*c,1.0,0.0]\n    else: obj=[CYLINDER,*a,*b,0.055,*c,*c]\n    cmd.load_cgo(obj,name,state)\nfor S in STATES:\n    st=S['state']; grp='model_%d'%st; hyd=[]\n    for i,e in enumerate(S['edges']):\n        name='m%d_%s_%04d'%(st,e['t'],i+1)\n        if e['t']=='hydrophobic': hyd.extend([e['r1'],e['r2']]); continue\n        arrow(name,e['a'],e['b'],COLORS[e['t']],st,e['t'] in ('hbond','saltbridge','cationpi','chpi','spi','metal','halogen','npistar'))\n        mid=[(e['a'][j]+e['b'][j])/2 for j in range(3)]\n        lab='%.2f A'%e['d'] + ((' / %.2f kcal/mol'%e['en']) if e['en'] is not None else '')\n        cmd.pseudoatom(name+'_label',pos=mid,label=lab,state=st)\n        cmd.group(grp,name+' '+name+'_label')\n    sels=[]\n    for rk in set(hyd):\n        ch,rn,rs=rk.split(':'); sels.append('(wymol and chain %s and resn %s and resi %s)'%(ch,rn,rs))\n    if sels:\n        sel='hydrophobic_m%d'%st; cmd.select(sel,' or '.join(sels)); cmd.show('surface',sel); cmd.color('gray70',sel); cmd.set('transparency',0.45,sel); cmd.group(grp,sel)\ncmd.set('label_size',11)\ncmd.set('dash_gap',0.25)\ncmd.orient('wymol')\npython end\n`;
-  downloadText(SOURCE_LABEL+"_Wymol_1.2.pml",script,"text/plain;charset=utf-8");
+  downloadText(SOURCE_LABEL+"_Wymol_1.3.pml",script.replace("Wymol 1.2","Wymol 1.3"),"text/plain;charset=utf-8");
 }
 
 /* ---- wire up UI ---- */
@@ -1736,18 +1924,20 @@ function wire(){
   $("#modelSelect").addEventListener("change",e=>selectModel(+e.target.value));
   $("#exportCsvBtn").addEventListener("click",exportInteractions);
   $("#exportPymolBtn").addEventListener("click",exportPymol);
+  $("#sseClear").addEventListener("click",()=>{ACTIVE_SSE=null;renderSSE();renderToggles();renderEdges();drawViewer();});
+  $("#mergeSheet").addEventListener("click",mergeActiveSheet);
   // Replace default wheel zoom with view-axis depth fog: down strengthens
   // distance blur, up restores clarity. Capture phase prevents 3Dmol zoom.
   $("#molviewer").addEventListener("wheel",e=>{
     e.preventDefault(); e.stopImmediatePropagation();
-    applyDepthBlur(e.deltaY>0?0.02:-0.02);
+    applyDepthBlur(e.deltaY>0?0.01:-0.01);
   },{capture:true,passive:false});
 }
 
 /* ---- react to language + theme changes ---- */
 window.onLangChange=function(){
   const rs=$("#resSearch"); if(rs) rs.setAttribute("placeholder", tt("resSearchPh"));
-  renderStats(); renderToggles(); renderChips($("#resSearch")?$("#resSearch").value:""); renderEdges();
+  renderStats(); renderSSE(); renderToggles(); renderChips($("#resSearch")?$("#resSearch").value:""); renderEdges();
 };
 // theme toggle already exists; also refresh viewer bg
 const _themeBtn=$("#themeBtn");
