@@ -14,8 +14,8 @@
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       document.documentElement.dataset.theme = savedTheme || (prefersDark ? "dark" : "light");
     </script>
-    <link rel="stylesheet" href="styles.css">
-    <script src="script.js" defer></script>
+    <link rel="stylesheet" href="styles.css?v=20260818-3">
+    <script src="script.js?v=20260818-3" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main-content" data-i18n="skip">Skip to content</a>
@@ -23,7 +23,7 @@
     <header class="site-header">
       <a class="brand" href="#top" aria-label="Wang Qian home">
         <span class="brand-mark" aria-hidden="true">
-          <img data-theme-headshot data-light-src="assets/headshot_light.jpg" data-dark-src="assets/headshot_dark.jpg" src="assets/headshot_light.jpg" alt="">
+          <img data-theme-headshot data-light-src="assets/headshot_light.jpg?v=20260818-3" data-dark-src="assets/headshot_dark.jpg?v=20260818-3" src="assets/headshot_light.jpg?v=20260818-3" alt="">
         </span>
         <span>Wang Qian</span>
       </a>
@@ -60,7 +60,7 @@
         <div class="container hero-inner">
           <div class="hero-avatar-wrap">
             <div class="hero-avatar">
-              <img data-theme-headshot data-light-src="assets/headshot_light.jpg" data-dark-src="assets/headshot_dark.jpg" src="assets/headshot_light.jpg" alt="Illustrated portrait of Wang Qian">
+              <img data-theme-headshot data-light-src="assets/headshot_light.jpg?v=20260818-3" data-dark-src="assets/headshot_dark.jpg?v=20260818-3" src="assets/headshot_light.jpg?v=20260818-3" alt="Illustrated portrait of Wang Qian">
             </div>
             <span class="avatar-badge" aria-label="Verified profile">✓</span>
           </div>
