@@ -38,5 +38,31 @@ const E={
   "disulfide":{title:{en:"Disulfide annotation",zh:"二硫键标注"},level:"covalent geometry annotation",formula:"SG–SG ≤ 2.6 Å",unit:"bond annotation",summary:{en:"A close Cys SG pair is annotated as a disulfide. Wymol reports a typical bond-energy range instead of applying the noncovalent pair score.",zh:"距离足够近的 Cys SG 对被标注为二硫键；Wymol 报告典型键能范围，而不套用非共价成对评分。"},limits:{en:"Bond order and redox state are inferred from geometry only.",zh:"键级和氧化还原状态仅由几何推断。"},refs:[]},
   "energy-partition":{title:{en:"Five-origin partition",zh:"五类物理来源拆解"},level:"teaching illustration",formula:"electrostatics + dispersion + polarization + charge transfer + solvent/entropy",unit:"%",summary:{en:"A qualitative teaching partition used to explain dominant physical origins.",zh:"用于解释主导物理来源的定性教学拆解。"},limits:{en:"Percentages are not calculated by SAPT for the uploaded geometry.",zh:"这些百分比不是针对上传结构现场运行 SAPT 得到的。"},refs:[refs.sapt]}
 };
+const examples={
+  "distance":{en:"If a donor and acceptor are 2.90 Å apart, Wymol reports 2.90 Å; this distance can satisfy an H-bond cutoff but does not alone prove an H-bond.",zh:"若 donor 与 acceptor 相距 2.90 Å，Wymol 报告 2.90 Å；该距离可能满足氢键 cutoff，但仅凭距离不能证明氢键存在。"},
+  "boundary-interactions":{en:"A helix with 60 detected edges to surrounding residues has 60 boundary interactions even if several edges connect the same residue pair.",zh:"一段 helix 与周围残基检测到 60 条 edges，则 boundary interactions 为 60；即使其中多条连接同一残基对，也分别计数。"},
+  "partner-residues":{en:"Sixty atom-level boundary edges may connect only 35 unique external residues, so the partner-residue count is 35.",zh:"60 条原子级 boundary edges 可能只连接 35 个唯一外部残基，因此 partner residues 为 35。"},
+  "depth-slope":{en:"At 0% the clear slab is 100 Å thick; at 100% only the central 5 Å slab remains fully clear.",zh:"0% 时清晰层总厚度为 100 Å；100% 时仅中心 5 Å 厚度保持完全清晰。"},
+  "estimated-energy":{en:"An edge scored −2.0 kcal/mol is treated as a stronger favorable visualization weight than one scored −0.5 kcal/mol, not as a measured ΔG difference.",zh:"评分 −2.0 kcal/mol 的 edge 会被视为比 −0.5 kcal/mol 更强的有利可视化权重，但不能解释成实验 ΔG 差。"},
+  "gibbs-free-energy":{en:"If structured → locally unfolded has ΔG=+3 kcal/mol, the structured state is favored under those conditions; this requires both states, not one PDB snapshot.",zh:"若 structured → locally unfolded 的 ΔG=+3 kcal/mol，则在该条件下 structured state 更有利；这需要比较两个状态，而不是只看一个 PDB snapshot。"},
+  "dissociation-constant":{en:"For ideal 1:1 binding with Kd=10 nM, 10 nM free ligand gives about 50% occupancy; Kd does not identify which helix stabilizes the complex.",zh:"理想 1:1 结合中，Kd=10 nM 时，10 nM 游离配体产生约 50% occupancy；Kd 不能指出是哪段 helix 稳定了复合物。"},
+  "local-stability":{en:"If one helix end has many persistent contacts and the other has few, call them more anchored and underconstrained—not stable and unstable without dynamic evidence.",zh:"若 helix 一端有许多持续 contacts、另一端很少，应称为较强锚定与约束不足；没有动态证据时不要直接称为稳定与不稳定。"},
+  "salt-bridge":{en:"For unit charges at r=3.0 Å with εeff=20, E≈332(−1)/(20×3.0)=−5.5 kcal/mol before desolvation costs.",zh:"单位异号电荷在 r=3.0 Å、εeff=20 时，E≈332(−1)/(20×3.0)=−5.5 kcal/mol；该值尚未计入去溶剂化代价。"},
+  "hydrogen-bond":{en:"At the model optimum r=2.85 Å, the 10–12 potential gives E=−2.5 kcal/mol; poorer geometry weakens the score.",zh:"在模型最优距离 r=2.85 Å 时，10–12 势给出 E=−2.5 kcal/mol；几何偏离会使评分减弱。"},
+  "metal":{en:"A nominal Mg²⁺–ligand pair at 2.1 Å gives a large favorable proxy, but it does not solve Mg coordination number or ligand-field chemistry.",zh:"名义 Mg²⁺–ligand 在 2.1 Å 时会得到较强有利 proxy，但该值没有求解 Mg 配位数或配位场化学。"},
+  "cation-pi":{en:"A Lys/Arg cation about 4.0 Å from an aromatic centroid lies near the model minimum and scores approximately −3.3 kcal/mol.",zh:"Lys/Arg 阳离子距芳环中心约 4.0 Å 时位于模型势阱附近，评分约 −3.3 kcal/mol。"},
+  "hydrophobic-sasa":{en:"Burying 100 Å² of nonpolar area gives ΔGhyd≈−0.025×100=−2.5 kcal/mol in this surface-area approximation.",zh:"埋藏 100 Å² 非极性面积时，本表面积近似给出 ΔGhyd≈−0.025×100=−2.5 kcal/mol。"},
+  "occupancy":{en:"If the same edge is detected in 15 of 20 NMR models, its model occupancy is 75%, not a 75% kinetic lifetime.",zh:"若同一 edge 在 20 个 NMR models 中有 15 个被检测到，其 model occupancy 为 75%，但这不是 75% 的动力学寿命。"},
+  "secondary-structure":{en:"PDB HELIX records A:10–24 as one α-helix unit; SHEET strands sharing sheet ID A can optionally become one β-sheet super-unit.",zh:"PDB HELIX 将 A:10–24 作为一个 α-helix 单元；共享 sheet ID A 的 SHEET strands 可选择合并为 β-sheet super-unit。"},
+  "sse-load":{en:"If a helix has boundary-edge magnitudes 2.0, 1.5, and 0.5 kcal/mol, its load is |2.0|+|1.5|+|0.5|=4.0 kcal/mol.",zh:"若 helix 的 boundary-edge 能量绝对值为 2.0、1.5、0.5 kcal/mol，则 load=2.0+1.5+0.5=4.0 kcal/mol。"},
+  "load-density":{en:"A 19-residue helix with load 90.0 kcal/mol has load density 90.0/19=4.74 kcal mol⁻¹ residue⁻¹.",zh:"19-residue helix 的 load 为 90.0 kcal/mol 时，load density=90.0/19=4.74 kcal mol⁻¹ residue⁻¹。"},
+  "directional-imbalance":{en:"Equal weighted contacts pulling in opposite spatial directions cancel toward 0%; contacts pointing mostly the same way approach 100%.",zh:"相等权重且空间方向相反的 contacts 会相互抵消并趋近 0%；大多指向同一方向时则趋近 100%。"},
+  "anchoring-asymmetry":{en:"If Lstart=1.83 and Lend=10.00, Aanchor=69% · C/end. The load split is N 15.5% | C 84.5%—not N 31% | C 69%.",zh:"若 Lstart=1.83、Lend=10.00，则 Aanchor=69% · C/end；末端负载分配为 N 15.5% | C 84.5%，不是 N 31% | C 69%。"},
+  "gaussian-contact-models":{en:"A π–π contact near its preferred distance receives a more negative score than the same rings far outside the Gaussian well.",zh:"接近偏好距离的 π–π contact 比远离 Gaussian 势阱的同一对芳环获得更负的评分。"},
+  "hydrophobic-contact":{en:"Eight detected nonpolar contacts between two residues give Econtact=−0.10×8=−0.8 kcal/mol.",zh:"两个残基之间检测到 8 个非极性 contacts 时，Econtact=−0.10×8=−0.8 kcal/mol。"},
+  "disulfide":{en:"Two Cys SG atoms 2.05 Å apart are annotated as a disulfide; Wymol does not apply its noncovalent score to that bond.",zh:"两个 Cys SG 原子相距 2.05 Å 时被标注为二硫键；Wymol 不对该键套用非共价评分。"},
+  "energy-partition":{en:"A salt bridge card may be shown as mostly electrostatic with smaller polarization and dispersion portions; these percentages teach origin, not geometry-specific SAPT output.",zh:"盐桥卡片可显示为静电占主导、极化和色散占比较小；这些比例用于解释物理来源，不是针对该几何的 SAPT 输出。"}
+};
+Object.entries(examples).forEach(([id,example])=>{if(E[id])E[id].example=example;});
 g.WYMOL_METHODS={version:"Wymol interaction model: v1.3",revision:"2026-08-19",references:refs,entries:E};
 })(window);

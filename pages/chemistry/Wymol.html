@@ -265,6 +265,7 @@ footer p{margin:6px 0}
 .loadtitle{font-size:.8rem;font-weight:800;margin-bottom:6px}.loadgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
 .loadmetric{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:6px 8px}
 .loadmetric b{display:block;font-size:.94rem}.loadmetric span{font-size:.64rem;color:var(--muted)}
+.loadmetric small{display:block;margin-top:2px;font-size:.61rem;color:var(--ink-2);font-variant-numeric:tabular-nums}
 .predictive-tag{display:inline-block;margin-left:3px;border:1px solid color-mix(in srgb,var(--solv) 45%,var(--border));border-radius:999px;padding:0 4px;color:var(--solv);font-size:.58rem;font-weight:800;text-transform:uppercase}
 .loadnote{font-size:.67rem;color:var(--muted);line-height:1.4;margin-top:7px}
 .info-btn{border:0;background:transparent;color:var(--accent);font-weight:900;cursor:pointer;padding:0 2px;font-size:.78em;vertical-align:1px}
@@ -1467,7 +1468,7 @@ function methodForType(t){ return ({hbond:"hydrogen-bond",waterbridge:"hydrogen-
 function openMethod(id){
   const db=window.WYMOL_METHODS, m=db&&db.entries[id]; if(!m)return;
   const z=LANG==="zh"?"zh":"en", refs=(m.refs||[]).map(r=>`<a href="${r.url}" target="_blank" rel="noopener">${r.label}</a>`).join("")||"—";
-  $("#methodDrawer").innerHTML=`<button class="close" id="methodClose">×</button><div class="method-level">${m.level}</div><h3>${m.title[z]}</h3><p>${m.summary[z]}</p><div class="method-formula">${m.formula}<br><small>${m.unit}</small></div><p><b>${z==="zh"?"限制":"Limitation"}:</b> ${m.limits[z]}</p><div class="method-refs">${refs}</div><p><a href="Wymol-methods.html#${id}" target="_blank">${z==="zh"?"打开完整方法说明 →":"Open full methodology →"}</a></p>`;
+  $("#methodDrawer").innerHTML=`<button class="close" id="methodClose">×</button><div class="method-level">${m.level}</div><h3>${m.title[z]}</h3><p>${m.summary[z]}</p><div class="method-formula">${m.formula}<br><small>${m.unit}</small></div>${m.example?`<p><b>${z==="zh"?"例子":"Example"}:</b> ${m.example[z]}</p>`:""}<p><b>${z==="zh"?"限制":"Limitation"}:</b> ${m.limits[z]}</p><div class="method-refs">${refs}</div><p><a href="Wymol-methods.html#${id}" target="_blank">${z==="zh"?"打开完整方法说明 →":"Open full methodology →"}</a></p>`;
   $("#methodOverlay").classList.add("show");
   $("#methodClose").onclick=()=>$("#methodOverlay").classList.remove("show");
 }
@@ -1612,6 +1613,14 @@ function focusSel(){
   const first=[...selResSet][0];
   try{ viewer.zoomTo(selResi(first),600); viewer.render(); }catch(_){}
 }
+function focusSSE(){
+  if(!viewer||!ACTIVE_SSE||!ACTIVE_SSE.residues.size)return;
+  const byChain={};
+  ACTIVE_SSE.residues.forEach(rk=>{const p=rk.split(":");(byChain[p[0]]=byChain[p[0]]||[]).push(parseInt(p[2]));});
+  const groups=Object.entries(byChain).map(([chain,resi])=>({chain,resi}));
+  const selection=groups.length===1?groups[0]:{or:groups};
+  try{viewer.zoomTo(selection,600);viewer.render();}catch(_){}
+}
 
 /* ---- render toggles ---- */
 function renderToggles(){
@@ -1651,6 +1660,7 @@ function selectSSE(uid){
   const u=SSE_UNITS.find(x=>x.uid===uid);
   ACTIVE_SSE=ACTIVE_SSE&&ACTIVE_SSE.uid===uid?null:u;
   selResSet.clear(); renderSSE(); renderChips($("#resSearch").value); renderToggles(); renderEdges(); drawViewer();
+  if(ACTIVE_SSE)focusSSE();
 }
 function mergeActiveSheet(){
   if(!ACTIVE_SSE||ACTIVE_SSE.type!=="strand"||!ACTIVE_SSE.sheetId)return;
@@ -1677,6 +1687,7 @@ function renderLoadPanel(){
   }
   const anis=load?Math.min(1,len(v)/load):0, density=nres?load/nres:0, terminalLoad=startLoad+endLoad;
   const anchorAvailable=!ACTIVE_SSE.merged&&terminalLoad>0, anchor=anchorAvailable?Math.abs(startLoad-endLoad)/terminalLoad:0;
+  const startPct=anchorAvailable?100*startLoad/terminalLoad:0, endPct=anchorAvailable?100*endLoad/terminalLoad:0;
   const anchorSide=!anchorAvailable?"":(Math.abs(startLoad-endLoad)<1e-9?(LANG==="zh"?"均衡":"balanced"):(startLoad>endLoad?"N/start":"C/end"));
   const top=Object.entries(byType).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>ityName(x[0])+" "+x[1]).join(" · ")||"—";
   p.className="loadpanel show";
@@ -1686,7 +1697,7 @@ function renderLoadPanel(){
       <div class="loadmetric"><b>${load.toFixed(1)}</b><span>|ΣE| kcal/mol ${ib("sse-load")}</span></div>
       <div class="loadmetric"><b>${density.toFixed(2)}</b><span>${LANG==="zh"?"每残基负载":"load / residue"} ${ib("load-density")}</span></div>
       <div class="loadmetric"><b>${Math.round(anis*100)}%</b><span>${LANG==="zh"?"方向不平衡":"directional imbalance"} ${ib("directional-imbalance")}</span></div>
-      <div class="loadmetric"><b>${anchorAvailable?Math.round(anchor*100)+"% · "+anchorSide:"N/A"}</b><span>${LANG==="zh"?"锚定不对称性":"anchoring asymmetry"}<i class="predictive-tag">${LANG==="zh"?"预测性":"predictive"}</i> ${ib("anchoring-asymmetry")}</span></div>
+      <div class="loadmetric"><b>${anchorAvailable?Math.round(anchor*100)+"% · "+anchorSide:"N/A"}</b><span>${LANG==="zh"?"锚定不对称性":"anchoring asymmetry"}<i class="predictive-tag">${LANG==="zh"?"预测性":"predictive"}</i> ${ib("anchoring-asymmetry")}</span>${anchorAvailable?`<small>${LANG==="zh"?"末端负载分配":"terminal load split"}: N ${startPct.toFixed(1)}% | C ${endPct.toFixed(1)}%</small>`:""}</div>
       <div class="loadmetric"><b>${partners.size}</b><span>${LANG==="zh"?"外部伙伴残基":"partner residues"} ${ib("partner-residues")}</span></div>
       <div class="loadmetric"><b>${occN?Math.round(occ/occN*100):100}%</b><span>${LANG==="zh"?"平均作用占据率":"mean edge occupancy"} ${ib("occupancy")}</span></div>
     </div><div class="loadnote">${top}<br>${LANG==="zh"?"这是静态 interaction-load 指标，不是真实机械应力或局部 ΔG。锚定不对称性只是预测性结构启发指标；单元内部作用已从显示和计算中排除。":"Static interaction-load metrics, not true mechanical stress or local ΔG. Anchoring asymmetry is a predictive structural heuristic only; intra-unit interactions are excluded from display and calculation."} ${ib("local-stability")}</div>`;
