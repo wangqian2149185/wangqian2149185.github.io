@@ -244,6 +244,13 @@ footer p{margin:6px 0}
 .vbtn:hover{border-color:var(--muted);color:var(--ink)}
 .vbtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
 .vhint{font-size:.72rem;color:var(--muted);margin-left:auto}
+.depth-hud{position:absolute;right:10px;bottom:10px;z-index:5;pointer-events:none;opacity:0;
+  border:1px solid var(--border);border-radius:999px;padding:4px 9px;background:color-mix(in srgb,var(--surface) 88%,transparent);
+  color:var(--ink-2);font-size:.7rem;font-weight:700;backdrop-filter:blur(6px);transition:opacity .18s}
+.depth-hud.show{opacity:1}
+.modelpick{display:none;align-items:center;gap:6px;font-size:.76rem;color:var(--ink-2)}
+.modelpick.show{display:flex}
+.modelpick select{border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:8px;padding:5px 8px}
 .surfnote{margin-top:8px;font-size:.75rem;color:var(--disp);background:color-mix(in srgb,var(--disp) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--disp) 24%,var(--border));border-radius:8px;padding:7px 10px}
 .hydro-callout{margin-top:16px;border:1px solid color-mix(in srgb,var(--solv) 26%,var(--border));border-radius:var(--r);background:color-mix(in srgb,var(--solv) 7%,var(--surface));padding:14px 18px;box-shadow:var(--shadow)}
 .hydro-callout .hc-t{font-weight:700;font-size:.96rem;margin-bottom:6px}
@@ -261,7 +268,7 @@ footer p{margin:6px 0}
 <header>
   <div class="hbar">
     <div class="brand">
-      <b data-i="brandT">蛋白质相互作用图谱</b>
+      <b data-i="brandT">Wymol 1.2</b>
       <span data-i="brandS">原子级相互作用 · 按 5 大物理来源拆解</span>
     </div>
     <div class="toggles">
@@ -339,19 +346,24 @@ footer p{margin:6px 0}
       <div class="pidwrap"><input id="pdbId" placeholder="PDB ID" maxlength="8">
         <button class="chip" id="pidBtn" data-i="pdbFetch">获取</button></div>
       <div class="exwrap"><span class="esub" data-i="pdbEx">示例:</span>
-        <button class="chip ex" data-id="1UBQ">1UBQ</button>
-        <button class="chip ex" data-id="4HHB">4HHB</button>
-        <button class="chip ex" data-id="1L2Y" data-i="exNMR">1L2Y · NMR</button>
+        <button class="chip ex" data-id="1E8A">1E8A</button>
+        <button class="chip ex" data-id="2WCF">2WCF</button>
+        <button class="chip ex" data-id="1GQM">1GQM</button>
+        <button class="chip ex" data-id="2M9G" data-i="exNMR">2M9G · NMR ensemble</button>
       </div>
+      <button class="chip" id="exportCsvBtn" data-i="exportCsv">Export interactions</button>
+      <button class="chip" id="exportPymolBtn" data-i="exportPymol">Export PyMOL</button>
     </div>
     <div class="pdb-layout">
       <div>
         <div class="vctrls">
           <button class="vbtn" id="labelBtn">🏷 <span data-i="btnLabels">残基标签</span></button>
           <button class="vbtn" id="waterBtn">💧 <span data-i="btnWater">水分子</span></button>
+          <button class="vbtn" id="distanceBtn">↔ <span data-i="btnDistance">距离</span></button>
+          <label class="modelpick" id="modelPick"><span data-i="modelLabel">Model</span><select id="modelSelect"></select></label>
           <span class="vhint" data-i="multiHint">Ctrl/⌘ + 点击可多选残基</span>
         </div>
-        <div id="molviewer"><div class="viewer-msg" id="viewerMsg" data-i="viewerEmpty">上传一个 PDB 文件开始</div></div>
+        <div id="molviewer"><div class="viewer-msg" id="viewerMsg" data-i="viewerEmpty">上传一个 PDB 文件开始</div><div class="depth-hud" id="depthHud">Depth blur 0%</div></div>
         <div class="itoggles" id="itoggles"></div>
         <div class="surfnote" id="surfNote" data-i="surfNote" style="display:none"></div>
       </div>
@@ -389,7 +401,7 @@ footer p{margin:6px 0}
    ============================================================ */
 const T = {
   zh:{
-    brandT:"Wymol · 蛋白质相互作用图谱", brandS:"原子级相互作用 · 按 5 大物理来源拆解",
+    brandT:"Wymol 1.2", brandS:"蛋白质相互作用图谱 · 原子级相互作用",
     theme:"深色",
     title:"蛋白质靠什么维持结构？",
     lede:"蛋白质不是靠某一种“键”锁死，而是靠成千上万个 0.2–5 kcal/mol 的弱相互作用协同，再叠加少数很强的共价键与金属配位。下面把结构、生化、光谱、热力学与计算反复验证过的原子级相互作用整理成一份可交互的“相互作用词典”。",
@@ -415,7 +427,8 @@ const T = {
     l1t:"几何识别（实时）", l1d:"从 PDB 坐标按距离/角度规则识别 H 键、盐桥、cation–π、π–π、CH–π、S–π、二硫、金属配位、疏水/vdW、卤键、水桥、n→π*。成熟且快。",
     l2t:"能量估算（粗略）", l2d:'对每条边给出 Coulomb + Lennard–Jones + 氢键项的粗略估计。称"估计相互作用能"，不是 ΔG（未含熵与溶剂重排）。',
     l3t:"动态 / 占据率", l3d:"若文件含多个 MODEL（如 NMR 系综），逐帧重算并给出占据率 %。真正的 MD 轨迹需力场与最小化，超出浏览器范围。",
-    pdbDrop:"拖入或点击选择 .pdb 文件", pdbFetch:"获取", pdbEx:"示例:", exNMR:"1L2Y · NMR 系综",
+    pdbDrop:"拖入或点击选择 .pdb 文件", pdbFetch:"获取", pdbEx:"示例:", exNMR:"2M9G · NMR 系综",
+    exportCsv:"导出全部相互作用", exportPymol:"导出 PyMOL", modelLabel:"模型", btnDistance:"距离",
     viewerEmpty:"上传一个 PDB 文件开始 · 或点上方示例", pickRes:"👆 点击一个残基查看其相互作用",
     stAtoms:"原子", stRes:"残基", stModels:"模型", stEdges:"相互作用",
     resSearchPh:"搜索残基（如 ARG45 / A:72）…",
@@ -424,13 +437,13 @@ const T = {
     parseErr:"未能把该文件解析为 PDB。", truncNote:"（为性能仅绘制部分接触）",
     noViewer:"3D 查看器未能加载（可能无网络）。相互作用检测仍可用——下方列表与残基点击均正常。",
     covNote:"共价键（约 50–70 kcal/mol，断键能）",
-    btnLabels:"残基标签", btnWater:"水分子", multiHint:"Ctrl/⌘ + 点击可多选残基",
+    btnLabels:"残基标签", btnWater:"水分子", multiHint:"左键旋转 · 中键平移 · 右键缩放 · 滚轮调节景深虚化",
     surfNote:"疏水残基较多——请先选中若干残基，仅对所选显示埋藏表面。",
     hcT:"为什么疏水作用画成“面”而不是“键”？",
     hcP:'疏水效应不是"Leu 与 Val 之间有一根疏水键"，而是<b>溶剂驱动的自由能效应</b>：两个非极性面各自暴露于水时，周围水被迫排成相对有序的水化壳；二者靠近、非极性面被埋藏（ΔSASA&lt;0），一部分有序水释放回本体、获得更多平动/转动/氢键构型，−TΔS&lt;0 使结合有利。更完整地说，它来自<b>创建非极性空腔的自由能成本 + 埋藏非极性面的收益</b>（小/大疏水基团机制不同，并非只是"水变自由"）。因此本工具对氢键/盐桥/金属用"线/箭头"，对疏水用<b>半透明埋藏表面 + SASA + ΔG≈γ·ΔA</b>。还要记住：两个疏水残基靠近时真正直接存在的是 <b>色散/vdW + 位阻堆积</b>，"疏水键"本身并不存在 —— ΔG_接触 = ΔG_溶剂化 + E_色散 + E_位阻 + …',
   },
   en:{
-    brandT:"Wymol", brandS:"Protein Interaction Atlas · atomic-level interactions",
+    brandT:"Wymol 1.2", brandS:"Protein Interaction Atlas · atomic-level interactions",
     theme:"Dark",
     title:"What actually holds a protein together?",
     lede:"A protein isn't locked by one kind of \"bond\". It's held by thousands of weak 0.2–5 kcal/mol interactions acting together, plus a few very strong covalent bonds and metal-coordination sites. Below is an interactive \"interaction vocabulary\" — every entry repeatedly validated by structural, biochemical, spectroscopic, thermodynamic and computational work.",
@@ -456,7 +469,8 @@ const T = {
     l1t:"Geometry (live)", l1d:"From PDB coordinates, distance/angle rules detect H-bonds, salt bridges, cation–π, π–π, CH–π, S–π, disulfides, metal coordination, hydrophobic/vdW, halogen bonds, water bridges, n→π*. Mature and fast.",
     l2t:"Energy (coarse)", l2d:'Each edge gets a coarse Coulomb + Lennard–Jones + H-bond estimate. Call it "estimated interaction energy", not ΔG (no entropy or solvent reorganization).',
     l3t:"Dynamics / occupancy", l3d:"If the file has multiple MODELs (e.g. an NMR ensemble), detection reruns per frame and reports occupancy %. A true MD trajectory needs a force field + minimization, beyond the browser.",
-    pdbDrop:"Drop or click to choose a .pdb file", pdbFetch:"Fetch", pdbEx:"Examples:", exNMR:"1L2Y · NMR ensemble",
+    pdbDrop:"Drop or click to choose a .pdb file", pdbFetch:"Fetch", pdbEx:"Examples:", exNMR:"2M9G · NMR ensemble",
+    exportCsv:"Export all interactions", exportPymol:"Export PyMOL", modelLabel:"Model", btnDistance:"Distances",
     viewerEmpty:"Upload a PDB file to start · or click an example above", pickRes:"👆 Click a residue to see its interactions",
     stAtoms:"atoms", stRes:"residues", stModels:"models", stEdges:"interactions",
     resSearchPh:"Search residue (e.g. ARG45 / A:72)…",
@@ -465,7 +479,7 @@ const T = {
     parseErr:"Could not parse this file as PDB.", truncNote:"(only part of the contacts drawn, for performance)",
     noViewer:"3-D viewer failed to load (network may be unavailable). Interaction detection still works — the list and residue clicks below are fully functional.",
     covNote:"covalent bond (~50–70 kcal/mol, bond energy)",
-    btnLabels:"Residue labels", btnWater:"Water", multiHint:"Ctrl/⌘ + click to multi-select residues",
+    btnLabels:"Residue labels", btnWater:"Water", multiHint:"Left rotate · middle translate · right zoom · wheel adjusts depth blur",
     surfNote:"Many hydrophobic residues — select a few residues first; the buried surface is shown only for the selection.",
     hcT:'Why draw the hydrophobic effect as a "surface", not a "bond"?',
     hcP:'The hydrophobic effect is not "a hydrophobic bond between Leu and Val" — it is a <b>solvent-driven free-energy effect</b>: when two nonpolar surfaces are each exposed to water, the surrounding water is forced into a relatively ordered hydration shell; as the residues approach and nonpolar surface is buried (ΔSASA&lt;0), some ordered water is released to the bulk, gaining translational / rotational / H-bond configurations, so −TΔS&lt;0 favors association. More completely it comes from <b>the free-energy cost of creating a nonpolar cavity + the gain from burying nonpolar surface</b> (small vs large hydrophobes differ — it is not simply "water becoming free"). So this tool draws H-bond / salt / metal as lines & arrows, but the hydrophobic effect as a <b>translucent buried surface + SASA + ΔG≈γ·ΔA</b>. And remember: what actually exists directly between two nearby hydrophobic residues is <b>dispersion/vdW + steric packing</b>; a "hydrophobic bond" as such does not exist — ΔG_contact = ΔG_solvation + E_dispersion + E_steric + …',
@@ -927,9 +941,10 @@ renderAll();
      PDB MODULE  ·  geometry detection + 3Dmol viewer + occupancy
      ============================================================ -->
 <script>
+window.__pdbInitError = null;
+try {
 (function(){
 "use strict";
-const $ = s=>document.querySelector(s);
 function tt(k){ return T[LANG][k]||k; }
 
 /* interaction types: color / names / directional */
@@ -1314,21 +1329,21 @@ function computeHydro(atoms){
 }
 
 /* ---- analyze with occupancy across models ---- */
-function analyze(parsed){
+function analyze(parsed, modelIndex=0, modelEdges=null, occupancySets=null, withHydro=true){
   const models=parsed.models;
-  const edges=detectModel(models[0].atoms,true);
+  const edges=modelEdges||detectModel(models[modelIndex].atoms,true);
   if(models.length>1){
-    const sets=models.map((m,idx)=> idx===0 ? new Set(edges.map(e=>e.key)) : new Set(detectModel(m.atoms,false)));
+    const sets=occupancySets||models.map((m,idx)=> idx===modelIndex ? new Set(edges.map(e=>e.key)) : new Set(detectModel(m.atoms,false)));
     edges.forEach(e=>{ let c=0; sets.forEach(s=>{ if(s.has(e.key)) c++; }); e.occ=c/models.length; });
   } else edges.forEach(e=>e.occ=1);
-  const atoms=models[0].atoms;
+  const atoms=models[modelIndex].atoms;
   const caByRk={};
   atoms.forEach(a=>{ if(a.name==="CA"&&a.el==="C"){ caByRk[a.rk]=a; } });
   atoms.forEach(a=>{ if(!caByRk[a.rk]) caByRk[a.rk]=a; }); // fallback: any atom
-  return {edges, nModels:models.length,
+  return {edges, nModels:models.length, modelIndex,
     nAtoms:atoms.length,
     nRes:new Set(atoms.filter(a=>!a.isHet||METALS.has(a.el)).map(a=>a.rk)).size,
-    atoms, caByRk, hydro:computeHydro(atoms), text:parsed.model0text};
+    atoms, caByRk, hydro:withHydro?computeHydro(atoms):undefined, text:parsed.model0text};
 }
 
 /* ---- energy estimate (coarse) ---- */
@@ -1354,8 +1369,9 @@ function estEnergy(e){
 }
 
 /* ---- state ---- */
-let DATA=null, viewer=null, viewerReady=false, enabled=new Set(DEFAULT_ON);
-let selResSet=new Set(), showLabels=false, showWater=false, surfActive=false;
+let DATA=null, PARSED=null, RAW_PDB="", SOURCE_LABEL="structure", MODEL_CACHE=[], viewer=null, viewerReady=false, enabled=new Set(DEFAULT_ON);
+let selResSet=new Set(), showLabels=false, showWater=false, showDistances=false, surfActive=false;
+let depthBlur=0, depthHudTimer=null, focusFullHalf=50;
 
 /* ---- 3Dmol loader ---- */
 function load3Dmol(){
@@ -1379,6 +1395,26 @@ function load3Dmol(){
 
 /* ---- viewer helpers ---- */
 function bg(){ return document.documentElement.getAttribute("data-theme")==="dark"?"0x1a1a19":"0xffffff"; }
+function applyDepthBlur(delta){
+  depthBlur=Math.max(0,Math.min(1,depthBlur+delta));
+  if(viewer){
+    // Symmetric focal slab around the screen-center depth plane. The wheel
+    // controls the distance-to-focus slope; at 100% only ±2.5 Å remains sharp.
+    const minHalf=2.5;
+    const half=minHalf+(focusFullHalf-minHalf)*Math.pow(1-depthBlur,2);
+    viewer.setSlab(-half,half);
+    if(depthBlur===0) viewer.enableFog(false);
+    else viewer.enableFog({fogStart:Math.max(0.02,0.62-depthBlur*0.52),fogEnd:Math.max(0.12,0.92-depthBlur*0.62)});
+    if(viewer.show) viewer.show(); else viewer.render();
+  }
+  const hud=$("#depthHud");
+  if(hud){
+    const minHalf=2.5;
+    const half=minHalf+(focusFullHalf-minHalf)*Math.pow(1-depthBlur,2), width=half*2;
+    hud.textContent=(LANG==="zh"?"景深斜率 ":"Depth slope ")+Math.round(depthBlur*100)+"% · "+(LANG==="zh"?"清晰层 ":"clear slab ")+width.toFixed(1)+" Å";
+    hud.classList.add("show"); clearTimeout(depthHudTimer); depthHudTimer=setTimeout(()=>hud.classList.remove("show"),1100);
+  }
+}
 function ensureViewer(){
   if(viewer||!window.$3Dmol) return;
   const el=$("#molviewer");
@@ -1408,13 +1444,15 @@ function drawViewer(){
   selResSet.forEach(rk=>{ viewer.addStyle(selResi(rk),{cartoon:{opacity:1},stick:{radius:0.28,opacity:1}}); });
   // labels
   if(showLabels){
-    const labelSet = hasSel ? [...selResSet] : [...resAdd].filter(rk=>rk.split(":")[1]!=="HOH").slice(0,45);
+    // Labels apply to every currently displayed chain; do not let early Chain A
+    // residues consume a global cap and hide labels from later chains.
+    const labelSet = [...resAdd].filter(rk=>rk.split(":")[1]!=="HOH");
     labelSet.forEach(rk=>{ const ca=DATA.caByRk[rk]; if(!ca)return; const p=rk.split(":");
       viewer.addLabel(p[1]+p[2], {position:{x:ca.x,y:ca.y,z:ca.z}, fontSize:11, fontColor:"white",
         backgroundColor: selResSet.has(rk)?"0x4a3aa7":"0x333333", backgroundOpacity:0.75, borderThickness:0.0}); });
   }
   // directional/line edges (hydrophobic handled as surface, NOT a line)
-  let drawn=0; const cap=650;
+  let drawn=0; const cap=2000;
   for(const e of active){
     if(e.type==="hydrophobic") continue;
     if(drawn>cap) break;
@@ -1424,6 +1462,10 @@ function drawViewer(){
     const s={x:e.a1.x,y:e.a1.y,z:e.a1.z}, t={x:e.a2.x,y:e.a2.y,z:e.a2.z};
     if(ITYPES[e.type].dir) viewer.addArrow({start:s,end:t,radius:0.08,radiusRatio:2.4,mid:0.72,color:col,opacity:op});
     else viewer.addCylinder({start:s,end:t,radius:0.06,dashed:true,fromCap:1,toCap:1,color:col,opacity:op});
+    // Distance labels follow every drawn interaction in every displayed chain.
+    if(showDistances){
+      viewer.addLabel(e.dist.toFixed(2)+" Å",{position:{x:(s.x+t.x)/2,y:(s.y+t.y)/2,z:(s.z+t.z)/2},fontSize:10,fontColor:"white",backgroundColor:"0x222222",backgroundOpacity:.72,borderThickness:0});
+    }
     drawn++;
   }
   // hydrophobic effect -> translucent buried nonpolar surface (a surface, not a bond)
@@ -1571,32 +1613,53 @@ function renderEdges(){
 
 /* ---- main load pipeline ---- */
 function setMsg(txt,isErr){ const m=$("#viewerMsg"); if(!m)return; m.style.display=txt?"flex":"none"; m.className="viewer-msg"+(isErr?" err":""); m.innerHTML=txt||""; }
-function firstModelText(text){
-  // return only first MODEL...ENDMDL block if multi-model, else full
-  const mi=text.indexOf("\nMODEL ");
-  if(mi<0 && !text.startsWith("MODEL ")) return text;
-  const start=text.indexOf("MODEL ");
-  const end=text.indexOf("ENDMDL");
-  if(start>=0&&end>start) return text.slice(0,start)+text.slice(start,end+6);
-  return text;
+function modelTextAt(text,index){
+  const lines=text.split(/\r?\n/), pre=[], block=[]; let inModel=false, model=-1;
+  for(const line of lines){
+    if(line.slice(0,6)==="MODEL "){ inModel=true; model++; if(model===index) block.push(line); continue; }
+    if(line.startsWith("ENDMDL")){ if(model===index) block.push(line); inModel=false; continue; }
+    if(!inModel && model<0 && !line.startsWith("ATOM") && !line.startsWith("HETATM")) pre.push(line);
+    if(inModel && model===index) block.push(line);
+  }
+  return block.length ? pre.join("\n")+"\n"+block.join("\n") : text;
+}
+function renderModelPicker(){
+  const wrap=$("#modelPick"), sel=$("#modelSelect"); if(!wrap||!sel||!PARSED)return;
+  wrap.classList.toggle("show",PARSED.models.length>1);
+  sel.innerHTML=PARSED.models.map((_,i)=>`<option value="${i}"${DATA&&DATA.modelIndex===i?' selected':''}>${i+1} / ${PARSED.models.length}</option>`).join("");
+}
+async function selectModel(index){
+  if(!PARSED)return; index=Math.max(0,Math.min(PARSED.models.length-1,index));
+  setMsg(`<span class="spin"></span>${tt("loadingMsg")}`,false); await new Promise(r=>setTimeout(r,10));
+  if(!MODEL_CACHE[index]) MODEL_CACHE[index]=analyze(PARSED,index);
+  else if(MODEL_CACHE[index].hydro===undefined) MODEL_CACHE[index].hydro=computeHydro(MODEL_CACHE[index].atoms);
+  DATA=MODEL_CACHE[index];
+  selResSet=new Set([...selResSet].filter(rk=>DATA.caByRk[rk]));
+  renderModelPicker(); renderStats(); renderToggles(); renderChips(""); renderEdges();
+  if(viewer){
+    if(PARSED.models.length>1 && viewer.setFrame) await viewer.setFrame(index);
+    drawViewer(); viewer.render();
+  }
+  setMsg("",false);
 }
 async function loadPDB(text,label){
   setMsg(`<span class="spin"></span>${tt("loadingMsg")}`,false);
   await new Promise(r=>setTimeout(r,10));
   const parsed=parsePDB(text);
   if(!parsed||!parsed.models.length){ setMsg(tt("parseErr"),true); return; }
-  const m0text=firstModelText(text);
-  DATA=analyze(parsed); DATA.m0text=m0text;
+  PARSED=parsed; RAW_PDB=text; SOURCE_LABEL=(label||"structure").replace(/\.[^.]+$/,""); MODEL_CACHE=[];
+  DATA=analyze(parsed,0); MODEL_CACHE[0]=DATA;
   // reset selection
   selResSet.clear();
-  renderStats(); renderToggles(); renderChips(""); renderEdges();
+  renderModelPicker(); renderStats(); renderToggles(); renderChips(""); renderEdges();
   // viewer
   const ok=await load3Dmol();
   if(ok){
     ensureViewer();
     if(viewer){
       viewer.clear();
-      viewer.addModel(m0text,"pdb");
+      if(parsed.models.length>1 && viewer.addModelsAsFrames) viewer.addModelsAsFrames(text,"pdb");
+      else viewer.addModel(modelTextAt(text,0),"pdb");
       viewer.setBackgroundColor(bg());
       drawViewer();
       try{
@@ -1607,6 +1670,7 @@ async function loadPDB(text,label){
         });
       }catch(_){}
       viewer.zoomTo(); viewer.render();
+      if(viewer.getSlab){ const s=viewer.getSlab(); focusFullHalf=Math.max(2.5,Math.abs(s.near||0),Math.abs(s.far||0)); }
       setMsg("",false);
     }
   } else {
@@ -1628,6 +1692,30 @@ async function fetchPDB(id){
   setMsg(tt("fetchErr"),true);
 }
 
+/* ---- exports ---- */
+function downloadText(name,text,mime){ const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([text],{type:mime})); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); }
+function csvCell(v){ v=v==null?"":String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+function allModelData(){
+  if(!PARSED)return [];
+  const full=PARSED.models.map((m,i)=>MODEL_CACHE[i]?MODEL_CACHE[i].edges:detectModel(m.atoms,true));
+  const sets=full.map(es=>new Set(es.map(e=>e.key)));
+  for(let i=0;i<PARSED.models.length;i++) if(!MODEL_CACHE[i]) MODEL_CACHE[i]=analyze(PARSED,i,full[i],sets,false);
+  return MODEL_CACHE;
+}
+function exportInteractions(){
+  if(!PARSED)return;
+  const rows=[["model","interaction","atom_1","atom_2","distance_A","estimated_energy_kcal_mol","energy_note","occupancy_percent"]];
+  allModelData().forEach((d,mi)=>d.edges.forEach(e=>{ const en=estEnergy(e); rows.push([mi+1,e.type,atomLabel(e.a1),atomLabel(e.a2),e.dist.toFixed(3),en.v==null?"":en.v.toFixed(3),en.note||"",Math.round(e.occ*100)]); }));
+  downloadText(SOURCE_LABEL+"_all-model-interactions.csv",rows.map(r=>r.map(csvCell).join(",")).join("\n"),"text/csv;charset=utf-8");
+}
+function exportPymol(){
+  if(!PARSED)return;
+  const states=allModelData().map((d,mi)=>({state:mi+1,edges:d.edges.map(e=>{const en=estEnergy(e);return{t:e.type,a:[e.a1.x,e.a1.y,e.a1.z],b:[e.a2.x,e.a2.y,e.a2.z],d:+e.dist.toFixed(3),en:en.v==null?null:+en.v.toFixed(3),note:en.note||"",r1:e.a1.rk,r2:e.a2.rk};})}));
+  const colors={}; Object.keys(ITYPES).forEach(k=>colors[k]=ITYPES[k].c);
+  const script=`# Wymol 1.2 PyMOL export: ${SOURCE_LABEL}\npython\nfrom pymol import cmd\nfrom pymol.cgo import CYLINDER, CONE\nPDB=${JSON.stringify(RAW_PDB)}\nSTATES=${JSON.stringify(states)}\nCOLORS=${JSON.stringify(colors)}\ncmd.read_pdbstr(PDB, 'wymol')\ncmd.hide('everything','wymol')\ncmd.show('cartoon','wymol')\ndef rgb(h): return tuple(int(h[i:i+2],16)/255.0 for i in (1,3,5))\ndef arrow(name,a,b,color,state,directional=True):\n    c=rgb(color); dx=[b[i]-a[i] for i in range(3)]; q=[a[i]+dx[i]*0.76 for i in range(3)]\n    obj=[CYLINDER,*a,*q,0.075,*c,*c]\n    if directional: obj += [CONE,*q,*b,0.18,0.0,*c,*c,1.0,0.0]\n    else: obj=[CYLINDER,*a,*b,0.055,*c,*c]\n    cmd.load_cgo(obj,name,state)\nfor S in STATES:\n    st=S['state']; grp='model_%d'%st; hyd=[]\n    for i,e in enumerate(S['edges']):\n        name='m%d_%s_%04d'%(st,e['t'],i+1)\n        if e['t']=='hydrophobic': hyd.extend([e['r1'],e['r2']]); continue\n        arrow(name,e['a'],e['b'],COLORS[e['t']],st,e['t'] in ('hbond','saltbridge','cationpi','chpi','spi','metal','halogen','npistar'))\n        mid=[(e['a'][j]+e['b'][j])/2 for j in range(3)]\n        lab='%.2f A'%e['d'] + ((' / %.2f kcal/mol'%e['en']) if e['en'] is not None else '')\n        cmd.pseudoatom(name+'_label',pos=mid,label=lab,state=st)\n        cmd.group(grp,name+' '+name+'_label')\n    sels=[]\n    for rk in set(hyd):\n        ch,rn,rs=rk.split(':'); sels.append('(wymol and chain %s and resn %s and resi %s)'%(ch,rn,rs))\n    if sels:\n        sel='hydrophobic_m%d'%st; cmd.select(sel,' or '.join(sels)); cmd.show('surface',sel); cmd.color('gray70',sel); cmd.set('transparency',0.45,sel); cmd.group(grp,sel)\ncmd.set('label_size',11)\ncmd.set('dash_gap',0.25)\ncmd.orient('wymol')\npython end\n`;
+  downloadText(SOURCE_LABEL+"_Wymol_1.2.pml",script,"text/plain;charset=utf-8");
+}
+
 /* ---- wire up UI ---- */
 function wire(){
   const drop=$("#dropZone"), fileInput=$("#pdbFile");
@@ -1641,9 +1729,19 @@ function wire(){
   document.querySelectorAll(".ex").forEach(b=>b.addEventListener("click",()=>fetchPDB(b.getAttribute("data-id"))));
   $("#resSearch").addEventListener("input",e=>renderChips(e.target.value));
   $("#resSearch").setAttribute("placeholder", tt("resSearchPh"));
-  const lb=$("#labelBtn"), wb=$("#waterBtn");
+  const lb=$("#labelBtn"), wb=$("#waterBtn"), db=$("#distanceBtn");
   if(lb) lb.addEventListener("click",()=>{ showLabels=!showLabels; lb.classList.toggle("on",showLabels); drawViewer(); });
   if(wb) wb.addEventListener("click",()=>{ showWater=!showWater; wb.classList.toggle("on",showWater); drawViewer(); });
+  if(db) db.addEventListener("click",()=>{ showDistances=!showDistances; db.classList.toggle("on",showDistances); drawViewer(); });
+  $("#modelSelect").addEventListener("change",e=>selectModel(+e.target.value));
+  $("#exportCsvBtn").addEventListener("click",exportInteractions);
+  $("#exportPymolBtn").addEventListener("click",exportPymol);
+  // Replace default wheel zoom with view-axis depth fog: down strengthens
+  // distance blur, up restores clarity. Capture phase prevents 3Dmol zoom.
+  $("#molviewer").addEventListener("wheel",e=>{
+    e.preventDefault(); e.stopImmediatePropagation();
+    applyDepthBlur(e.deltaY>0?0.02:-0.02);
+  },{capture:true,passive:false});
 }
 
 /* ---- react to language + theme changes ---- */
@@ -1656,8 +1754,12 @@ const _themeBtn=$("#themeBtn");
 if(_themeBtn) _themeBtn.addEventListener("click",()=>{ if(viewer){ viewer.setBackgroundColor(bg()); viewer.render(); } });
 
 wire();
-window.__pdb={parsePDB, detectModel, analyze, estEnergy, loadPDB, get data(){return DATA;}};
+window.__pdb={parsePDB, detectModel, analyze, estEnergy, loadPDB, selectModel, exportInteractions, exportPymol, get data(){return DATA;}};
 })();
+} catch (e) {
+  window.__pdbInitError = (e && e.stack) ? e.stack : String(e);
+  console.error("Wymol PDB module failed to initialize", e);
+}
 </script>
 </body>
 </html>
