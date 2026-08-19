@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wymol 1.3 · Protein Interaction Atlas</title>
+<title>Wymol 1.4 · Protein Interaction Atlas</title>
 <style>
 :root{
   color-scheme: light;
@@ -241,6 +241,7 @@ footer p{margin:6px 0}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--elec);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
 @keyframes sp{to{transform:rotate(360deg)}}
 .vctrls{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.evidence-legend{display:none;align-items:center;gap:7px;font-size:.68rem;color:var(--muted);margin:3px 0 7px}.evidence-legend.show{display:flex}.evidence-ramp{width:145px;height:8px;border-radius:999px;background:linear-gradient(90deg,#234ea8,#97bee6,#f5f5f0,#ee9349,#be232d)}
 .vbtn{border:1px solid var(--border);background:var(--surface);color:var(--ink-2);border-radius:999px;padding:5px 12px;font-size:.78rem;cursor:pointer;font-weight:600;transition:.14s}
 .vbtn:hover{border-color:var(--muted);color:var(--ink)}
 .vbtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
@@ -289,7 +290,7 @@ footer p{margin:6px 0}
 <header>
   <div class="hbar">
     <div class="brand">
-      <b data-i="brandT">Wymol 1.3</b>
+      <b data-i="brandT">Wymol 1.4</b>
       <span data-i="brandS">原子级相互作用 · 按 5 大物理来源拆解</span>
     </div>
     <div class="toggles">
@@ -382,10 +383,12 @@ footer p{margin:6px 0}
           <button class="vbtn" id="labelBtn">🏷 <span data-i="btnLabels">残基标签</span></button>
           <button class="vbtn" id="waterBtn">💧 <span data-i="btnWater">水分子</span></button>
           <button class="vbtn" id="distanceBtn">↔ <span data-i="btnDistance">距离</span></button>
+          <button class="vbtn" id="evidenceBtn">◉ <span>B-factor</span></button>
           <label class="modelpick" id="modelPick"><span data-i="modelLabel">Model</span><select id="modelSelect"></select></label>
           <span class="vhint" data-i="multiHint">Ctrl/⌘ + 点击可多选残基</span>
           <button class="info-btn" data-method="depth-slope" title="Depth blur method">ⓘ</button>
         </div>
+        <div class="evidence-legend" id="evidenceLegend"><span data-i="evLow">low relative spread</span><i class="evidence-ramp"></i><span data-i="evHigh">high relative spread</span><button class="info-btn" data-method="b-factor">ⓘ</button></div>
         <div id="molviewer"><div class="viewer-msg" id="viewerMsg" data-i="viewerEmpty">上传一个 PDB 文件开始</div><div class="depth-hud" id="depthHud">Depth blur 0%</div></div>
         <div class="itoggles" id="itoggles"></div>
         <div class="surfnote" id="surfNote" data-i="surfNote" style="display:none"></div>
@@ -412,7 +415,7 @@ footer p{margin:6px 0}
   </section>
 
   <footer>
-    <p><b>Wymol interaction model: v1.3</b> · <a href="Wymol-methods.html" target="_blank" style="color:var(--accent)" data-i="methodsLink">Methods</a></p>
+    <p><b>Wymol interaction model: v1.4</b> · <a href="Wymol-methods.html" target="_blank" style="color:var(--accent)" data-i="methodsLink">Methods</a></p>
     <p data-i="f1"><b>重要提醒 · </b>表中能量给出的是蛋白环境中的典型量级，不是绝对常数。成对能与净 ΔG 贡献常相差很大：氢键与盐桥必须先打破与水的相互作用，净收益远小于裸相互作用能。</p>
     <p data-i="f2">金属配位的能量跨度极大（配位数、氧化态、配位场、螯合效应、去溶剂化都在起作用），即使先进计算也可能有数 kcal/mol 的模型误差——具体体系需单独处理。</p>
     <p data-i="f3">拆解比例为教学示意，用于建立直觉；精确分解需 SAPT 等量子化学方法对具体几何计算。</p>
@@ -432,7 +435,7 @@ footer p{margin:6px 0}
    ============================================================ */
 const T = {
   zh:{
-    brandT:"Wymol 1.3", brandS:"蛋白质相互作用图谱 · 原子级相互作用",
+    brandT:"Wymol 1.4", brandS:"蛋白质相互作用图谱 · 原子级相互作用",
     theme:"深色", methodsLink:"方法说明",
     title:"蛋白质靠什么维持结构？",
     lede:"蛋白质不是靠某一种“键”锁死，而是靠成千上万个 0.2–5 kcal/mol 的弱相互作用协同，再叠加少数很强的共价键与金属配位。下面把结构、生化、光谱、热力学与计算反复验证过的原子级相互作用整理成一份可交互的“相互作用词典”。",
@@ -459,7 +462,7 @@ const T = {
     l2t:"能量估算（粗略）", l2d:'对每条边给出 Coulomb + Lennard–Jones + 氢键项的粗略估计。称"估计相互作用能"，不是 ΔG（未含熵与溶剂重排）。',
     l3t:"动态 / 占据率", l3d:"若文件含多个 MODEL（如 NMR 系综），逐帧重算并给出占据率 %。真正的 MD 轨迹需力场与最小化，超出浏览器范围。",
     pdbDrop:"拖入或点击选择 .pdb 文件", pdbFetch:"获取", pdbEx:"示例:", exNMR:"2M9G · NMR 系综",
-    exportCsv:"导出全部相互作用", exportPymol:"导出 PyMOL", modelLabel:"模型", btnDistance:"距离",
+    exportCsv:"导出全部相互作用", exportPymol:"导出 PyMOL", modelLabel:"模型", btnDistance:"距离", evLow:"较低相对位移", evHigh:"较高相对位移",
     sseTitle:"二级结构单元", sseHint:"选择后仅显示跨边界作用", sseEmpty:"加载 PDB 后识别 helix 与 strand", sseClear:"全部相互作用", mergeSheet:"合并 β-sheet",
     viewerEmpty:"上传一个 PDB 文件开始 · 或点上方示例", pickRes:"👆 点击一个残基查看其相互作用",
     stAtoms:"原子", stRes:"残基", stModels:"模型", stEdges:"相互作用",
@@ -475,7 +478,7 @@ const T = {
     hcP:'疏水效应不是"Leu 与 Val 之间有一根疏水键"，而是<b>溶剂驱动的自由能效应</b>：两个非极性面各自暴露于水时，周围水被迫排成相对有序的水化壳；二者靠近、非极性面被埋藏（ΔSASA&lt;0），一部分有序水释放回本体、获得更多平动/转动/氢键构型，−TΔS&lt;0 使结合有利。更完整地说，它来自<b>创建非极性空腔的自由能成本 + 埋藏非极性面的收益</b>（小/大疏水基团机制不同，并非只是"水变自由"）。因此本工具对氢键/盐桥/金属用"线/箭头"，对疏水用<b>半透明埋藏表面 + SASA + ΔG≈γ·ΔA</b>。还要记住：两个疏水残基靠近时真正直接存在的是 <b>色散/vdW + 位阻堆积</b>，"疏水键"本身并不存在 —— ΔG_接触 = ΔG_溶剂化 + E_色散 + E_位阻 + …',
   },
   en:{
-    brandT:"Wymol 1.3", brandS:"Protein Interaction Atlas · atomic-level interactions",
+    brandT:"Wymol 1.4", brandS:"Protein Interaction Atlas · atomic-level interactions",
     theme:"Dark", methodsLink:"Methods",
     title:"What actually holds a protein together?",
     lede:"A protein isn't locked by one kind of \"bond\". It's held by thousands of weak 0.2–5 kcal/mol interactions acting together, plus a few very strong covalent bonds and metal-coordination sites. Below is an interactive \"interaction vocabulary\" — every entry repeatedly validated by structural, biochemical, spectroscopic, thermodynamic and computational work.",
@@ -502,7 +505,7 @@ const T = {
     l2t:"Energy (coarse)", l2d:'Each edge gets a coarse Coulomb + Lennard–Jones + H-bond estimate. Call it "estimated interaction energy", not ΔG (no entropy or solvent reorganization).',
     l3t:"Dynamics / occupancy", l3d:"If the file has multiple MODELs (e.g. an NMR ensemble), detection reruns per frame and reports occupancy %. A true MD trajectory needs a force field + minimization, beyond the browser.",
     pdbDrop:"Drop or click to choose a .pdb file", pdbFetch:"Fetch", pdbEx:"Examples:", exNMR:"2M9G · NMR ensemble",
-    exportCsv:"Export all interactions", exportPymol:"Export PyMOL", modelLabel:"Model", btnDistance:"Distances",
+    exportCsv:"Export all interactions", exportPymol:"Export PyMOL", modelLabel:"Model", btnDistance:"Distances", evLow:"low relative spread", evHigh:"high relative spread",
     sseTitle:"Secondary-structure units", sseHint:"Select to show boundary interactions only", sseEmpty:"Load a PDB to identify helices and strands", sseClear:"All interactions", mergeSheet:"Merge β-sheet",
     viewerEmpty:"Upload a PDB file to start · or click an example above", pickRes:"👆 Click a residue to see its interactions",
     stAtoms:"atoms", stRes:"residues", stModels:"models", stEdges:"interactions",
@@ -1060,6 +1063,11 @@ const isAnionO  = a => (a.resName==="ASP"&&(a.name==="OD1"||a.name==="OD2"))
 /* ---- PDB parser (supports multi-MODEL) ---- */
 function parsePDB(text){
   const models=[], sseRecords=[]; let cur=null;
+  const upper=text.toUpperCase(), meta={
+    experiment:(text.match(/^EXPDTA\s+(.+)$/m)||[])[1]||"",
+    isNMR:/SOLUTION NMR|SOLID-STATE NMR/.test(upper),
+    isPredicted:/ALPHAFOLD|PREDICTED MODEL|MODEL CONFIDENCE/.test(upper)
+  };
   const start=()=>{ cur={atoms:[]}; models.push(cur); };
   const lines=text.split(/\r?\n/);
   let sawModel=false;
@@ -1096,13 +1104,14 @@ function parsePDB(text){
         if(isHet && METALS.has(resName)) el=resName;
         else { const m=name.replace(/[^A-Za-z]/g,""); el=(m.length>=2 && (METALS.has(m.slice(0,2))||HALOGENS.has(m.slice(0,2))))?m.slice(0,2).toUpperCase():m.charAt(0).toUpperCase(); }
       }
-      cur.atoms.push({x,y,z,name,resName,chain,resSeq,el,isHet,
+      const occupancy=parseFloat(line.slice(54,60)), b=parseFloat(line.slice(60,66));
+      cur.atoms.push({x,y,z,name,resName,chain,resSeq,el,isHet,occupancy:isNaN(occupancy)?1:occupancy,b:isNaN(b)?0:b,
         rk:chain+":"+resName+":"+resSeq});
     }
   }
   if(models.length===0) return null;
   // drop empty trailing models
-  return { models: models.filter(m=>m.atoms.length>0), sseRecords };
+  return { models: models.filter(m=>m.atoms.length>0), sseRecords, meta };
 }
 
 /* ---- secondary-structure units (PDB HELIX/SHEET, geometry fallback) ---- */
@@ -1138,6 +1147,27 @@ function secondaryUnits(parsed,modelIndex){
     return {...r,uid:r.type+":"+r.chain+":"+r.start+"-"+r.end+":"+i,residues};
   }).filter(u=>u.residues.size>0);
 }
+
+/* ---- experimental displacement / confidence evidence ---- */
+function median(xs){const a=xs.filter(Number.isFinite).sort((x,y)=>x-y),n=a.length;return n?(n%2?a[(n-1)/2]:(a[n/2-1]+a[n/2])/2):null;}
+function evidenceFor(parsed,modelIndex){
+  const atoms=parsed.models[modelIndex].atoms.filter(a=>!a.isHet&&a.el!=="H"), bValid=atoms.filter(a=>a.b>0).length;
+  let mode=parsed.meta&&parsed.meta.isPredicted?"plddt":((parsed.meta&&parsed.meta.isNMR)||parsed.models.length>1&&bValid<atoms.length*.25?"ensemble":(bValid>=atoms.length*.5?"bfactor":"unavailable"));
+  const values={};
+  if(mode==="ensemble"){
+    const positions={};
+    parsed.models.forEach(m=>m.atoms.filter(a=>!a.isHet&&a.name==="CA").forEach(a=>(positions[a.rk]=positions[a.rk]||[]).push(a)));
+    Object.entries(positions).forEach(([rk,ps])=>{if(ps.length<2)return;const c=ps.reduce((q,a)=>({x:q.x+a.x,y:q.y+a.y,z:q.z+a.z}),{x:0,y:0,z:0});c.x/=ps.length;c.y/=ps.length;c.z/=ps.length;values[rk]=Math.sqrt(ps.reduce((s,a)=>s+(a.x-c.x)**2+(a.y-c.y)**2+(a.z-c.z)**2,0)/ps.length);});
+  }else if(mode!=="unavailable"){
+    const sums={};atoms.forEach(a=>{const q=sums[a.rk]||(sums[a.rk]={w:0,s:0});const w=Math.max(0,a.occupancy||0);q.w+=w;q.s+=w*a.b;});
+    Object.entries(sums).forEach(([rk,q])=>{if(q.w)values[rk]=q.s/q.w;});
+  }
+  const residues={};
+  const chains={};Object.entries(values).forEach(([rk,v])=>{const ch=rk.split(":")[0];(chains[ch]=chains[ch]||[]).push(v);});
+  Object.entries(values).forEach(([rk,value])=>{const vals=chains[rk.split(":")[0]].slice().sort((a,b)=>a-b),med=median(vals),mad=median(vals.map(v=>Math.abs(v-med)))||0;const below=vals.filter(v=>v<value).length,equal=vals.filter(v=>v===value).length;residues[rk]={value,pct:100*(below+.5*equal)/vals.length,z:mad?(value-med)/(1.4826*mad):0};});
+  return {mode,residues,unit:mode==="bfactor"?"Å²":mode==="ensemble"?"Å":"score",label:mode==="bfactor"?"B-factor":mode==="ensemble"?"ensemble spread":mode==="plddt"?"pLDDT":"unavailable"};
+}
+function evidenceColor(pct,reverse=false){let t=Math.max(0,Math.min(1,pct/100));if(reverse)t=1-t;const stops=[[35,78,168],[151,190,230],[245,245,240],[238,147,73],[190,35,45]],x=t*(stops.length-1),i=Math.min(stops.length-2,Math.floor(x)),f=x-i,a=stops[i],b=stops[i+1];return "#"+a.map((v,k)=>Math.round(v+(b[k]-v)*f).toString(16).padStart(2,"0")).join("");}
 
 /* ---- spatial grid ---- */
 function buildGrid(atoms,cell){
@@ -1422,7 +1452,7 @@ function analyze(parsed, modelIndex=0, modelEdges=null, occupancySets=null, with
   const caByRk={};
   atoms.forEach(a=>{ if(a.name==="CA"&&a.el==="C"){ caByRk[a.rk]=a; } });
   atoms.forEach(a=>{ if(!caByRk[a.rk]) caByRk[a.rk]=a; }); // fallback: any atom
-  return {edges, nModels:models.length, modelIndex,
+  return {edges, nModels:models.length, modelIndex,evidence:evidenceFor(parsed,modelIndex),
     nAtoms:atoms.length,
     nRes:new Set(atoms.filter(a=>!a.isHet||METALS.has(a.el)).map(a=>a.rk)).size,
     atoms, caByRk, hydro:withHydro?computeHydro(atoms):undefined, text:parsed.model0text};
@@ -1452,7 +1482,7 @@ function estEnergy(e){
 
 /* ---- state ---- */
 let DATA=null, PARSED=null, RAW_PDB="", SOURCE_LABEL="structure", MODEL_CACHE=[], viewer=null, viewerReady=false, enabled=new Set(DEFAULT_ON);
-let selResSet=new Set(), showLabels=false, showWater=false, showDistances=false, surfActive=false;
+let selResSet=new Set(), showLabels=false, showWater=false, showDistances=false, showEvidence=false, surfActive=false;
 let depthBlur=0, depthHudTimer=null, focusFullHalf=50;
 let SSE_UNITS=[], ACTIVE_SSE=null;
 
@@ -1533,6 +1563,7 @@ function drawViewer(){
   const emphasized=ACTIVE_SSE?ACTIVE_SSE.residues:selResSet;
   const dimBase=hasSel?0.12:0.9;
   viewer.setStyle({}, {cartoon:{color:"spectrum",opacity:dimBase}});
+  if(showEvidence&&DATA.evidence&&DATA.evidence.mode!=="unavailable") Object.entries(DATA.evidence.residues).forEach(([rk,e])=>viewer.addStyle(selResi(rk),{cartoon:{color:evidenceColor(e.pct,DATA.evidence.mode==="plddt"),opacity:hasSel&&!emphasized.has(rk)?.18:1}}));
   // ligands / metals (all hetero first)
   viewer.setStyle({hetflag:true},{stick:{radius:0.16,opacity:hasSel?0.3:1},sphere:{scale:0.28,opacity:hasSel?0.3:1}});
   // waters LAST so this overrides the hetero styling above
@@ -1545,7 +1576,7 @@ function drawViewer(){
   resAdd.forEach(rk=>{ if(rk.split(":")[1]==="HOH")return; const dim=hasSel&&!emphasized.has(rk); viewer.addStyle(selResi(rk),{stick:{radius:0.13,opacity:dim?0.18:1}}); });
   // selected residues emphasized (full opacity, thicker)
   selResSet.forEach(rk=>{ viewer.addStyle(selResi(rk),{cartoon:{opacity:1},stick:{radius:0.28,opacity:1}}); });
-  if(ACTIVE_SSE) ACTIVE_SSE.residues.forEach(rk=>viewer.addStyle(selResi(rk),{cartoon:{color:ACTIVE_SSE.type==="helix"?"0xeda100":"0x2a78d6",opacity:1},stick:{radius:0.22,opacity:1}}));
+  if(ACTIVE_SSE) ACTIVE_SSE.residues.forEach(rk=>viewer.addStyle(selResi(rk),{cartoon:{color:showEvidence&&DATA.evidence&&DATA.evidence.residues[rk]?evidenceColor(DATA.evidence.residues[rk].pct,DATA.evidence.mode==="plddt"):(ACTIVE_SSE.type==="helix"?"0xeda100":"0x2a78d6"),opacity:1},stick:{radius:0.22,opacity:1}}));
   // labels
   if(showLabels){
     // Labels apply to every currently displayed chain; do not let early Chain A
@@ -1644,6 +1675,13 @@ function renderStats(){
   const cells=[[DATA.nAtoms,"stAtoms"],[DATA.nRes,"stRes"],[DATA.nModels,"stModels"],[DATA.edges.length,"stEdges"]];
   box.innerHTML=cells.map(c=>`<div class="pstat"><b>${c[0]}</b><span>${tt(c[1])}</span></div>`).join("");
 }
+function renderEvidenceControl(){
+  const b=$("#evidenceBtn"),legend=$("#evidenceLegend");if(!b)return;
+  const ev=DATA&&DATA.evidence,available=ev&&ev.mode!=="unavailable";
+  b.disabled=!available;b.classList.toggle("on",showEvidence&&available);
+  b.querySelector("span").textContent=!available?(LANG==="zh"?"B-factor 不可用":"B-factor unavailable"):(ev.mode==="plddt"?"pLDDT":ev.mode==="ensemble"?(LANG==="zh"?"系综位移":"Ensemble spread"):"B-factor");
+  if(legend){legend.classList.toggle("show",showEvidence&&available);const low=legend.querySelector('[data-i="evLow"]'),high=legend.querySelector('[data-i="evHigh"]');if(ev&&ev.mode==="plddt"){low.textContent=LANG==="zh"?"低置信度":"low confidence";high.textContent=LANG==="zh"?"高置信度":"high confidence";}else{low.textContent=tt("evLow");high.textContent=tt("evHigh");}}
+}
 
 /* ---- secondary-structure boundary mode + L2 interaction load ---- */
 function renderSSE(){
@@ -1700,7 +1738,20 @@ function renderLoadPanel(){
       <div class="loadmetric"><b>${anchorAvailable?Math.round(anchor*100)+"% · "+anchorSide:"N/A"}</b><span>${LANG==="zh"?"锚定不对称性":"anchoring asymmetry"}<i class="predictive-tag">${LANG==="zh"?"预测性":"predictive"}</i> ${ib("anchoring-asymmetry")}</span>${anchorAvailable?`<small>${LANG==="zh"?"末端负载分配":"terminal load split"}: N ${startPct.toFixed(1)}% | C ${endPct.toFixed(1)}%</small>`:""}</div>
       <div class="loadmetric"><b>${partners.size}</b><span>${LANG==="zh"?"外部伙伴残基":"partner residues"} ${ib("partner-residues")}</span></div>
       <div class="loadmetric"><b>${occN?Math.round(occ/occN*100):100}%</b><span>${LANG==="zh"?"平均作用占据率":"mean edge occupancy"} ${ib("occupancy")}</span></div>
-    </div><div class="loadnote">${top}<br>${LANG==="zh"?"这是静态 interaction-load 指标，不是真实机械应力或局部 ΔG。锚定不对称性只是预测性结构启发指标；单元内部作用已从显示和计算中排除。":"Static interaction-load metrics, not true mechanical stress or local ΔG. Anchoring asymmetry is a predictive structural heuristic only; intra-unit interactions are excluded from display and calculation."} ${ib("local-stability")}</div>`;
+    </div>${sseEvidenceCard(startSet,endSet,anchorSide,anchorAvailable)}<div class="loadnote">${top}<br>${LANG==="zh"?"这是静态 interaction-load 指标，不是真实机械应力或局部 ΔG。锚定不对称性只是预测性结构启发指标；单元内部作用已从显示和计算中排除。":"Static interaction-load metrics, not true mechanical stress or local ΔG. Anchoring asymmetry is a predictive structural heuristic only; intra-unit interactions are excluded from display and calculation."} ${ib("local-stability")}</div>`;
+}
+function sseEvidenceCard(startSet,endSet,anchorSide,anchorAvailable){
+  const ev=DATA&&DATA.evidence;if(!ev||ev.mode==="unavailable")return `<div class="loadnote">${LANG==="zh"?"实验位移证据不可用。":"Experimental displacement evidence unavailable."} ${ib("b-factor")}</div>`;
+  const vals=set=>[...set].map(rk=>ev.residues[rk]).filter(Boolean),s=vals(startSet),e=vals(endSet),all=[...ACTIVE_SSE.residues].map(rk=>ev.residues[rk]).filter(Boolean);
+  if(!all.length)return "";const sv=median(s.map(x=>x.value)),evv=median(e.map(x=>x.value)),sp=median(s.map(x=>x.pct)),ep=median(e.map(x=>x.pct)),overall=median(all.map(x=>x.value));
+  const fmt=v=>v==null?"—":v.toFixed(ev.mode==="plddt"?0:1), title=ev.mode==="bfactor"?"B-factor":ev.mode==="ensemble"?(LANG==="zh"?"NMR 系综位移":"NMR ensemble spread"):"pLDDT";
+  let status="";
+  if(ev.mode==="plddt")status=LANG==="zh"?"pLDDT 是模型置信度，不参与锚定-运动性一致性判断。":"pLDDT is model confidence and is not used for anchoring–mobility consistency.";
+  else if(anchorAvailable&&anchorSide!=="均衡"&&anchorSide!=="balanced"){
+    const sz=median(s.map(x=>x.z)),ez=median(e.map(x=>x.z)),weakIsN=anchorSide==="C/end",delta=(weakIsN?sz-ez:ez-sz),weak=weakIsN?"N/start":"C/end";
+    status=delta>.5?`✓ ${LANG==="zh"?"一致":"Consistent"} · ${weak} ${LANG==="zh"?"弱锚定端同时具有较高相对位移":"weakly anchored end also has higher relative spread"}`:delta<-.5?`△ ${LANG==="zh"?"相反模式":"Opposite pattern"} · ${LANG==="zh"?"强锚定端具有更高相对位移":"strongly anchored end has higher relative spread"}`:`— ${LANG==="zh"?"证据不足：两端差异较小":"Inconclusive: terminal difference is small"}`;
+  }
+  return `<div class="loadnote" style="border:1px solid var(--border);border-radius:8px;padding:7px;background:var(--surface-2)"><b>${title}</b> ${ib(ev.mode==="ensemble"?"ensemble-spread":ev.mode==="plddt"?"plddt":"b-factor")}<br>${LANG==="zh"?"单元中位数":"unit median"}: ${fmt(overall)} ${ev.unit}<br>N/start: ${fmt(sv)} ${ev.unit} · ${fmt(sp)} percentile<br>C/end: ${fmt(evv)} ${ev.unit} · ${fmt(ep)} percentile${status?`<br><b>${LANG==="zh"?"锚定一致性":"anchoring consistency"}:</b> ${status} ${ib("b-factor-consistency")}`:""}</div>`;
 }
 
 /* ---- residue chips ---- */
@@ -1754,6 +1805,7 @@ function burialCard(rk){
       : "γ≈25 cal·mol⁻¹·Å⁻². A solvent-driven free-energy effect (burying nonpolar surface → releasing ordered water), on top of inter-residue dispersion/vdW — not a fixed \"hydrophobic bond\"."}</div>
   </div>`;
 }
+function evidenceCard(rk){const ev=DATA&&DATA.evidence,x=ev&&ev.residues[rk];if(!x)return "";const title=ev.mode==="bfactor"?"B-factor":ev.mode==="ensemble"?(LANG==="zh"?"NMR 系综位移":"NMR ensemble spread"):"pLDDT";return `<div class="burial"><div class="bt">${title} ${ib(ev.mode==="ensemble"?"ensemble-spread":ev.mode==="plddt"?"plddt":"b-factor")}</div><div class="brow"><span>${LANG==="zh"?"残基值":"residue value"}</span><b>${x.value.toFixed(ev.mode==="plddt"?0:1)} ${ev.unit}</b></div><div class="brow"><span>${LANG==="zh"?"chain 内 percentile":"within-chain percentile"}</span><b>${x.pct.toFixed(0)}%</b></div></div>`;}
 function renderEdges(){
   const box=$("#edgebox"); if(!box)return;
   if(ACTIVE_SSE){
@@ -1774,7 +1826,7 @@ function renderEdges(){
       .sort((a,b)=> (enabled.has(b.type)-enabled.has(a.type)) || (a.dist-b.dist));
     const p=selRes.split(":");
     html+=`<div class="resblock"><h4>${p[0]} · ${p[1]}${p[2]}</h4><div class="esub">${mine.length} ${tt("stEdges")}</div>`;
-    html+=burialCard(selRes);
+    html+=evidenceCard(selRes)+burialCard(selRes);
     if(!mine.length) html+=`<div class="esub" style="margin-top:8px">—</div>`;
     for(const e of mine){
       const iAmA1=e.a1.rk===selRes;
@@ -1834,7 +1886,7 @@ async function selectModel(index){
     else ACTIVE_SSE=SSE_UNITS.find(u=>u.type===prevSSE.type&&u.chain===prevSSE.chain&&u.start===prevSSE.start&&u.end===prevSSE.end)||null;
   }
   selResSet=new Set([...selResSet].filter(rk=>DATA.caByRk[rk]));
-  renderModelPicker(); renderStats(); renderSSE(); renderToggles(); renderChips(""); renderEdges();
+  renderModelPicker(); renderStats(); renderEvidenceControl(); renderSSE(); renderToggles(); renderChips(""); renderEdges();
   if(viewer){
     if(PARSED.models.length>1 && viewer.setFrame) await viewer.setFrame(index);
     drawViewer(); viewer.render();
@@ -1849,8 +1901,8 @@ async function loadPDB(text,label){
   PARSED=parsed; RAW_PDB=text; SOURCE_LABEL=(label||"structure").replace(/\.[^.]+$/,""); MODEL_CACHE=[];
   DATA=analyze(parsed,0); MODEL_CACHE[0]=DATA;
   // reset selection
-  selResSet.clear(); ACTIVE_SSE=null; SSE_UNITS=secondaryUnits(parsed,0);
-  renderModelPicker(); renderStats(); renderSSE(); renderToggles(); renderChips(""); renderEdges();
+  selResSet.clear(); ACTIVE_SSE=null; SSE_UNITS=secondaryUnits(parsed,0); showEvidence=false;
+  renderModelPicker(); renderStats(); renderEvidenceControl(); renderSSE(); renderToggles(); renderChips(""); renderEdges();
   // viewer
   const ok=await load3Dmol();
   if(ok){
@@ -1912,7 +1964,7 @@ function exportPymol(){
   const states=allModelData().map((d,mi)=>({state:mi+1,edges:d.edges.map(e=>{const en=estEnergy(e);return{t:e.type,a:[e.a1.x,e.a1.y,e.a1.z],b:[e.a2.x,e.a2.y,e.a2.z],d:+e.dist.toFixed(3),en:en.v==null?null:+en.v.toFixed(3),note:en.note||"",r1:e.a1.rk,r2:e.a2.rk};})}));
   const colors={}; Object.keys(ITYPES).forEach(k=>colors[k]=ITYPES[k].c);
   const script=`# Wymol 1.2 PyMOL export: ${SOURCE_LABEL}\npython\nfrom pymol import cmd\nfrom pymol.cgo import CYLINDER, CONE\nPDB=${JSON.stringify(RAW_PDB)}\nSTATES=${JSON.stringify(states)}\nCOLORS=${JSON.stringify(colors)}\ncmd.read_pdbstr(PDB, 'wymol')\ncmd.hide('everything','wymol')\ncmd.show('cartoon','wymol')\ndef rgb(h): return tuple(int(h[i:i+2],16)/255.0 for i in (1,3,5))\ndef arrow(name,a,b,color,state,directional=True):\n    c=rgb(color); dx=[b[i]-a[i] for i in range(3)]; q=[a[i]+dx[i]*0.76 for i in range(3)]\n    obj=[CYLINDER,*a,*q,0.075,*c,*c]\n    if directional: obj += [CONE,*q,*b,0.18,0.0,*c,*c,1.0,0.0]\n    else: obj=[CYLINDER,*a,*b,0.055,*c,*c]\n    cmd.load_cgo(obj,name,state)\nfor S in STATES:\n    st=S['state']; grp='model_%d'%st; hyd=[]\n    for i,e in enumerate(S['edges']):\n        name='m%d_%s_%04d'%(st,e['t'],i+1)\n        if e['t']=='hydrophobic': hyd.extend([e['r1'],e['r2']]); continue\n        arrow(name,e['a'],e['b'],COLORS[e['t']],st,e['t'] in ('hbond','saltbridge','cationpi','chpi','spi','metal','halogen','npistar'))\n        mid=[(e['a'][j]+e['b'][j])/2 for j in range(3)]\n        lab='%.2f A'%e['d'] + ((' / %.2f kcal/mol'%e['en']) if e['en'] is not None else '')\n        cmd.pseudoatom(name+'_label',pos=mid,label=lab,state=st)\n        cmd.group(grp,name+' '+name+'_label')\n    sels=[]\n    for rk in set(hyd):\n        ch,rn,rs=rk.split(':'); sels.append('(wymol and chain %s and resn %s and resi %s)'%(ch,rn,rs))\n    if sels:\n        sel='hydrophobic_m%d'%st; cmd.select(sel,' or '.join(sels)); cmd.show('surface',sel); cmd.color('gray70',sel); cmd.set('transparency',0.45,sel); cmd.group(grp,sel)\ncmd.set('label_size',11)\ncmd.set('dash_gap',0.25)\ncmd.orient('wymol')\npython end\n`;
-  downloadText(SOURCE_LABEL+"_Wymol_1.3.pml",script.replace("Wymol 1.2","Wymol 1.3"),"text/plain;charset=utf-8");
+  downloadText(SOURCE_LABEL+"_Wymol_1.4.pml",script.replace("Wymol 1.2","Wymol 1.4"),"text/plain;charset=utf-8");
 }
 
 /* ---- wire up UI ---- */
@@ -1928,10 +1980,11 @@ function wire(){
   document.querySelectorAll(".ex").forEach(b=>b.addEventListener("click",()=>fetchPDB(b.getAttribute("data-id"))));
   $("#resSearch").addEventListener("input",e=>renderChips(e.target.value));
   $("#resSearch").setAttribute("placeholder", tt("resSearchPh"));
-  const lb=$("#labelBtn"), wb=$("#waterBtn"), db=$("#distanceBtn");
+  const lb=$("#labelBtn"), wb=$("#waterBtn"), db=$("#distanceBtn"), eb=$("#evidenceBtn");
   if(lb) lb.addEventListener("click",()=>{ showLabels=!showLabels; lb.classList.toggle("on",showLabels); drawViewer(); });
   if(wb) wb.addEventListener("click",()=>{ showWater=!showWater; wb.classList.toggle("on",showWater); drawViewer(); });
   if(db) db.addEventListener("click",()=>{ showDistances=!showDistances; db.classList.toggle("on",showDistances); drawViewer(); });
+  if(eb) eb.addEventListener("click",()=>{if(!DATA||DATA.evidence.mode==="unavailable")return;showEvidence=!showEvidence;renderEvidenceControl();drawViewer();});
   $("#modelSelect").addEventListener("change",e=>selectModel(+e.target.value));
   $("#exportCsvBtn").addEventListener("click",exportInteractions);
   $("#exportPymolBtn").addEventListener("click",exportPymol);
@@ -1948,7 +2001,7 @@ function wire(){
 /* ---- react to language + theme changes ---- */
 window.onLangChange=function(){
   const rs=$("#resSearch"); if(rs) rs.setAttribute("placeholder", tt("resSearchPh"));
-  renderStats(); renderSSE(); renderToggles(); renderChips($("#resSearch")?$("#resSearch").value:""); renderEdges();
+  renderStats(); renderEvidenceControl(); renderSSE(); renderToggles(); renderChips($("#resSearch")?$("#resSearch").value:""); renderEdges();
 };
 // theme toggle already exists; also refresh viewer bg
 const _themeBtn=$("#themeBtn");
