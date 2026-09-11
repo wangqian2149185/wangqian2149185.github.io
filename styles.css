@@ -59,8 +59,7 @@ body::before {
 
 a {
   color: inherit;
-  text-decoration-thickness: 0.08em;
-  text-underline-offset: 0.2em;
+  text-decoration: none;
 }
 
 button {
@@ -623,8 +622,7 @@ h3 {
 
 .timeline-item a:hover {
   color: hsl(var(--primary));
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration: none;
 }
 
 .role {
@@ -878,4 +876,35 @@ h3 {
   border-color: hsl(var(--primary));
   outline: 2px solid hsl(var(--primary));
   outline-offset: 3px;
+}
+
+.button,
+a.project-card,
+.hobby-links a {
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .button:hover,
+  a.project-card:hover,
+  .hobby-links a:hover {
+    transform: translateY(-5px);
+    border-color: hsl(var(--primary));
+    box-shadow: 0 20px 44px hsl(var(--shadow));
+  }
+}
+
+.button:focus-visible,
+.hobby-links a:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button,
+  a.project-card,
+  .hobby-links a {
+    transition: none;
+    transform: none;
+  }
 }
