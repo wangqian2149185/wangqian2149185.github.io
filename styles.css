@@ -633,6 +633,7 @@ h3 {
 }
 
 .project-card {
+  text-decoration: none;
   min-height: 310px;
   display: flex;
   flex-direction: column;
@@ -870,4 +871,11 @@ h3 {
     height: 34px;
     font-size: 0.9rem;
   }
+}
+
+.project-card:hover,
+.project-card:focus-visible {
+  border-color: hsl(var(--primary));
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 3px;
 }
