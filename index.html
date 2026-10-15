@@ -14,8 +14,8 @@
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       document.documentElement.dataset.theme = savedTheme || (prefersDark ? "dark" : "light");
     </script>
-    <link rel="stylesheet" href="styles.css?v=20260911-1">
-    <script src="script.js?v=20260818-3" defer></script>
+    <link rel="stylesheet" href="styles.css?v=20261015-1">
+    <script src="script.js?v=20261015-2" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main-content" data-i18n="skip">Skip to content</a>
@@ -200,10 +200,20 @@
         <div class="container">
           <div class="section-heading">
             <p class="eyebrow" data-i18n="experienceEyebrow">Experience</p>
-            <h2 data-i18n="experienceTitle">Research &amp; community experience</h2>
+            <h2 data-i18n="experienceTitle">Research, product &amp; community experience</h2>
           </div>
 
           <div class="timeline">
+            <article class="timeline-item">
+              <div data-i18n="enkiraDate" class="timeline-date">Sep 2026 – Present</div>
+              <div>
+                <h3 data-i18n="enkiraTitle">AI Product Engineer — Project Contributor</h3>
+                <p class="role">Enkira · <span data-i18n="enkiraType">Part-time project contribution</span></p>
+                <p data-i18n="enkiraCopy">Contributed to an early-stage AI startup by translating complex system behavior and conversational product ideas into interactive, testable prototypes. My work spans requirements clarification, flow design, frontend and backend prototyping, model API integration, and tools for traceable human feedback.</p>
+                <p data-i18n="enkiraScope">Exploratory project work; these prototypes are not presented as production deployments or commercially validated products.</p>
+              </div>
+            </article>
+
             <article class="timeline-item">
               <div class="timeline-date">
                 <a
@@ -331,6 +341,29 @@
                 <li>NMR</li>
               </ul>
             </a>
+          </div>
+          <p class="project-group-title" data-i18n="enkiraProjects">Enkira · Product prototypes</p>
+          <div class="project-grid project-grid-pair">
+            <article class="project-card" aria-labelledby="architecture-title">
+              <div class="project-topline"><span data-i18n="enkiraBadge" class="badge">Exploratory prototype</span></div>
+              <h3 data-i18n="architectureTitle" id="architecture-title">Interactive Architecture Visualization</h3>
+              <dl class="project-details">
+                <div><dt data-i18n="problemLabel">Problem</dt><dd data-i18n="architectureProblem">Complex software relationships can be difficult to understand and discuss when learning an unfamiliar codebase.</dd></div>
+                <div><dt data-i18n="contributionLabel">My contribution & delivered capabilities</dt><dd data-i18n="architectureContribution">Built interactive architecture and flow views with multiple levels of abstraction, step-by-step scenario walkthroughs, source evidence inspection, and bilingual presentation.</dd></div>
+                <div><dt data-i18n="valueLabel">Intended value</dt><dd data-i18n="architectureValue">Designed to help engineers understand unfamiliar code, discuss system behavior, and identify documentation drift.</dd></div>
+                <div><dt data-i18n="boundaryLabel">Current boundary</dt><dd data-i18n="architectureBoundary">Code-change detection and candidate diagram updates remain exploratory and require human review. This is not a fully automatic or always-accurate code-to-architecture mapping.</dd></div>
+              </dl>
+            </article>
+            <article class="project-card" aria-labelledby="workbench-title">
+              <div class="project-topline"><span data-i18n="enkiraBadge" class="badge">Exploratory prototype</span></div>
+              <h3 data-i18n="workbenchTitle" id="workbench-title">Conversational AI Prototyping & Evaluation Workbench</h3>
+              <dl class="project-details">
+                <div><dt data-i18n="problemLabel">Problem</dt><dd data-i18n="workbenchProblem">Conversational product ideas need observable, testable behavior before connecting to real voice and production systems.</dd></div>
+                <div><dt data-i18n="contributionLabel">My contribution & delivered capabilities</dt><dd data-i18n="workbenchContribution">Translated requirements into visual flows and runnable text prototypes using Python, JavaScript, and model APIs. Built tools to edit prompts, context, and workflow configuration; connect to multiple model services; inspect dialogue and state changes using synthetic test material and simulated external responses; and save case execution records with line-by-line human edits, feedback reasons, and structured exports.</dd></div>
+                <div><dt data-i18n="valueLabel">Intended value</dt><dd data-i18n="workbenchValue">Designed to make behavior easier to observe, compare, and revise before real-world integration.</dd></div>
+                <div><dt data-i18n="boundaryLabel">Current boundary</dt><dd data-i18n="workbenchBoundary">An exploratory text prototype. External actions and order-related functions are simulated; it does not demonstrate live voice integration or production use.</dd></div>
+              </dl>
+            </article>
           </div>
         </div>
       </section>

@@ -871,8 +871,8 @@ h3 {
   }
 }
 
-.project-card:hover,
-.project-card:focus-visible {
+a.project-card:hover,
+a.project-card:focus-visible {
   border-color: hsl(var(--primary));
   outline: 2px solid hsl(var(--primary));
   outline-offset: 3px;
@@ -906,5 +906,39 @@ a.project-card,
   .hobby-links a {
     transition: none;
     transform: none;
+  }
+}
+
+.project-group-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin-top: 40px;
+  margin-bottom: 20px;
+}
+
+.project-grid-pair {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.project-details {
+  margin: 0;
+  display: grid;
+  gap: 18px;
+}
+
+.project-details dt {
+  margin-bottom: 5px;
+  font-weight: 800;
+}
+
+.project-details dd {
+  margin: 0;
+  color: hsl(var(--muted-foreground));
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+  .project-grid-pair {
+    grid-template-columns: 1fr;
   }
 }
