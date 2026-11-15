@@ -14,8 +14,8 @@
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       document.documentElement.dataset.theme = savedTheme || (prefersDark ? "dark" : "light");
     </script>
-    <link rel="stylesheet" href="styles.css?v=20261015-1">
-    <script src="script.js?v=20261015-2" defer></script>
+    <link rel="stylesheet" href="styles.css?v=20261115-3">
+    <script src="script.js?v=20261115-3" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main-content" data-i18n="skip">Skip to content</a>
@@ -29,6 +29,7 @@
       </a>
 
       <nav class="top-nav" aria-label="Primary navigation">
+        <a href="#research" data-i18n="navResearch">Research</a>
         <a href="#experience" data-i18n="navExperience">Experience</a>
         <a href="#projects" data-i18n="navProjects">Projects</a>
         <a href="#education" data-i18n="navEducation">Education</a>
@@ -78,7 +79,7 @@
             </p>
 
             <div class="hero-actions" aria-label="Primary links">
-              <a class="button primary" href="#projects" data-i18n="ctaWork">View work</a>
+              <a class="button primary" href="#research" data-i18n="ctaWork">View work</a>
               <a class="button" href="mailto:wangqian01222026@gmail.com" data-i18n="ctaContact">Contact</a>
               <a class="button" href="pages/learn-llm.html" data-i18n="ctaLearnLlm">Learn LLM with me</a>
               <a class="button" href="pages/chemistry/index.html" data-i18n="ctaLearnChemistry">Learn Chemistry</a>
@@ -98,6 +99,7 @@
       </section>
 
       <aside class="toc" aria-label="Section navigation">
+        <a href="#research" data-i18n="navResearch">Research</a>
         <a href="#experience" data-i18n="tocExperience">Experience</a>
         <a href="#projects" data-i18n="tocProjects">Projects</a>
         <a href="#speaking" data-i18n="tocSharing">Hobby</a>
@@ -192,6 +194,45 @@
                 </blockquote>
               </article>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="research" aria-labelledby="research-heading">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow" data-i18n="researchEyebrow">Research Case Studies</p>
+            <h2 id="research-heading" data-i18n="researchTitle">Scientific decisions, explained.</h2>
+          </div>
+          <p class="research-intro" data-i18n="researchIntro">How I use mechanistic reasoning, models, and experiments to move a research question forward.</p>
+          <a class="research-feature" href="pages/research/cpmg.html">
+            <div class="research-feature-copy">
+              <span class="badge" data-i18n="cpmgBadge">Case study 01 · Protein Science, 2022</span>
+              <h3 data-i18n="cpmgTitle">Using mechanistic modeling to redesign a protein NMR experiment</h3>
+              <p data-i18n="cpmgSummary">Identified an information bottleneck, explored the model in Excel, and persuaded the PI to adopt lower-temperature measurements. Designed the revised experiment and fitted the new data.</p>
+              <ul class="tech-list"><li>Protein biophysics</li><li>CPMG NMR</li><li data-i18n="cpmgStrategy">Experimental strategy</li></ul>
+              <span class="research-read" data-i18n="readCase">Read the case study →</span>
+            </div>
+            <div class="research-feature-figure">
+              <img src="pages/research/assets/exchange-rate-sweep.svg" width="940" height="530" loading="lazy" alt="Synthetic CPMG curves comparing three exchange rates.">
+              <span data-i18n="cpmgFigureLabel">Reconstructed model illustration · Synthetic parameters</span>
+            </div>
+          </a>
+          <div class="research-case-grid">
+            <a class="research-case-card" href="pages/research/chemical-shift.html">
+              <span class="badge" data-i18n="shiftCaseBadge">Case study 02 · Computational research</span>
+              <h3 data-i18n="shiftCaseTitle">Designing a structure-aware model for protein NMR prediction</h3>
+              <p data-i18n="shiftCaseSummary">From molecular representation to a graph model and a held-out comparison. Framework design, training, and evaluation with explicit limits.</p>
+              <img src="pages/research/assets/chemical-shift-gnn-recorded.png" width="1200" height="500" loading="lazy" alt="Recorded hydrogen and nitrogen chemical-shift prediction scatter plots.">
+              <span class="research-read" data-i18n="readCase">Read the case study →</span>
+            </a>
+            <a class="research-case-card" href="pages/research/ct-stroke.html">
+              <span class="badge" data-i18n="ctCaseBadge">Case study 03 · Domain-guided AI</span>
+              <h3 data-i18n="ctCaseTitle">Using CT physics to guide an AI representation choice</h3>
+              <p data-i18n="ctCaseSummary">How I contributed the scientific rationale for HU-based inputs in a collaborative stroke-classification project.</p>
+              <div class="research-hu" aria-hidden="true"><span data-i18n="ctStored">Stored values</span><strong>→ HU →</strong><span data-i18n="ctModel">Model input</span></div>
+              <span class="research-read" data-i18n="readCase">Read the case study →</span>
+            </a>
           </div>
         </div>
       </section>
@@ -331,9 +372,7 @@
               </div>
               <h3 data-i18n="projectThreeTitle">NMR-HSQC-GNN: Protein Chemical Shift Predictor</h3>
               <p data-i18n="projectThreeCopy">
-                Developed a GATv2 model on 4,286 paired BMRB/PDB protein entries,
-                improving Pearson correlation from 0.43 to 0.74 and achieving
-                held-out MAE of 0.302 ppm for 1H and 1.749 ppm for 15N shifts.
+                Designed and trained a structure-aware GATv2 framework. Its recorded v11 evaluation on 612 held-out BMRB entries reports secondary-shift MAE of 0.302 ppm for 1H and 1.749 ppm for 15N.
               </p>
               <ul class="tech-list">
                 <li>PyTorch Geometric</li>

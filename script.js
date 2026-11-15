@@ -105,7 +105,7 @@ const translations = {
     projectThreeBadge: "2024 · Present",
     projectThreeTitle: "NMR-HSQC-GNN: Protein Chemical Shift Predictor",
     projectThreeCopy:
-      "Developed a GATv2 model on 4,286 paired BMRB/PDB protein entries, improving Pearson correlation from 0.43 to 0.74 and achieving held-out MAE of 0.302 ppm for 1H and 1.749 ppm for 15N shifts.",
+      "Designed and trained a structure-aware GATv2 framework. Its recorded v11 evaluation on 612 held-out BMRB entries reports secondary-shift MAE of 0.302 ppm for 1H and 1.749 ppm for 15N.",
     sharingEyebrow: "Hobby",
     sharingTitle: "Game design, systems, and rules as creative constraints",
     hobbyBadge: "Yi Jiang Cheng Ming 2012 · Award-winning design",
@@ -238,7 +238,7 @@ const translations = {
     projectThreeBadge: "2024 · 至今",
     projectThreeTitle: "NMR-HSQC-GNN: Protein Chemical Shift Predictor",
     projectThreeCopy:
-      "基于 4,286 组 BMRB/PDB 蛋白条目开发 GATv2 模型，将 Pearson 相关性从 0.43 提升至 0.74，并在 held-out 测试集达到 1H 0.302 ppm、15N 1.749 ppm 的 MAE。",
+      "设计并训练结构感知的 GATv2 框架。v11 已记录的评价在 612 个留出 BMRB 条目上报告次级化学位移 MAE：1H 为 0.302 ppm，15N 为 1.749 ppm。",
     sharingEyebrow: "爱好",
     sharingTitle: "游戏设计、系统与规则约束中的创造力",
     hobbyBadge: "一将成名 2012 · 获奖设计",
@@ -266,6 +266,47 @@ const translations = {
     contactButton: "发送邮件",
   },
 };
+
+Object.assign(translations.en, {
+  shiftCaseBadge: "Case study 02 · Computational research",
+  shiftCaseTitle: "Designing a structure-aware model for protein NMR prediction",
+  shiftCaseSummary: "From molecular representation to a graph model and a held-out comparison. Framework design, training, and evaluation with explicit limits.",
+  ctCaseBadge: "Case study 03 · Domain-guided AI",
+  ctCaseTitle: "Using CT physics to guide an AI representation choice",
+  ctCaseSummary: "How I contributed the scientific rationale for HU-based inputs in a collaborative stroke-classification project.",
+  ctStored: "Stored values",
+  ctModel: "Model input",
+  navResearch: "Research",
+  researchEyebrow: "Research Case Studies",
+  researchTitle: "Scientific decisions, explained.",
+  researchIntro: "How I use mechanistic reasoning, models, and experiments to move a research question forward.",
+  cpmgBadge: "Case study 01 · Protein Science, 2022",
+  cpmgTitle: "Using mechanistic modeling to redesign a protein NMR experiment",
+  cpmgSummary: "Identified an information bottleneck, explored the model in Excel, and persuaded the PI to adopt lower-temperature measurements. Designed the revised experiment and fitted the new data.",
+  cpmgStrategy: "Experimental strategy",
+  readCase: "Read the case study →",
+  cpmgFigureLabel: "Reconstructed model illustration · Synthetic parameters",
+});
+Object.assign(translations.zh, {
+  shiftCaseBadge: "案例 02 · 计算研究",
+  shiftCaseTitle: "为蛋白质 NMR 预测设计结构感知模型",
+  shiftCaseSummary: "从分子表示到图模型与留出集比较，展示框架设计、训练和评价，并明确结论边界。",
+  ctCaseBadge: "案例 03 · 领域知识指导 AI",
+  ctCaseTitle: "用 CT 物理知识指导 AI 输入表示",
+  ctCaseSummary: "在合作的卒中分类项目中，我如何为基于 HU 的模型输入提供科学依据。",
+  ctStored: "存储数值",
+  ctModel: "模型输入",
+  navResearch: "科研案例",
+  researchEyebrow: "科研案例库",
+  researchTitle: "从科学判断到研究行动",
+  researchIntro: "展示我如何运用机制推理、模型与实验，推动具体科学问题的研究。",
+  cpmgBadge: "案例 01 · Protein Science，2022",
+  cpmgTitle: "用机制建模重新设计蛋白质 NMR 实验",
+  cpmgSummary: "识别数据的信息瓶颈，在 Excel 中探索模型，并用科学依据说服 PI 采用低温测量。我负责调整后的实验方案及新数据拟合。",
+  cpmgStrategy: "实验策略",
+  readCase: "阅读完整案例 →",
+  cpmgFigureLabel: "重建的模型示意 · 使用模拟参数",
+});
 
 const quoteLibrary = {
   en: [

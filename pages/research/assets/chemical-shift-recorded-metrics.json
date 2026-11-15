@@ -1,0 +1,36 @@
+{
+  "source_url": "https://github.com/wangqian2149185/nmr-hsqc-predictor/blob/1d258ff92f237e930f6718a37a550c6d981dac4c/ipynb/nmr_hsqc_colab_v11.ipynb",
+  "source_blob_sha": "ff9a29dc088db40600e7fb50fb63b4b28c822515",
+  "evidence": "saved notebook outputs, not independently rerun",
+  "retrieved": "2026-11-15",
+  "target": "secondary chemical shifts",
+  "unit": "ppm",
+  "split": {
+    "unit": "BMRB entry ID",
+    "train": 4286,
+    "validation": 1225,
+    "test": 612,
+    "random_seed": 42,
+    "sequence_family_disjoint_verified": false
+  },
+  "aggregation": "pooled collected residue predictions",
+  "GNN": {
+    "mae_H": 0.302,
+    "mae_N": 1.7486,
+    "r_H": 0.7358,
+    "r_N": 0.7734
+  },
+  "MLP": {
+    "mae_H": 0.4061,
+    "mae_N": 2.2681,
+    "r_H": 0.4899,
+    "r_N": 0.6076
+  },
+  "r_definition": "Pearson correlation",
+  "baseline": "MLP with node features; not a sequence-only model",
+  "cells_zero_based": {
+    "split": 26,
+    "models": 28,
+    "evaluation": 36
+  }
+}

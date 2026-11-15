@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Using Mechanistic Modeling to Redesign a Protein NMR Experiment | Qian Wang</title>
+  <meta name="description" content="How Qian Wang used CPMG exchange-model exploration to propose lower-temperature measurements and advance a protein dynamics study.">
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <script>document.documentElement.dataset.theme = localStorage.getItem('portfolio-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); document.documentElement.lang = localStorage.getItem('portfolio-lang') === 'zh' ? 'zh-CN' : 'en';</script>
+  <link rel="stylesheet" href="../../styles.css?v=20261115-1">
+  <link rel="stylesheet" href="cpmg.css?v=20261115-2">
+  <script src="cpmg.js?v=20261115-2" defer></script>
+</head>
+<body class="case-page">
+  <a class="skip-link" href="#main-content"><span data-copy="en">Skip to content</span><span data-copy="zh">跳至正文</span></a>
+  <header class="site-header">
+    <a class="brand" href="../../index.html">Qian Wang <span aria-hidden="true">/</span> <span data-copy="en">Research</span><span data-copy="zh">科研案例</span></a>
+    <div class="header-controls">
+      <button class="theme-button" type="button" data-theme-toggle aria-label="Switch color theme">☾</button>
+      <div class="language-switch" aria-label="Language switcher">
+        <button class="lang-button" type="button" data-lang="en">EN</button>
+        <button class="lang-button" type="button" data-lang="zh">中</button>
+      </div>
+    </div>
+  </header>
+  <main id="main-content">
+    <div class="case-hero">
+      <div class="container">
+        <a class="case-breadcrumb" href="../../index.html#research"><span data-copy="en">← Research case studies</span><span data-copy="zh">← 科研案例库</span></a>
+        <p class="eyebrow"><span data-copy="en">Case study 01 · Protein biophysics</span><span data-copy="zh">案例 01 · 蛋白质生物物理</span></p>
+        <h1><span data-copy="en">Using mechanistic modeling to redesign a protein NMR experiment</span><span data-copy="zh">用机制建模重新设计蛋白质 NMR 实验</span></h1>
+        <p class="case-deck" data-copy="en">I identified why the initial measurements were unlikely to support useful analysis, explored the model in Excel, and persuaded the PI to adopt a lower-temperature experiment. I then fitted the new data, helping advance the study to publication.</p>
+        <p class="case-deck" data-copy="zh">我判断初始测量难以支持有价值的分析，随后在 Excel 中探索模型，并用科学依据说服 PI 采用低温方案。我负责新数据的拟合，推动研究完成并发表。</p>
+        <dl class="case-facts">
+          <div><dt><span data-copy="en">Scientific system</span><span data-copy="zh">研究体系</span></dt><dd>Calgranulin C / S100A12</dd></div>
+          <div><dt><span data-copy="en">My role</span><span data-copy="zh">我的职责</span></dt><dd><span data-copy="en">Model exploration, experimental strategy, fitting</span><span data-copy="zh">模型探索、实验方案与拟合</span></dd></div>
+          <div><dt><span data-copy="en">Research output</span><span data-copy="zh">研究产出</span></dt><dd><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9650546/pdf/PRO-31-e4403.pdf" target="_blank" rel="noopener noreferrer">Protein Science · 2022 · e4403</a></dd></div>
+        </dl>
+      </div>
+    </div>
+    <div class="container">
+      <nav class="case-nav" aria-label="Case study sections">
+        <a href="#challenge"><span data-copy="en">The challenge</span><span data-copy="zh">实验瓶颈</span></a>
+        <a href="#reasoning"><span data-copy="en">My reasoning</span><span data-copy="zh">我的推理</span></a>
+        <a href="#decision"><span data-copy="en">Experimental decision</span><span data-copy="zh">实验决策</span></a>
+        <a href="#outcome"><span data-copy="en">Outcome & contribution</span><span data-copy="zh">结果与分工</span></a>
+      </nav>
+      <section class="case-section" id="challenge">
+        <div class="case-text">
+          <span class="case-number">01</span>
+          <h2><span data-copy="en">Recognize the information bottleneck</span><span data-copy="zh">识别数据中的信息瓶颈</span></h2>
+          <p data-copy="en">We were investigating how calgranulin C, an antimicrobial protein, exchanges between molecular conformations. CPMG NMR measures a response across different pulse frequencies; changes in that response can help estimate the rate and populations of exchanging states.</p>
+          <p data-copy="zh">我们研究抗菌蛋白 calgranulin C 在不同分子构象之间的交换。CPMG NMR 通过改变脉冲频率观察响应变化，帮助估计构象交换的速率和各状态的布居。</p>
+          <p data-copy="en">The initial 37°C profiles were nearly flat. My PI suggested trying to fit the existing data. I judged that the limited variation would make it difficult to extract reliable exchange parameters. The immediate research decision was where to invest the next effort: further fitting, or measurements under more informative conditions.</p>
+          <p data-copy="zh">初始 37°C 曲线接近平坦。PI 建议尝试拟合现有数据，而我判断，曲线变化太小，难以可靠提取交换参数。眼前需要决定的是下一步把精力投向哪里：继续拟合，还是寻找能提供更多信息的测量条件。</p>
+          <p class="case-callout" data-copy="en">I prioritized improving the information in the experiment before further parameter extraction.</p>
+          <p class="case-callout" data-copy="zh">我选择优先提高实验的信息量，再进一步提取参数。</p>
+        </div>
+      </section>
+      <section class="case-section" id="reasoning">
+        <div class="case-text">
+          <span class="case-number">02</span>
+          <h2><span data-copy="en">Trace the profile back to the model</span><span data-copy="zh">从曲线现象回到底层模型</span></h2>
+          <p data-copy="en">I returned to the equations underlying CPMG relaxation dispersion and implemented them in Excel. Rather than adjusting fitting settings, I varied model parameters individually and inspected how each changed the predicted profile. This made the relationship between the physical process and the measured curve visible.</p>
+          <p data-copy="zh">我从 CPMG 弛豫色散的底层公式入手，在 Excel 中实现计算。接着，我逐一改变模型参数，观察每个参数如何改变预测曲线。这让我能够直接看见物理过程与测量曲线之间的关系。</p>
+          <p data-copy="en">The distinction that mattered was between obtaining a numerical fit and obtaining parameters that the data meaningfully constrain. A curve with little variation can leave different parameter combinations difficult to distinguish. For this study, I wanted measurements with enough frequency-dependent change to support the analysis we needed.</p>
+          <p data-copy="zh">我关心的是，数据能否真正约束拟合得到的参数。曲线变化很小时，不同参数组合可能难以区分。对于这个研究，我需要寻找能在测量频率范围内产生足够变化的条件，让后续分析具有依据。</p>
+          <p data-copy="en">Exchange rate stood out in the parameter exploration. In the regime I was considering, a high rate could produce an almost flat profile across the available frequency window. Reducing that rate could make the predicted dispersion more pronounced. This gave me a candidate explanation for the bottleneck and a direction for an experimental test.</p>
+          <p data-copy="zh">参数探索显示，交换速率对曲线形态的影响尤其明显。在我当时考虑的区间内，较高的交换速率可能让曲线在可用频率窗口内接近平坦；降低速率则可能产生更明显的色散。由此，我得到了一个解释瓶颈的候选假说，以及可以通过实验检验的方向。</p>
+          <p data-copy="en">The model did not establish that the original flatness was caused by rapid exchange. It showed a plausible way to change what could be observed. My next step was to connect that model parameter to a controllable experimental condition. Temperature offered that connection because it affects molecular exchange kinetics and is straightforward to adjust.</p>
+          <p data-copy="zh">模型并没有证明原始曲线平坦一定由快速交换造成，而是指出了一个可能改变可观测信号的途径。下一步，我需要把模型参数连接到可调控的实验条件。温度既能影响分子交换动力学，又便于调节，因此成为具体的实验切入点。</p>
+        </div>
+        <figure class="case-figure">
+          <div class="figure-heading"><h3><span data-copy="en">Figure 1. Why change the experimental conditions?</span><span data-copy="zh">图一：为什么改变实验条件？</span></h3><span class="figure-kind"><span data-copy="en">Reconstructed model illustration</span><span data-copy="zh">重建的模型示意</span></span></div>
+          <ol class="decision-path">
+            <li><strong><span data-copy="en">Observation</span><span data-copy="zh">观察现象</span></strong><span data-copy="en">Nearly flat profiles limit exchange analysis.</span><span data-copy="zh">曲线接近平坦，限制交换分析。</span></li>
+            <li><strong><span data-copy="en">Model exploration</span><span data-copy="zh">模型探索</span></strong><span data-copy="en">Vary parameters to identify a plausible explanation.</span><span data-copy="zh">逐一改变参数，寻找候选解释。</span></li>
+            <li><strong><span data-copy="en">Experimental lever</span><span data-copy="zh">实验切入点</span></strong><span data-copy="en">Use temperature to test the exchange-rate hypothesis.</span><span data-copy="zh">用温度变化检验交换速率假说。</span></li>
+            <li><strong><span data-copy="en">Decision</span><span data-copy="zh">研究决策</span></strong><span data-copy="en">Collect at 25°C and 15°C, then fit the new data.</span><span data-copy="zh">采集 25°C、15°C 数据并拟合。</span></li>
+          </ol>
+          <img src="assets/exchange-rate-sweep.svg" width="940" height="530" alt="Three synthetic CPMG profiles with exchange rates of 20,000, 5,000 and 1,000 per second. The 20,000 curve is nearly flat; the lower-rate curves show greater dispersion across 80 to 1,040 Hz.">
+          <p class="case-parameters">p<sub>A</sub> = 0.95 · Δω = 1,000 rad/s · R<sub>2,0</sub> = 10 s⁻¹ · ν<sub>CPMG</sub> = 80–1,040 Hz</p>
+          <figcaption>
+            <span data-copy="en">Reconstructed for this case using synthetic parameters. Holding other parameters fixed, lowering the exchange rate within this range reveals more dispersion. This illustrates the hypothesis behind the experimental decision. The curves are not measured temperature data.</span>
+            <span data-copy="zh">为本案例重建，使用模拟参数。固定其他参数后，在此范围内降低交换速率，可以看到更明显的色散。这说明了实验决策背后的假说。图中曲线并非实测温度数据。</span>
+          </figcaption>
+          <details>
+            <summary><span data-copy="en">Technical details and reproducibility</span><span data-copy="zh">技术细节与复现材料</span></summary>
+            <p data-copy="en">Carver–Richards single-mode approximation with equal intrinsic R₂ in both states and ideal pulses. Frequency convention: νCPMG = 1/(4τcp), with Δω in rad/s. This is not an exact finite-time CPMG signal calculation or a fit. Greater dispersion alone does not establish that all parameters can be uniquely estimated. Lowering the rate does not always improve the profile, and temperature can also affect populations, chemical shifts and intrinsic relaxation.</p>
+            <p data-copy="zh">采用 Carver–Richards 单模式近似，假定两个状态具有相同的固有 R₂，且脉冲理想。频率约定为 νCPMG = 1/(4τcp)，Δω 单位为 rad/s。这不是有限时间 CPMG 信号的精确计算或拟合。更明显的色散本身不代表所有参数都能被唯一确定；持续降低速率也不一定改善曲线，温度还可能影响布居、化学位移及固有弛豫。</p>
+            <p><a href="https://doi.org/10.1016/j.jmr.2014.02.023" target="_blank" rel="noopener noreferrer">Baldwin (2014): exact solution and Carver–Richards approximation</a></p>
+            <div class="case-links"><a href="assets/exchange-rate-sweep.png" download><span data-copy="en">Download figure</span><span data-copy="zh">下载图片</span></a><a href="assets/exchange-rate-sweep.csv" download><span data-copy="en">Curve data (CSV)</span><span data-copy="zh">曲线数据（CSV）</span></a><a href="generate_cpmg_figure.py" download><span data-copy="en">Reproduction script</span><span data-copy="zh">复现脚本</span></a></div>
+          </details>
+        </figure>
+      </section>
+      <section class="case-section" id="decision">
+        <div class="case-text">
+          <span class="case-number">03</span>
+          <h2><span data-copy="en">Make the case for a different experiment</span><span data-copy="zh">用模型依据推动新的实验方案</span></h2>
+          <p data-copy="en">I proposed collecting additional measurements at 25°C and 15°C, below the initial 37°C condition. The rationale connected three things: a parameter that strongly influenced the modeled profile, an experimentally accessible way to affect that parameter, and an expected observation that could be checked in the new data.</p>
+          <p data-copy="zh">我提出在初始 37°C 条件之外，追加 25°C 和 15°C 测量。依据是一条明确的推理链：找到显著影响模型曲线的参数，选择能影响该参数且便于调控的实验条件，再用新数据检验预期现象。</p>
+          <p data-copy="en">The expectation was that slowing exchange from the hypothesized regime could reveal more frequency-dependent variation and provide a better basis for fitting. This was an experimental hypothesis. Temperature can also change state populations, chemical shifts and intrinsic relaxation, so the resulting profiles still needed to be evaluated on their own evidence.</p>
+          <p data-copy="zh">我的预期是，从假定的交换区间降低速率，可能产生更明显的频率依赖变化，为拟合提供更好的基础。这是一个需要检验的实验假说。温度也可能改变布居、化学位移和固有弛豫，因此新曲线仍须依据实际数据进行判断。</p>
+          <p data-copy="en">To secure agreement, I showed the PI the Excel curves first, explaining how exchange rate changed their shape. I then connected that result to temperature control and proposed the lower-temperature acquisitions. The model gave us a concrete basis for discussing why the additional experiment was worth doing. The PI accepted my recommendation.</p>
+          <p data-copy="zh">为了推动方案落地，我先向 PI 展示 Excel 曲线，解释交换速率如何改变曲线形状；随后把这一结果连接到温度调控，提出低温采集方案。模型为讨论“为什么值得再做这个实验”提供了具体依据，最终 PI 采纳了我的建议。</p>
+          <p data-copy="en">I was responsible for the model exploration, experimental plan and fitting. A collaborator acquired the NMR data. Once the additional measurements were available, I fitted them; the lower-temperature profiles provided dispersion suitable for analysis and helped move the project forward. My contribution spanned the decision about what to measure and the analysis that followed.</p>
+          <p data-copy="zh">我负责模型探索、实验方案和拟合，合作者负责 NMR 数据采集。获得新测量后，我完成后续拟合；低温曲线提供了适于分析的色散，推动项目继续开展。我的贡献贯穿了“下一步测什么”的决策与测量完成后的分析。</p>
+        </div>
+      </section>
+      <section class="case-section" id="outcome">
+        <div class="case-text">
+          <span class="case-number">04</span>
+          <h2><span data-copy="en">Evaluate the result and retain its limits</span><span data-copy="zh">用结果检验判断，保留结论边界</span></h2>
+          <p data-copy="en">The study was published in <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9650546/pdf/PRO-31-e4403.pdf" target="_blank" rel="noopener noreferrer">Protein Science</a> in 2022. It reports measurements at all three temperatures and two-site exchange analysis. The published 25°C profiles below show measured dispersion and fits for representative residues. They provide experimental evidence from the completed study, rather than a reconstruction of the initial dataset.</p>
+          <p data-copy="zh">研究最终发表于 2022 年的 <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9650546/pdf/PRO-31-e4403.pdf" target="_blank" rel="noopener noreferrer">Protein Science</a>，报告了三个温度的测量与两位点交换分析。下方已发表的 25°C 曲线展示代表性残基的实测色散与拟合，是研究完成后的实验证据。</p>
+          <p data-copy="en">This figure compares pH and magnetic-field conditions at one temperature. It is not a matched 37°C-to-25°C-to-15°C comparison and does not establish how much the rate changed on cooling. Quantifying that comparison would require the corresponding measurements and fitted parameters.</p>
+          <p data-copy="zh">这张图比较同一温度下的 pH 和磁场条件，并非 37°C、25°C、15°C 的配对前后对照，也不能据此量化降温造成的速率变化。这样的定量比较需要相应测量与拟合参数。</p>
+        </div>
+        <figure class="case-figure case-evidence">
+          <div class="figure-heading"><h3><span data-copy="en">Figure 2. What the completed measurements supported</span><span data-copy="zh">图二：完成后的测量支持了什么？</span></h3><span class="figure-kind"><span data-copy="en">Published experimental data · 25°C</span><span data-copy="zh">已发表的实测数据 · 25°C</span></span></div>
+          <div class="evidence-layout">
+            <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9650546/figure/pro4403-fig-0004/" target="_blank" rel="noopener noreferrer" aria-label="Open original published Figure 4"><img src="assets/published-dispersion-figure4.jpg" width="709" height="991" loading="lazy" alt="Published 25°C CPMG profiles with error bars for individual residues, comparing pH 6.0 and 5.5 at two magnetic fields. Several profiles show dispersion and fitted lines; others are flat or lack reliable fits."></a>
+            <div class="evidence-reading">
+              <h4><span data-copy="en">How to read the evidence</span><span data-copy="zh">怎样阅读这张证据图</span></h4>
+              <p data-copy="en">These are real measurements for selected amino-acid residues after lowering the temperature to 25°C. V19 and T26, for example, show a clear upward rise toward the low-frequency end of the curve: visible relaxation dispersion that supports fitting. Points show measurements, error bars show reported uncertainty, and lines show fits where available.</p>
+              <p data-copy="zh">此图展示降温至 25°C 后部分氨基酸残基的真实数据。例如，V19、T26 的曲线在低频端出现了明显的“抬头”，呈现出可用于拟合的弛豫色散。数据点表示实测值，误差棒表示报告的不确定性，曲线表示可获得的拟合。</p>
+              <p data-copy="en">Blue and orange distinguish pH 6.0 and 5.5. Open and filled symbols distinguish 11.7 and 18.8 T. All panels were acquired at 25°C.</p>
+              <p data-copy="zh">蓝色与橙色区分 pH 6.0 和 5.5，空心与实心符号区分 11.7 和 18.8 T。所有面板均为 25°C 数据。</p>
+              <p data-copy="en">Other residues, such as V68, remain nearly flat. Possible explanations include a major-state population pA close to 1 or a small chemical-shift difference Δω; a flat profile alone does not distinguish these possibilities.</p>
+              <p data-copy="zh">其他残基，例如 V68，仍未出现明显的“抬头”。可能的原因包括主态布居 pA 接近 1.0，或两态化学位移差 Δω 过小；仅凭平坦曲线尚不能区分这些可能性。</p>
+              <p data-copy="en">In this project, temperature control helped overcome the initial fitting bottleneck associated with the hypothesized overly rapid exchange, yielding profiles suitable for analysis in responsive residues. The remaining flat profiles show that residue-specific dynamics still influence what can be observed.</p>
+              <p data-copy="zh">在本项目中，温度调控帮助我们突破了原先与假定的过快交换相关的拟合瓶颈，使有响应的残基获得了适于分析的曲线。仍然平坦的曲线则说明，残基本身的动力学特征依然影响可观测结果。</p>
+              <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9650546/figure/pro4403-fig-0004/" target="_blank" rel="noopener noreferrer"><span data-copy="en">View original figure and caption ↗</span><span data-copy="zh">查看原图与图注 ↗</span></a>
+            </div>
+          </div>
+          <figcaption><span data-copy="en">Source: Wang et al., <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9650546/pdf/PRO-31-e4403.pdf" target="_blank" rel="noopener noreferrer">Protein Science (2022), e4403</a>, Figure 4. Original figure reproduced without changes. © 2022 The Protein Society.</span><span data-copy="zh">来源：Wang 等，<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9650546/pdf/PRO-31-e4403.pdf" target="_blank" rel="noopener noreferrer">Protein Science（2022），e4403</a>，图 4。原图未经修改。© 2022 The Protein Society。</span></figcaption>
+        </figure>
+        <h3 class="contribution-heading"><span data-copy="en">Who did what</span><span data-copy="zh">个人与团队分工</span></h3>
+        <div class="contribution-grid">
+          <div class="contribution-panel"><h3><span data-copy="en">My contribution</span><span data-copy="zh">我的贡献</span></h3><p data-copy="en">Identified the information bottleneck, explored model parameters in Excel, developed and communicated the temperature-change rationale, designed the revised measurements, and fitted the resulting data.</p><p data-copy="zh">识别测量信息不足的问题；在 Excel 中探索模型参数；提出并向 PI 解释降温依据；设计调整后的测量方案；完成数据拟合。</p></div>
+          <div class="contribution-panel"><h3><span data-copy="en">Collaboration</span><span data-copy="zh">协作分工</span></h3><p data-copy="en">A collaborator acquired the NMR measurements. The PI adopted the revised strategy. The publication reflects the broader team's research contributions; this case describes my role in the modeling, experimental decision and fitting.</p><p data-copy="zh">合作者完成 NMR 测量，PI 采纳调整后的策略。论文包含更广泛的团队贡献；本案例聚焦我在模型探索、实验决策及拟合中的工作。</p></div>
+        </div>
+        <div class="case-publication">
+          <h3>Dynamic regulation of Zn(II) sequestration by calgranulin C</h3>
+          <p>Wang Q, Kuci D, Bhattacharya S, Hadden-Perilla JA, Gupta R.<br><em>Protein Science</em> (2022), 31(9), e4403.</p>
+          <div class="case-links"><a href="https://doi.org/10.1002/pro.4403" target="_blank" rel="noopener noreferrer"><span data-copy="en">Read the paper</span><span data-copy="zh">阅读论文</span></a><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9650546/" target="_blank" rel="noopener noreferrer"><span data-copy="en">Measured profiles: see Figure 4 in full text</span><span data-copy="zh">实测曲线：见全文图 4</span></a></div>
+        </div>
+      </section>
+      <section class="case-section">
+        <div class="case-text"><span class="case-number">05</span><h2><span data-copy="en">A research decision I can explain</span><span data-copy="zh">能够解释依据的研究决策</span></h2><p data-copy="en">This case captures how I work when results do not yet answer the question: identify the information gap, use the model to develop a testable explanation, and recommend an experiment with a clear rationale. I then follow the decision through to analysis, while keeping the individual contribution and limits of the evidence explicit.</p><p data-copy="zh">这个案例展示了我面对尚不足以回答问题的数据时的工作方式：识别信息缺口，借助模型形成可检验的解释，再提出有明确依据的实验建议。我会继续负责后续分析，并清楚说明个人贡献与证据边界。</p><p class="case-source-note" data-copy="en">The decision sequence and division of work are my retrospective account. The figures distinguish a newly reconstructed simulation from published experimental data.</p><p class="case-source-note" data-copy="zh">决策过程与工作分工来自我对经历的回顾。两张图分别标明新重建的模拟与已发表的实测数据。</p></div>
+      </section>
+      <footer class="case-footer"><a class="case-breadcrumb" href="../../index.html#research"><span data-copy="en">← Back to research case studies</span><span data-copy="zh">← 返回科研案例库</span></a></footer>
+    </div>
+  </main>
+</body>
+</html>
