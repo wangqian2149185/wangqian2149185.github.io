@@ -7,9 +7,9 @@
   <meta name="description" content="How Qian Wang used CPMG exchange-model exploration to propose lower-temperature measurements and advance a protein dynamics study.">
   <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
   <script>document.documentElement.dataset.theme = localStorage.getItem('portfolio-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); document.documentElement.lang = localStorage.getItem('portfolio-lang') === 'zh' ? 'zh-CN' : 'en';</script>
-  <link rel="stylesheet" href="../../styles.css?v=20261115-1">
-  <link rel="stylesheet" href="cpmg.css?v=20261115-2">
-  <script src="cpmg.js?v=20261115-2" defer></script>
+  <link rel="stylesheet" href="../../styles.css?v=20261115-8">
+  <link rel="stylesheet" href="cpmg.css?v=20261115-3">
+  <script src="cpmg.js?v=20261115-3" defer></script>
 </head>
 <body class="case-page">
   <a class="skip-link" href="#main-content"><span data-copy="en">Skip to content</span><span data-copy="zh">跳至正文</span></a>
@@ -78,7 +78,7 @@
             <li><strong><span data-copy="en">Experimental lever</span><span data-copy="zh">实验切入点</span></strong><span data-copy="en">Use temperature to test the exchange-rate hypothesis.</span><span data-copy="zh">用温度变化检验交换速率假说。</span></li>
             <li><strong><span data-copy="en">Decision</span><span data-copy="zh">研究决策</span></strong><span data-copy="en">Collect at 25°C and 15°C, then fit the new data.</span><span data-copy="zh">采集 25°C、15°C 数据并拟合。</span></li>
           </ol>
-          <img src="assets/exchange-rate-sweep.svg" width="940" height="530" alt="Three synthetic CPMG profiles with exchange rates of 20,000, 5,000 and 1,000 per second. The 20,000 curve is nearly flat; the lower-rate curves show greater dispersion across 80 to 1,040 Hz.">
+          <img src="assets/exchange-rate-sweep-light.svg" data-theme-light-src="assets/exchange-rate-sweep-light.svg" data-theme-dark-src="assets/exchange-rate-sweep-dark.svg" width="940" height="530" alt="Three synthetic CPMG profiles with exchange rates of 20,000, 5,000 and 1,000 per second. The 20,000 curve is nearly flat; the lower-rate curves show greater dispersion across 80 to 1,040 Hz.">
           <p class="case-parameters">p<sub>A</sub> = 0.95 · Δω = 1,000 rad/s · R<sub>2,0</sub> = 10 s⁻¹ · ν<sub>CPMG</sub> = 80–1,040 Hz</p>
           <figcaption>
             <span data-copy="en">Reconstructed for this case using synthetic parameters. Holding other parameters fixed, lowering the exchange rate within this range reveals more dispersion. This illustrates the hypothesis behind the experimental decision. The curves are not measured temperature data.</span>
@@ -119,7 +119,7 @@
         <figure class="case-figure case-evidence">
           <div class="figure-heading"><h3><span data-copy="en">Figure 2. What the completed measurements supported</span><span data-copy="zh">图二：完成后的测量支持了什么？</span></h3><span class="figure-kind"><span data-copy="en">Published experimental data · 25°C</span><span data-copy="zh">已发表的实测数据 · 25°C</span></span></div>
           <div class="evidence-layout">
-            <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9650546/figure/pro4403-fig-0004/" target="_blank" rel="noopener noreferrer" aria-label="Open original published Figure 4"><img src="assets/published-dispersion-figure4.jpg" width="709" height="991" loading="lazy" alt="Published 25°C CPMG profiles with error bars for individual residues, comparing pH 6.0 and 5.5 at two magnetic fields. Several profiles show dispersion and fitted lines; others are flat or lack reliable fits."></a>
+            <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9650546/figure/pro4403-fig-0004/" target="_blank" rel="noopener noreferrer" aria-label="Open original published Figure 4"><img src="assets/published-dispersion-figure4-light.png" data-theme-light-src="assets/published-dispersion-figure4-light.png" data-theme-dark-src="assets/published-dispersion-figure4-dark.png" width="709" height="991" loading="lazy" alt="Published 25°C CPMG profiles with error bars for individual residues, comparing pH 6.0 and 5.5 at two magnetic fields. Several profiles show dispersion and fitted lines; others are flat or lack reliable fits."></a>
             <div class="evidence-reading">
               <h4><span data-copy="en">How to read the evidence</span><span data-copy="zh">怎样阅读这张证据图</span></h4>
               <p data-copy="en">These are real measurements for selected amino-acid residues after lowering the temperature to 25°C. V19 and T26, for example, show a clear upward rise toward the low-frequency end of the curve: visible relaxation dispersion that supports fitting. Points show measurements, error bars show reported uncertainty, and lines show fits where available.</p>
@@ -133,7 +133,7 @@
               <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9650546/figure/pro4403-fig-0004/" target="_blank" rel="noopener noreferrer"><span data-copy="en">View original figure and caption ↗</span><span data-copy="zh">查看原图与图注 ↗</span></a>
             </div>
           </div>
-          <figcaption><span data-copy="en">Source: Wang et al., <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9650546/pdf/PRO-31-e4403.pdf" target="_blank" rel="noopener noreferrer">Protein Science (2022), e4403</a>, Figure 4. Original figure reproduced without changes. © 2022 The Protein Society.</span><span data-copy="zh">来源：Wang 等，<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9650546/pdf/PRO-31-e4403.pdf" target="_blank" rel="noopener noreferrer">Protein Science（2022），e4403</a>，图 4。原图未经修改。© 2022 The Protein Society。</span></figcaption>
+          <figcaption><span data-copy="en">Source: Wang et al., <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9650546/pdf/PRO-31-e4403.pdf" target="_blank" rel="noopener noreferrer">Protein Science (2022), e4403</a>, Figure 4. Background and ink colors adapted for the display theme; point positions, curves and error bars retained. The linked original is unchanged. © 2022 The Protein Society.</span><span data-copy="zh">来源：Wang 等，<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9650546/pdf/PRO-31-e4403.pdf" target="_blank" rel="noopener noreferrer">Protein Science（2022），e4403</a>，图 4。为适配明暗主题，仅调整背景与配色，保留点位、曲线及误差棒；链接提供未修改的原图。© 2022 The Protein Society。</span></figcaption>
         </figure>
         <h3 class="contribution-heading"><span data-copy="en">Who did what</span><span data-copy="zh">个人与团队分工</span></h3>
         <div class="contribution-grid">

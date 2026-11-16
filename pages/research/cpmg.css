@@ -24,7 +24,7 @@ html[lang="zh-CN"] .case-page [data-copy="zh"] { display: revert; }
 .figure-heading { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
 .figure-heading h3 { margin: 0; font-size: 1.15rem; }
 .figure-kind { color: hsl(var(--primary)); font-size: .8rem; font-weight: 700; }
-.case-figure img { display: block; width: 100%; height: auto; border-radius: 5px; background: white; }
+.case-figure img { display: block; width: 100%; height: auto; border-radius: 5px; background: transparent; }
 .case-figure figcaption { font-size: .9rem; color: hsl(var(--muted-foreground)); margin-top: 16px; max-width: 850px; }
 .case-links { display: flex; flex-wrap: wrap; gap: 14px 22px; margin-top: 20px; font-size: .92rem; }
 .case-page .case-links a, .case-text a { color: hsl(var(--primary)); text-decoration: underline; text-underline-offset: 4px; }

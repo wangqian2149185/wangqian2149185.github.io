@@ -56,7 +56,7 @@ body {
 .research-feature p { color: hsl(var(--muted-foreground)); }
 .research-read { display: inline-block; color: hsl(var(--primary)); font-weight: 800; margin-top: 18px; }
 .research-feature-figure { min-width: 0; }
-.research-feature-figure img { display: block; width: 100%; height: auto; border-radius: 8px; background: white; }
+.research-feature-figure img { display: block; width: 100%; height: auto; border-radius: 8px; background: transparent; }
 .research-feature-figure > span { display: block; font-size: .78rem; color: hsl(var(--muted-foreground)); margin-top: 12px; }
 .research-case-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
 .research-case-card { min-width: 0; display: flex; flex-direction: column; padding: clamp(20px, 3vw, 32px); border: 1px solid hsl(var(--border)); border-radius: 12px; background: hsl(var(--card)); }

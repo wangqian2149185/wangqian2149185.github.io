@@ -40,20 +40,29 @@ with (OUT / 'exchange-rate-sweep.csv').open('w', newline='') as f:
     writer.writerows(zip(frequencies, *curves))
 
 plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 12, 'svg.fonttype': 'none'})
-fig, ax = plt.subplots(figsize=(9.4, 5.3), layout='constrained')
-for k, values, color, style in zip(RATES, curves, ['#63758c', '#aa4a12', '#007a7d'], [':', '--', '-']):
-    ax.plot(frequencies, values, label=rf'$k_{{ex}}$ = {k:,.0f} s$^{{-1}}$', color=color, linestyle=style, linewidth=2.7)
-ax.axhline(R20, color='#9aa4af', linewidth=1, linestyle='--')
-ax.text(1020, 10.5, r'$R_{2,0}$', ha='right', fontsize=11, color='#586574')
-ax.set(xlim=(80, 1040), ylim=(8, 36), xlabel=r'$\nu_{CPMG}$ (Hz)', ylabel=r'$R_{2,eff}$ (s$^{-1}$)')
-ax.set_xticks([80, 240, 400, 560, 720, 880, 1040])
-ax.spines[['top', 'right']].set_visible(False)
-ax.grid(axis='y', color='#e4e9ef', linewidth=0.8)
-ax.legend(frameon=False, loc='upper right')
-fig.savefig(OUT / 'exchange-rate-sweep.svg', facecolor='white')
-svg = OUT / 'exchange-rate-sweep.svg'
-svg.write_text('\n'.join(line.rstrip() for line in svg.read_text().splitlines()) + '\n')
-fig.savefig(OUT / 'exchange-rate-sweep.png', dpi=180, facecolor='white')
-plt.close(fig)
+for theme, colors, ink, grid in [
+    ('light', ['#6541b5', '#b34d05', '#007567'], '#263344', '#d5dde5'),
+    ('dark', ['#bc9aff', '#ffb454', '#42f5ce'], '#e5edf7', '#394454'),
+]:
+    with plt.rc_context({'text.color': ink, 'axes.labelcolor': ink,
+                         'axes.edgecolor': ink, 'xtick.color': ink, 'ytick.color': ink}):
+        fig, ax = plt.subplots(figsize=(9.4, 5.3), layout='constrained')
+        for k, values, color, style in zip(RATES, curves, colors, [':', '--', '-']):
+            ax.plot(frequencies, values, label=rf'$k_{{ex}}$ = {k:,.0f} s$^{{-1}}$', color=color, linestyle=style, linewidth=2.7)
+        ax.axhline(R20, color=ink, alpha=.55, linewidth=1, linestyle='--')
+        ax.text(1020, 10.5, r'$R_{2,0}$', ha='right', fontsize=11, color=ink)
+        ax.set(xlim=(80, 1040), ylim=(8, 36), xlabel=r'$\nu_{CPMG}$ (Hz)', ylabel=r'$R_{2,eff}$ (s$^{-1}$)')
+        ax.set_xticks([80, 240, 400, 560, 720, 880, 1040])
+        ax.spines[['top', 'right']].set_visible(False)
+        ax.grid(axis='y', color=grid, linewidth=0.8)
+        ax.legend(frameon=False, loc='upper right')
+        for suffix in ('svg', 'png'):
+            path = OUT / f'exchange-rate-sweep-{theme}.{suffix}'
+            fig.savefig(path, dpi=180, transparent=True)
+            if suffix == 'svg':
+                path.write_text('\n'.join(line.rstrip() for line in path.read_text().splitlines()) + '\n')
+            if theme == 'light':
+                (OUT / f'exchange-rate-sweep.{suffix}').write_bytes(path.read_bytes())
+        plt.close(fig)
 for k, values in zip(RATES, curves):
     print(f'kex={k:g}: R(80)={values[0]:.6f}, R(1040)={values[-1]:.6f}, difference={values[0]-values[-1]:.6f}')

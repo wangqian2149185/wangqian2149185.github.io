@@ -14,8 +14,8 @@
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       document.documentElement.dataset.theme = savedTheme || (prefersDark ? "dark" : "light");
     </script>
-    <link rel="stylesheet" href="styles.css?v=20261115-7">
-    <script src="script.js?v=20261115-5" defer></script>
+    <link rel="stylesheet" href="styles.css?v=20261115-8">
+    <script src="script.js?v=20261115-6" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main-content" data-i18n="skip">Skip to content</a>
@@ -214,7 +214,7 @@
               <span class="research-read" data-i18n="readCase">Read the case study →</span>
             </div>
             <div class="research-feature-figure">
-              <img src="pages/research/assets/exchange-rate-sweep.svg" width="940" height="530" loading="lazy" alt="Synthetic CPMG curves comparing three exchange rates.">
+              <img src="pages/research/assets/exchange-rate-sweep-light.svg" data-theme-light-src="pages/research/assets/exchange-rate-sweep-light.svg" data-theme-dark-src="pages/research/assets/exchange-rate-sweep-dark.svg" width="940" height="530" loading="lazy" alt="Synthetic CPMG curves comparing three exchange rates.">
               <span data-i18n="cpmgFigureLabel">Reconstructed model illustration · Synthetic parameters</span>
             </div>
           </a>
@@ -223,7 +223,7 @@
               <span class="badge" data-i18n="shiftCaseBadge">Case study 02 · Computational research</span>
               <h3 data-i18n="shiftCaseTitle">Designing a structure-aware model for protein NMR prediction</h3>
               <p data-i18n="shiftCaseSummary">From molecular representation to a graph model and a held-out comparison. Framework design, training, and evaluation with explicit limits.</p>
-              <img src="pages/research/assets/chemical-shift-gnn-recorded.png" width="1200" height="500" loading="lazy" alt="Recorded hydrogen and nitrogen chemical-shift prediction scatter plots.">
+              <img src="pages/research/assets/chemical-shift-gnn-recorded-light.png" data-theme-light-src="pages/research/assets/chemical-shift-gnn-recorded-light.png" data-theme-dark-src="pages/research/assets/chemical-shift-gnn-recorded-dark.png" width="1200" height="500" loading="lazy" alt="Recorded hydrogen and nitrogen chemical-shift prediction scatter plots.">
               <span class="research-read" data-i18n="readCase">Read the case study →</span>
             </a>
             <a class="research-case-card research-case-card-ct" href="pages/research/ct-stroke.html">

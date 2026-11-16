@@ -388,6 +388,10 @@ function setTheme(theme) {
     headshot.src = isDark ? headshot.dataset.darkSrc : headshot.dataset.lightSrc;
   });
 
+  document.querySelectorAll('img[data-theme-light-src]').forEach(image => {
+    image.src = nextTheme === 'dark' ? image.dataset.themeDarkSrc : image.dataset.themeLightSrc;
+  });
+
   const button = document.querySelector("[data-theme-toggle]");
   if (button) {
     button.textContent = isDark ? "☀" : "☾";

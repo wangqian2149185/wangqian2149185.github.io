@@ -1,0 +1,54 @@
+{
+  "method": "White-matte removal and per-pixel ink recoloring only; original pixel coordinates and dimensions retained.",
+  "script": "../generate_theme_figures.py",
+  "palettes": {
+    "light": {
+      "ink": "#263344",
+      "blue": "#175da3",
+      "orange": "#b75b00"
+    },
+    "dark": {
+      "ink": "#e5edf7",
+      "blue": "#54cfff",
+      "orange": "#ffb454"
+    }
+  },
+  "figures": [
+    {
+      "source": "chemical-shift-gnn-recorded.png",
+      "sha256": "7c0ab07d536a55ce9d16cdf898103415665be37c4dcd5ddc6c9a59cda8591907",
+      "size_px": [
+        1189,
+        490
+      ],
+      "derivatives": [
+        "chemical-shift-gnn-recorded-light.png",
+        "chemical-shift-gnn-recorded-dark.png"
+      ]
+    },
+    {
+      "source": "chemical-shift-mlp-recorded.png",
+      "sha256": "224abd388c7d1d7e18b5369a8d570ccea9e47721d53ed6d417b649abbbae501e",
+      "size_px": [
+        1189,
+        490
+      ],
+      "derivatives": [
+        "chemical-shift-mlp-recorded-light.png",
+        "chemical-shift-mlp-recorded-dark.png"
+      ]
+    },
+    {
+      "source": "published-dispersion-figure4.jpg",
+      "sha256": "096596d4f1a581113d2e5074e15d28a9d6c85f300296bc9df4e91176595e69e8",
+      "size_px": [
+        709,
+        991
+      ],
+      "derivatives": [
+        "published-dispersion-figure4-light.png",
+        "published-dispersion-figure4-dark.png"
+      ]
+    }
+  ]
+}

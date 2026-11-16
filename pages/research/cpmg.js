@@ -18,6 +18,10 @@ function applyTheme(theme) {
   const next = theme === 'dark' ? 'dark' : 'light';
   document.documentElement.dataset.theme = next;
   localStorage.setItem('portfolio-theme', next);
+  document.querySelectorAll('img[data-theme-light-src]').forEach(image => {
+    image.src = next === 'dark' ? image.dataset.themeDarkSrc : image.dataset.themeLightSrc;
+  });
+
   const button = document.querySelector('[data-theme-toggle]');
   button.textContent = next === 'dark' ? '☀' : '☾';
   button.setAttribute('aria-label', next === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
