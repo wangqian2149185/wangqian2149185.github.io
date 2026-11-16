@@ -1,0 +1,91 @@
+{
+  "evidence": "saved local notebook outputs; model inference not independently rerun",
+  "source_notebook": "CTstroke_RedChannel.ipynb",
+  "source_notebook_sha256": "470db8eeba564c77cb0efdabdd0c8e11052f1025a24b07691412768ed5fddcec",
+  "review_date": "2026-11-15",
+  "dataset": "ozguraslank/brain-stroke-ct-dataset",
+  "dataset_version_in_download_output": 3,
+  "processed_manifest": {
+    "rows": 6636,
+    "Normal": 4427,
+    "Ischemia": 1116,
+    "Bleeding": 1093
+  },
+  "split": {
+    "unit": "processed image row",
+    "train": 4645,
+    "validation": 1327,
+    "test": 664,
+    "stratified_by": "class label",
+    "random_seed": 42,
+    "patient_grouped": false,
+    "test_split_file_present_in_supplied_archive": false
+  },
+  "preprocessing": {
+    "dicom_rescale": "pixel * RescaleSlope + RescaleIntercept",
+    "clip_range_HU": [
+      0,
+      100
+    ],
+    "normalization": "divide clipped HU by 100",
+    "resize": [
+      256,
+      256
+    ]
+  },
+  "classification": {
+    "metric": "multiclass image-level accuracy",
+    "printed_accuracy": 0.9729,
+    "correct_from_recorded_confusion_matrix": 646,
+    "n": 664,
+    "class_order": [
+      "Normal",
+      "Ischemia",
+      "Bleeding"
+    ],
+    "confusion_matrix_actual_rows_predicted_columns": [
+      [
+        440,
+        0,
+        3
+      ],
+      [
+        8,
+        104,
+        0
+      ],
+      [
+        4,
+        3,
+        102
+      ]
+    ],
+    "support": [
+      443,
+      112,
+      109
+    ],
+    "printed_macro_f1": 0.96,
+    "printed_macro_recall": 0.95
+  },
+  "segmentation": {
+    "metric": "validation foreground Dice, averaged by batch",
+    "max_in_saved_training_log": 0.31202605331227895,
+    "final_in_saved_training_log": 0.31120741917263894,
+    "epochs_in_log": 61,
+    "labels": "masks derived from differences between source overlays and PNGs",
+    "test_dice_reported": false
+  },
+  "source_cells_zero_based": {
+    "dataset_loader": 7,
+    "preprocessing": 13,
+    "training_split": 18,
+    "evaluation": 23
+  },
+  "limitations": [
+    "No verified patient-disjoint or external-site test",
+    "Training resumes a checkpoint whose earlier provenance was not independently verified",
+    "No controlled grayscale-versus-HU ablation in supplied artifacts",
+    "Recorded classification accuracy does not measure lesion overlap or establish clinical performance"
+  ]
+}
