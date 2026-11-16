@@ -14,8 +14,8 @@
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       document.documentElement.dataset.theme = savedTheme || (prefersDark ? "dark" : "light");
     </script>
-    <link rel="stylesheet" href="styles.css?v=20261115-3">
-    <script src="script.js?v=20261115-4" defer></script>
+    <link rel="stylesheet" href="styles.css?v=20261115-5">
+    <script src="script.js?v=20261115-5" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main-content" data-i18n="skip">Skip to content</a>
@@ -226,12 +226,18 @@
               <img src="pages/research/assets/chemical-shift-gnn-recorded.png" width="1200" height="500" loading="lazy" alt="Recorded hydrogen and nitrogen chemical-shift prediction scatter plots.">
               <span class="research-read" data-i18n="readCase">Read the case study →</span>
             </a>
-            <a class="research-case-card" href="pages/research/ct-stroke.html">
+            <a class="research-case-card research-case-card-ct" href="pages/research/ct-stroke.html">
               <span class="badge" data-i18n="ctCaseBadge">Case study 03 · Domain-guided AI</span>
               <h3 data-i18n="ctCaseTitle">Using CT physics to guide an AI representation choice</h3>
               <p data-i18n="ctCaseSummary">Contributed the HU-based input rationale. The collaborative model’s recorded evaluation reports 97.29% classification accuracy on 664 test images.</p>
-              <div class="research-hu" aria-hidden="true"><span data-i18n="ctStored">Stored values</span><strong>→ HU →</strong><span data-i18n="ctModel">Model input</span></div>
+              <div class="ct-showcase">
+                <figure><img src="pages/research/assets/ct-card-bleeding-10007.png" width="856" height="856" loading="lazy" alt="Bleeding prediction in red, example 10007."><figcaption><span data-i18n="ctBleeding">Bleeding</span> · 10007</figcaption></figure>
+                <figure><img src="pages/research/assets/ct-card-bleeding-10210.png" width="856" height="856" loading="lazy" alt="Bleeding prediction in red, example 10210."><figcaption><span data-i18n="ctBleeding">Bleeding</span> · 10210</figcaption></figure>
+                <figure><img src="pages/research/assets/ct-card-ischemia-10053.png" width="856" height="928" loading="lazy" alt="Ischemia prediction in blue, example 10053."><figcaption><span data-i18n="ctIschemia">Ischemia</span> · 10053</figcaption></figure>
+                <figure><img src="pages/research/assets/ct-card-ischemia-10160.png" width="856" height="856" loading="lazy" alt="Ischemia prediction in blue, example 10160."><figcaption><span data-i18n="ctIschemia">Ischemia</span> · 10160</figcaption></figure>
+              </div>
               <span class="research-read" data-i18n="readCase">Read the case study →</span>
+              <div class="research-hu research-hu-footer" aria-hidden="true"><span data-i18n="ctStored">Stored values</span><strong>→ HU →</strong><span data-i18n="ctModel">Model input</span></div>
             </a>
           </div>
         </div>
