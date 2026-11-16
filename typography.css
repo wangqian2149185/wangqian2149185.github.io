@@ -1,0 +1,190 @@
+/* Shared reading system for the portfolio and research cases.
+   16px / 24px body; 1.25 heading scale; 8px spacing increments. */
+:root {
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --type-body: 1rem;
+  --type-small: .8rem;
+  --type-h4: 1.25rem;
+  --type-h3: 1.5625rem;
+  --type-h2: 1.953125rem;
+  --type-h1: 2.44140625rem;
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
+  --space-8: 64px;
+  --space-10: 80px;
+  --muted-foreground: 240 8% 28%;
+}
+:root[data-theme="dark"] { --muted-foreground: 240 8% 80%; }
+html { font-size: 100%; }
+body { font-family: var(--font-ui); font-size: var(--type-body); line-height: 1.5; }
+h1, h2, h3, h4, h5, h6, .brand, .button, button, input, select, textarea {
+  font-family: var(--font-ui);
+}
+h1, h2, h3, h4 { line-height: 1.2; letter-spacing: -.02em; text-wrap: balance; }
+h1, [lang="zh-CN"] h1 { font-size: var(--type-h1); gap: var(--space-2); margin: 0 0 var(--space-3); }
+h2 { font-size: var(--type-h2); }
+h3, .research-feature h3, .research-case-card h3 { font-size: var(--type-h3); line-height: 1.2; }
+h4 { font-size: var(--type-h4); }
+p { margin-bottom: var(--space-2); }
+.hero-copy, .summary-copy, .summary-copy p, .feature-card p, .feature-card blockquote p, .project-card p,
+.research-intro, .research-feature p, .research-case-card p,
+.case-page .case-deck, .case-page .case-section p, .case-page .case-figure details p,
+.case-page .case-facts dd, .case-page .case-publication p, .profile-focus, .profile-discipline {
+  font-size: var(--type-body);
+  line-height: 1.5;
+}
+.container { width: min(1120px, calc(100% - 64px)); }
+.site-header { gap: var(--space-3); padding: var(--space-2) var(--space-4); }
+.brand, .header-controls { gap: var(--space-1); }
+.top-nav, .toc { gap: var(--space-2); }
+.top-nav a, .toc a { font-size: .875rem; line-height: 1.5; }
+.theme-button { width: 40px; height: 40px; }
+.language-switch { padding: 0; }
+.lang-button { min-width: 40px; padding: var(--space-1); }
+.lang-button.active { background: hsl(var(--primary)); color: hsl(var(--card)); }
+:root[data-theme="dark"] body:not(.glass-portfolio) .button.primary { color: hsl(var(--background)); }
+.button { min-height: 40px; padding: var(--space-1) var(--space-2); font-size: .875rem; line-height: 1.5; }
+.eyebrow, .hero-meta li, .badge, .tech-list li, .timeline-date,
+.project-number, .card-index, .feature-card cite,
+.research-feature-figure > span, .figure-kind, .case-number,
+.case-page .case-facts dt, .profile-topline, .tile-label {
+  font-size: var(--type-small);
+  line-height: 1.5;
+}
+.eyebrow { margin-bottom: var(--space-1); }
+.hero-inner { gap: var(--space-4); padding: var(--space-8) 0; }
+body:not(.glass-portfolio) .hero-inner { grid-template-columns: minmax(0, 1fr) minmax(0, 1.618fr); }
+body:not(.glass-portfolio) .hero-inner > .hero-avatar-wrap { width: min(320px, 100%); justify-self: center; }
+.hero-content { min-width: 0; }
+.hero-name { font-size: var(--type-h4); line-height: 1.2; }
+.gradient-text { font-size: var(--type-h1); line-height: 1.2; }
+.hero-copy { max-width: 60ch; min-height: 120px; margin-bottom: var(--space-3); }
+.hero-actions { gap: var(--space-1); margin-top: var(--space-3); }
+.hero-meta { gap: var(--space-1); margin-top: var(--space-3); }
+.hero-meta li { padding: var(--space-1) var(--space-2); }
+.section, .footer { padding: var(--space-8) 0; }
+.section-heading { gap: var(--space-1); margin-bottom: var(--space-4); }
+.summary-layout, .research-feature, .research-case-grid, .project-grid,
+.feature-grid, .education-grid, .stack-grid, .split, .hobby-layout,
+.hobby-card, .footer-inner { gap: var(--space-3); }
+.summary-copy { gap: var(--space-3); }
+.summary-copy p { margin-bottom: 0; }
+.feature-card, .project-card, .info-panel, .research-feature, .research-case-card { padding: var(--space-4); }
+.feature-card { grid-template-columns: 32px minmax(0, 1fr); gap: var(--space-2); }
+.feature-card .card-index { grid-column: 1; grid-row: 1 / 4; }
+.feature-card h3, .feature-card > p, .feature-card blockquote { grid-column: 2; min-width: 0; }
+.feature-card blockquote { padding-left: var(--space-2); }
+.role { margin-bottom: var(--space-1); }
+.project-topline { margin-bottom: var(--space-3); }
+.project-details { gap: var(--space-2); }
+.project-details dt { margin-bottom: var(--space-1); }
+.research-intro { margin-bottom: var(--space-4); }
+.project-group-title { font-size: var(--type-h4); line-height: 1.2; margin: var(--space-4) 0 var(--space-2); }
+.research-feature h3, .research-case-card h3 { margin: var(--space-3) 0 var(--space-2); }
+.research-read, .research-case-card .research-read { margin-top: var(--space-3); }
+.research-feature-figure > span { margin-top: var(--space-2); }
+.research-case-grid { margin-top: var(--space-3); }
+.badge, .tech-list li, .pill-list li { padding: var(--space-1); }
+.tech-list { gap: var(--space-1); }
+.timeline-item { padding: var(--space-3) 0; gap: var(--space-3); }
+.timeline-date, .feature-card cite, .card-index, .project-number,
+.case-page .case-source-note, .case-page .case-figure figcaption,
+.research-feature-figure > span { color: hsl(var(--muted-foreground)); }
+.ct-showcase { gap: var(--space-1); }
+.research-case-card-ct .research-hu-footer { margin-top: var(--space-2); padding: var(--space-2) var(--space-1); gap: var(--space-1); }
+.hobby-card { padding: var(--space-3); }
+.hobby-copy { padding: 0; gap: var(--space-2); }
+.hobby-links { gap: var(--space-2); }
+.hobby-links a { padding: var(--space-1) var(--space-2); }
+.link-list { gap: var(--space-2); }
+.link-list a { padding-bottom: var(--space-2); }
+.stack-grid > div { padding-top: var(--space-3); }
+.footer h2 { margin-bottom: var(--space-2); }
+
+/* Case pages use the same scale as the homepage, including technical details. */
+.case-page .case-hero { padding: var(--space-8) 0 var(--space-5); }
+.case-page .case-breadcrumb { margin-bottom: var(--space-4); }
+.case-page h1, html[lang="zh-CN"] .case-page h1 {
+  font-size: var(--type-h1); line-height: 1.2; margin: var(--space-2) 0 var(--space-3);
+}
+.case-page .case-section h2 { font-size: var(--type-h2); line-height: 1.2; margin: var(--space-1) 0 var(--space-3); }
+.case-page .figure-heading h3, .case-page .contribution-heading,
+.case-page .contribution-panel h3 { font-size: var(--type-h3); }
+.case-page .evidence-reading h4, .case-page .representation-panel h4 { font-size: var(--type-h4); }
+.case-page .case-callout { font-size: var(--type-body) !important; padding: var(--space-1) 0 var(--space-1) var(--space-3); margin: var(--space-4) 0; }
+.case-page .case-facts { gap: var(--space-3); margin: var(--space-4) 0 var(--space-1); }
+.case-page .case-nav { gap: var(--space-2) var(--space-3); padding: var(--space-3) 0; }
+.case-page .case-section { padding: var(--space-6) 0; }
+.case-page .case-figure { padding: var(--space-4); margin-top: var(--space-4); }
+.case-page .figure-heading { gap: var(--space-2); margin-bottom: var(--space-2); }
+.case-page .case-figure figcaption, .case-page .case-source-note {
+  font-size: .875rem; line-height: 1.5;
+}
+.case-page .case-figure details { margin-top: var(--space-3); padding-top: var(--space-2); font-size: var(--type-body); }
+.case-page .case-parameters { font-size: .875rem !important; }
+.case-page .case-links { gap: var(--space-2) var(--space-3); margin-top: var(--space-3); }
+.case-page .decision-path { margin: var(--space-1) 0 var(--space-4); gap: var(--space-2); }
+.case-page .decision-path li { padding-top: var(--space-2); font-size: .875rem; }
+.case-page .evidence-layout { gap: var(--space-4); }
+.case-page .contribution-grid, .case-page .representation-comparison { gap: var(--space-3); }
+.case-page .contribution-heading { margin: var(--space-5) 0 var(--space-3); }
+.case-page .case-publication { margin-top: var(--space-4); }
+.case-page .case-footer { margin-top: var(--space-5); padding: var(--space-4) 0 var(--space-6); }
+.case-page .case-table { font-size: .875rem; line-height: 1.5; }
+.case-page .case-table th, .case-page .case-table td { padding: var(--space-2); }
+.case-page .case-table caption { padding-bottom: var(--space-2); }
+.case-page .case-equation { padding: var(--space-4) var(--space-2); margin: var(--space-3) 0; }
+.case-page .representation-comparison { margin-top: var(--space-3); }
+.case-page .case-flow-note { font-size: var(--type-body) !important; }
+
+/* Also apply the system to the existing local glass layout without changing its markup. */
+body.glass-portfolio .hero-inner { grid-template-columns: minmax(0, 1.618fr) minmax(0, 1fr); padding: var(--space-2) 0 var(--space-3); }
+body.glass-portfolio .hero-content { padding: var(--space-5); }
+body.glass-portfolio .container { width: min(1280px, calc(100% - 64px)); }
+body.glass-portfolio .profile-glass { padding: var(--space-4); }
+body.glass-portfolio h1 { gap: var(--space-2); margin: var(--space-3) 0; }
+body.glass-portfolio .hero-name { font-size: var(--type-h2); }
+body.glass-portfolio .profile-glass h2 { font-size: var(--type-h2); }
+body.glass-portfolio .profile-glass .hero-avatar-wrap { margin: var(--space-4) 0 var(--space-3); }
+body.glass-portfolio .profile-discipline { margin: var(--space-1) 0 var(--space-3); }
+body.glass-portfolio .profile-divider { margin-bottom: var(--space-3); }
+body.glass-portfolio .profile-link { font-size: .875rem; padding: var(--space-2); }
+body.glass-portfolio .profile-glass .eyebrow { font-size: var(--type-small); margin-bottom: var(--space-1); }
+body.glass-portfolio .focus-strip { gap: var(--space-2); }
+body.glass-portfolio .focus-tile { padding: var(--space-2); }
+body.glass-portfolio .tile-art { height: 96px; margin-bottom: var(--space-2); }
+body.glass-portfolio .tile-label { margin: 0 0 var(--space-1); }
+body.glass-portfolio .focus-tile strong { font-size: var(--type-body); line-height: 1.5; padding: 0 var(--space-3) var(--space-1) 0; }
+body.glass-portfolio .timeline { padding: var(--space-1) var(--space-4); }
+body.glass-portfolio .top-nav { gap: var(--space-1); }
+body.glass-portfolio .top-nav a { font-size: .75rem; }
+body.glass-portfolio .summary-copy { padding: var(--space-4); }
+
+@media(max-width: 1100px) {
+  body.glass-portfolio .hero-content, body.glass-portfolio .profile-glass { padding: var(--space-3); }
+}
+@media(max-width: 900px) {
+  body:not(.glass-portfolio) .hero-inner, body.glass-portfolio .hero-inner { grid-template-columns: minmax(0, 1fr); min-height: 0; padding: var(--space-5) 0; }
+  body:not(.glass-portfolio) .hero-inner > .hero-avatar-wrap { width: 160px; justify-self: start; margin-left: var(--space-2); }
+  body:not(.glass-portfolio) .top-nav { display: none; }
+}
+@media(max-width: 760px) {
+  .container, body.glass-portfolio .container { width: calc(100% - 32px); }
+  .site-header, .case-page .site-header { padding: var(--space-2); gap: var(--space-1); }
+  .hero-copy { min-height: 192px; }
+  .section, .footer, .case-page .case-section { padding: var(--space-4) 0; }
+  .feature-card, .project-card, .info-panel, .research-feature, .research-case-card,
+  .case-page .case-figure { padding: var(--space-3); }
+  .feature-card { grid-template-columns: minmax(0, 1fr); }
+  .feature-card .card-index, .feature-card h3, .feature-card > p, .feature-card blockquote { grid-column: 1; grid-row: auto; }
+  .case-page .case-hero { padding: var(--space-5) 0 var(--space-4); }
+  .case-page .case-facts, .case-page .contribution-grid { gap: var(--space-2); }
+  body.glass-portfolio .hero-inner { padding: var(--space-1) 0 var(--space-3); gap: var(--space-2); }
+  body.glass-portfolio .profile-glass { gap: var(--space-1) var(--space-2); }
+  body.glass-portfolio .profile-glass .hero-avatar-wrap { margin: var(--space-1) 0; }
+  body.glass-portfolio .top-nav { padding: var(--space-1); }
+}
