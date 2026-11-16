@@ -1,0 +1,50 @@
+[
+  {
+    "case": "10007",
+    "source_input": "Bleeding_input_10007.png",
+    "source_annotation": "Bleeding_10007.png",
+    "source_prediction": "predict_10007.png",
+    "prediction_sha256": "76960ebbaa827552f5f45af84d8335bcc9917295a896d0c415baafa294d5400f",
+    "annotation_sha256": "e152822ab539b803b08780fd0d6cba7d5398a11d70f04d8453ecdbd7ea607cb6",
+    "input_dimensions": [
+      512,
+      512
+    ],
+    "prediction_dimensions": [
+      856,
+      856
+    ],
+    "prediction_display": "Unchanged RGB pixels; no mask editing, filling or removal of extra predictions",
+    "annotation_display": "Red fill extracted by fixed RGB threshold, displayed blue over paired CT",
+    "annotation_source_confirmed_by_user": true,
+    "prediction_same_model_as_reported_evaluation_per_user": true,
+    "confirmation_date": "2026-11-15",
+    "confirmation_basis": "User identifies predict filenames as model outputs and matching suffixes without predict as original data; user confirms same model.",
+    "independently_reproduced_from_local_checkpoint": false,
+    "quantitative_overlap_reported": false
+  },
+  {
+    "case": "10210",
+    "source_input": "Bleeding_input_10210.png",
+    "source_annotation": "Bleeding_10210.png",
+    "source_prediction": "predict_10210.png",
+    "prediction_sha256": "29cf12399d2c80e3b733a1b45c725379d84c4768c581db1f6c1bef03e14cc6f8",
+    "annotation_sha256": "f07846ab3d0d358c623e61416dade93d274f9a1a972065dab9c7522e47228b84",
+    "input_dimensions": [
+      512,
+      512
+    ],
+    "prediction_dimensions": [
+      856,
+      856
+    ],
+    "prediction_display": "Unchanged RGB pixels; no mask editing, filling or removal of extra predictions",
+    "annotation_display": "Red fill extracted by fixed RGB threshold, displayed blue over paired CT",
+    "annotation_source_confirmed_by_user": true,
+    "prediction_same_model_as_reported_evaluation_per_user": true,
+    "confirmation_date": "2026-11-15",
+    "confirmation_basis": "User identifies predict filenames as model outputs and matching suffixes without predict as original data; user confirms same model.",
+    "independently_reproduced_from_local_checkpoint": false,
+    "quantitative_overlap_reported": false
+  }
+]
