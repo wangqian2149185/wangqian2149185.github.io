@@ -6,7 +6,7 @@
     "source_sha256": "76960ebbaa827552f5f45af84d8335bcc9917295a896d0c415baafa294d5400f",
     "pixel_content_preserved": true,
     "exif_removed": true,
-    "display": "HTML grid, no cropping or segmentation-mask edits"
+    "display": "HTML four-image grid: half-size image frames and centered CSS crop; stored RGB pixels and segmentation colors unchanged"
   },
   {
     "source_file": "predict_10210.png",
@@ -15,7 +15,7 @@
     "source_sha256": "29cf12399d2c80e3b733a1b45c725379d84c4768c581db1f6c1bef03e14cc6f8",
     "pixel_content_preserved": true,
     "exif_removed": true,
-    "display": "HTML grid, no cropping or segmentation-mask edits"
+    "display": "HTML four-image grid: half-size image frames and centered CSS crop; stored RGB pixels and segmentation colors unchanged"
   },
   {
     "source_file": "predict_10053.png",
@@ -24,7 +24,7 @@
     "source_sha256": "c4b284c697a030d45f25efb6529072bf30006193a99b151d99e1a04431dff042",
     "pixel_content_preserved": true,
     "exif_removed": true,
-    "display": "HTML grid, no cropping or segmentation-mask edits"
+    "display": "HTML four-image grid: half-size image frames and centered CSS crop; stored RGB pixels and segmentation colors unchanged"
   },
   {
     "source_file": "precit_10160.png",
@@ -33,6 +33,6 @@
     "source_sha256": "e17729d1f318db5e50ab5a9b5c79ae8139ddfccaab2e507fc37c60c07b65e253",
     "pixel_content_preserved": true,
     "exif_removed": true,
-    "display": "HTML grid, no cropping or segmentation-mask edits"
+    "display": "HTML four-image grid: half-size image frames and centered CSS crop; stored RGB pixels and segmentation colors unchanged"
   }
 ]

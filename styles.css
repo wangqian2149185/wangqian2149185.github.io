@@ -69,10 +69,11 @@ body {
 .research-hu { margin-top: auto; padding: 42px 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; background: hsl(var(--muted) / .35); border-radius: 8px; }
 .research-hu strong { font-size: 1.8rem; color: hsl(var(--primary)); }
 .research-case-card .research-read { margin-top: 22px; }
-.ct-showcase { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: auto; }
-.ct-showcase figure { position: relative; min-width: 0; margin: 0; overflow: hidden; border-radius: 8px; background: #000; }
-.research-case-card .ct-showcase img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: contain; margin: 0; border-radius: 0; }
-.ct-showcase figcaption { position: absolute; bottom: 0; inset-inline: 0; padding: 6px 5px; color: #fff; background: linear-gradient(transparent, #000e); font-size: .72rem; text-align: center; }
+.ct-showcase { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 50%; align-self: center; gap: 4px; margin-top: auto; }
+.ct-showcase figure { position: relative; min-width: 0; aspect-ratio: 1; margin: 0; overflow: hidden; border-radius: 8px; background: #000; }
+.research-case-card .ct-showcase img { display: block; width: 100%; height: 100%; aspect-ratio: 1; object-fit: cover; object-position: center; transform: scale(2); transform-origin: center; margin: 0; border-radius: 0; }
+.ct-showcase figcaption { position: absolute; bottom: 0; inset-inline: 0; padding: 3px 2px; color: #fff; background: linear-gradient(transparent, #000e); font-size: .62rem; line-height: 1.1; text-align: center; }
+.ct-showcase figcaption span { display: block; }
 .research-case-card-ct .research-hu-footer { margin-top: 18px; padding: 12px 8px; gap: 8px; font-size: .8rem; }
 .research-case-card-ct .research-hu-footer strong { font-size: 1.08rem; }
 @media(max-width: 760px) { .research-case-grid { grid-template-columns: 1fr; } }
